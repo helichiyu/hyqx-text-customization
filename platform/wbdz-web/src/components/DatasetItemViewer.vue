@@ -1,5 +1,5 @@
 <template>
-  <el-drawer :model-value="modelValue" :title="title" size="72%" @update:model-value="emit('update:modelValue', $event)">
+  <el-drawer :model-value="modelValue" :title="title" class="wbdz-drawer" @update:model-value="emit('update:modelValue', $event)">
     <template v-if="item">
       <div class="viewer">
         <div class="pane left">
@@ -260,7 +260,7 @@ const graphicRows = computed(() =>
   border: 1px solid var(--el-border-color);
 }
 .latex-box {
-  font-family: Consolas, monospace;
+  font-family: var(--wbdz-font-mono);
   background: var(--el-fill-color-light);
   padding: 12px;
   border-radius: 4px;
@@ -269,7 +269,7 @@ const graphicRows = computed(() =>
 }
 .hint {
   color: var(--el-text-color-secondary);
-  font-size: 12px;
+  font-size: var(--wbdz-font-caption);
   margin-top: 8px;
 }
 .muted {

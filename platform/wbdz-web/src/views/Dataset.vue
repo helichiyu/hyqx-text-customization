@@ -14,8 +14,8 @@
             <el-button type="primary" @click="load(1)">查询</el-button>
           </div>
 
-          <el-table :data="rows" v-loading="loading" stripe>
-            <el-table-column prop="bizNo" label="数据集编号" width="190" />
+          <el-table :data="rows" v-loading="loading">
+            <el-table-column label="数据集编号" width="210"><template #default="{ row }"><BizIdText :value="row.bizNo" /></template></el-table-column>
             <el-table-column prop="lineName" label="产线" width="110" />
             <el-table-column prop="semVer" label="语义版本" width="100" />
             <el-table-column label="状态" width="100">
@@ -45,8 +45,8 @@
 
       <el-tab-pane label="交付记录" name="deliveries">
         <el-card shadow="never">
-          <el-table :data="deliveries" v-loading="deliveryLoading" stripe>
-            <el-table-column prop="bizNo" label="交付编号" width="190" />
+          <el-table :data="deliveries" v-loading="deliveryLoading">
+            <el-table-column label="交付编号" width="210"><template #default="{ row }"><BizIdText :value="row.bizNo" /></template></el-table-column>
             <el-table-column prop="datasetBizNo" label="数据集" width="190" />
             <el-table-column prop="lineName" label="产线" width="110" />
             <el-table-column prop="type" label="交付类型" width="140" />
@@ -61,10 +61,10 @@
     </el-tabs>
 
     <!-- 详情抽屉 -->
-    <el-drawer v-model="detailVisible" title="数据集详情" size="80%" @closed="detail = null">
+    <el-drawer v-model="detailVisible" title="数据集详情" class="wbdz-drawer" @closed="detail = null">
       <template v-if="detail">
         <el-descriptions :column="3" border size="small">
-          <el-descriptions-item label="编号">{{ detail.bizNo }}</el-descriptions-item>
+          <el-descriptions-item label="编号"><BizIdText :value="detail.bizNo" /></el-descriptions-item>
           <el-descriptions-item label="产线">{{ detail.lineName }}</el-descriptions-item>
           <el-descriptions-item label="语义版本">{{ detail.semVer }}</el-descriptions-item>
           <el-descriptions-item label="状态">
@@ -165,7 +165,7 @@
     />
 
     <!-- 跳过 / 失败清单（来自各环节执行记录） -->
-    <el-dialog v-model="skipVisible" title="跳过 / 失败清单" width="760px">
+    <el-dialog v-model="skipVisible" title="跳过 / 失败清单" class="wbdz-dialog">
       <el-empty v-if="!skipRows.length" description="该任务无跳过或失败记录" />
       <el-table v-else :data="skipRows" size="small" border max-height="460">
         <el-table-column prop="stage" label="环节" width="110" />
@@ -182,6 +182,7 @@
 </template>
 
 <script setup lang="ts">
+import BizIdText from '@/components/BizIdText.vue'
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import DatasetItemViewer from '@/components/DatasetItemViewer.vue'
@@ -375,9 +376,9 @@ onMounted(() => load())
 <style scoped>
 .toolbar { display: flex; gap: 10px; margin-bottom: 14px; align-items: center; }
 .pager { margin-top: 14px; justify-content: flex-end; }
-.mono { font-family: Consolas, monospace; }
-.small { font-size: 12px; }
-.json { background: #f5f7fa; padding: 10px; font-size: 12px; margin: 0 0 0 48px; max-height: 240px; overflow: auto; white-space: pre-wrap; word-break: break-all; }
+.mono { font-family: var(--wbdz-font-mono); }
+.small { font-size: var(--wbdz-font-caption); }
+.json { background: var(--wbdz-bg-page); padding: 10px; font-size: var(--wbdz-font-caption); margin: 0 0 0 48px; max-height: 240px; overflow: auto; white-space: pre-wrap; word-break: break-all; }
 .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 8px; }
-h4 { margin: 16px 0 8px; color: #303133; font-size: 14px; }
+h4 { margin: 16px 0 8px; color: var(--wbdz-title); font-size: var(--wbdz-font-body); }
 </style>

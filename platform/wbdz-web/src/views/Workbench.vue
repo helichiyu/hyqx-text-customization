@@ -22,8 +22,8 @@
         <el-button @click="load()">刷新</el-button>
       </div>
 
-      <el-table :data="rows" v-loading="loading" stripe>
-        <el-table-column prop="bizNo" label="任务编号" width="190" />
+      <el-table :data="rows" v-loading="loading">
+        <el-table-column label="任务编号" width="210"><template #default="{ row }"><BizIdText :value="row.bizNo" /></template></el-table-column>
         <el-table-column prop="name" label="任务名称" min-width="170" show-overflow-tooltip />
         <el-table-column label="状态" width="100">
           <template #default="{ row }">
@@ -59,7 +59,7 @@
     </el-card>
 
     <!-- 新建任务 -->
-    <el-dialog v-model="createVisible" title="新建任务" width="560px">
+    <el-dialog v-model="createVisible" title="新建任务" class="wbdz-dialog">
       <el-form label-width="100px">
         <el-form-item label="任务名称" required>
           <el-input v-model="form.name" placeholder="如：2026Q4 政策文本元信息批次" />
@@ -99,6 +99,7 @@
 </template>
 
 <script setup lang="ts">
+import BizIdText from '@/components/BizIdText.vue'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -233,13 +234,13 @@ defineExpose({ lineName: LINE_NAMES[line.value] })
 <style scoped>
 .stat-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 14px; }
 .stat { text-align: center; }
-.stat-value { font-size: 26px; font-weight: 600; color: #303133; }
-.stat-label { font-size: 13px; color: #909399; margin-top: 4px; }
-.stat.blue .stat-value { color: #256deb; }
-.stat.red .stat-value { color: #f56c6c; }
-.stat.green .stat-value { color: #67c23a; }
-.stat.gray .stat-value { color: #909399; }
+.stat-value { font-size: var(--wbdz-font-stat); font-weight: 600; color: var(--wbdz-title); }
+.stat-label { font-size: var(--wbdz-font-body); color: var(--wbdz-secondary); margin-top: 4px; }
+.stat.blue .stat-value { color: var(--wbdz-primary); }
+.stat.red .stat-value { color: var(--wbdz-danger); }
+.stat.green .stat-value { color: var(--wbdz-success); }
+.stat.gray .stat-value { color: var(--wbdz-secondary); }
 .toolbar { display: flex; gap: 10px; margin-bottom: 14px; align-items: center; }
 .pager { margin-top: 14px; justify-content: flex-end; }
-.hint { font-size: 12px; color: #909399; line-height: 1.6; }
+.hint { font-size: var(--wbdz-font-caption); color: var(--wbdz-secondary); line-height: 1.6; }
 </style>

@@ -5,7 +5,7 @@
         <div>
           <h3 class="title">{{ task.name }}</h3>
           <div class="sub">
-            <span class="mono">{{ task.bizNo }}</span>
+            <BizIdText :value="task.bizNo" />
             <el-tag :type="TASK_STATUS[task.status]?.tag" effect="light">{{ task.statusName }}</el-tag>
             <el-tag :type="PRIORITIES[task.priority]?.tag" size="small">{{ PRIORITIES[task.priority]?.name }}</el-tag>
             <el-tag v-if="task.imageClass" size="small" type="info">{{ task.imageClass }}</el-tag>
@@ -92,7 +92,7 @@
       <el-card shadow="never" class="block">
         <template #header><b>数据集（{{ task?.datasets?.length || 0 }}）</b></template>
         <el-table :data="task?.datasets || []" size="small">
-          <el-table-column prop="bizNo" label="编号" min-width="170" />
+          <el-table-column label="编号" min-width="190"><template #default="{ row }"><BizIdText :value="row.bizNo" /></template></el-table-column>
           <el-table-column prop="semVer" label="版本" width="80" />
           <el-table-column label="状态" width="90">
             <template #default="{ row }">
@@ -114,7 +114,7 @@
       <el-card shadow="never" class="block">
         <template #header><b>条件复核单（{{ task?.reviewOrders?.length || 0 }}）</b></template>
         <el-table :data="task?.reviewOrders || []" size="small">
-          <el-table-column prop="bizNo" label="编号" min-width="170" />
+          <el-table-column label="编号" min-width="190"><template #default="{ row }"><BizIdText :value="row.bizNo" /></template></el-table-column>
           <el-table-column prop="stageName" label="环节" width="120" />
           <el-table-column label="状态" width="90">
             <template #default="{ row }">
@@ -172,7 +172,7 @@
     </el-dialog>
 
     <!-- 产物文件抽屉 -->
-    <el-drawer v-model="filesVisible" :title="`产物文件 · 第 ${filesRun?.stageNo} 环节 ${filesRun?.operatorTag || ''}`" size="620px">
+    <el-drawer v-model="filesVisible" :title="`产物文件 · 第 ${filesRun?.stageNo} 环节 ${filesRun?.operatorTag || ''}`" class="wbdz-drawer">
       <el-table :data="files" size="small" v-loading="filesLoading">
         <el-table-column prop="name" label="文件" min-width="260" show-overflow-tooltip />
         <el-table-column label="大小" width="90">
@@ -193,7 +193,7 @@
     </el-dialog>
 
     <!-- 数据集明细 -->
-    <el-drawer v-model="dsVisible" title="数据集明细" size="760px">
+    <el-drawer v-model="dsVisible" title="数据集明细" class="wbdz-drawer">
       <div class="toolbar">
         <el-select v-model="dsFilter" placeholder="复核状态" clearable style="width: 150px" @change="loadDatasetItems(1)">
           <el-option label="已确认(A)" value="已确认" />
@@ -244,6 +244,7 @@
 </template>
 
 <script setup lang="ts">
+import BizIdText from '@/components/BizIdText.vue'
 import { computed, onUnmounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import DatasetItemViewer from '@/components/DatasetItemViewer.vue'
@@ -476,25 +477,25 @@ onUnmounted(() => {
 
 <style scoped>
 .head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
-.title { margin: 0 0 8px; font-size: 18px; color: #303133; }
+.title { margin: 0 0 8px; font-size: var(--wbdz-font-banner); color: var(--wbdz-title); }
 .sub { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-.mono { font-family: Consolas, monospace; }
-.small { font-size: 12px; }
-.muted { color: #909399; }
+.mono { font-family: var(--wbdz-font-mono); }
+.small { font-size: var(--wbdz-font-caption); }
+.muted { color: var(--wbdz-secondary); }
 .actions { display: flex; flex-wrap: wrap; gap: 4px; }
 .desc { margin-top: 14px; }
 .block { margin-top: 14px; }
 .stages { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-.stage { border: 1px solid #e4e7ed; border-radius: 8px; padding: 12px 14px; position: relative; background: #fafafa; }
-.stage.done { border-color: #67c23a; background: #f0f9eb; }
-.stage.current { border-color: #256deb; background: #ecf5ff; }
-.stage-no { width: 24px; height: 24px; line-height: 24px; text-align: center; border-radius: 50%; background: #256deb; color: #fff; font-size: 13px; }
-.stage.done .stage-no { background: #67c23a; }
-.stage-name { margin-top: 8px; font-weight: 600; color: #303133; }
-.stage-sub { font-size: 12px; color: #909399; margin-top: 2px; }
+.stage { border: 1px solid var(--wbdz-border); border-radius: 8px; padding: 12px 14px; position: relative; background: var(--wbdz-bg-page); }
+.stage.done { border-color: var(--wbdz-success); background: var(--wbdz-success-light); }
+.stage.current { border-color: var(--wbdz-primary); background: var(--wbdz-primary-light); }
+.stage-no { width: 24px; height: 24px; line-height: 24px; text-align: center; border-radius: 50%; background: var(--wbdz-primary); color: #fff; font-size: var(--wbdz-font-body); }
+.stage.done .stage-no { background: var(--wbdz-success); }
+.stage-name { margin-top: 8px; font-weight: 600; color: var(--wbdz-title); }
+.stage-sub { font-size: var(--wbdz-font-caption); color: var(--wbdz-secondary); margin-top: 2px; }
 .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .toolbar { display: flex; gap: 10px; margin-bottom: 12px; }
 .pager { margin-top: 12px; justify-content: flex-end; }
-.preview-text { max-height: 62vh; overflow: auto; background: #f5f7fa; padding: 12px; font-size: 12px; line-height: 1.6; white-space: pre-wrap; word-break: break-all; }
-.hint { font-size: 12px; color: #909399; }
+.preview-text { max-height: 62vh; overflow: auto; background: var(--wbdz-bg-page); padding: 12px; font-size: var(--wbdz-font-caption); line-height: 1.6; white-space: pre-wrap; word-break: break-all; }
+.hint { font-size: var(--wbdz-font-caption); color: var(--wbdz-secondary); }
 </style>

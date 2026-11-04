@@ -74,7 +74,7 @@
       </div>
     </el-card>
 
-    <el-dialog v-model="versionVisible" :title="`版本 ${version?.version} 内容`" width="680px">
+    <el-dialog v-model="versionVisible" :title="`版本 ${version?.version} 内容`" class="wbdz-dialog">
       <el-table :data="version?.content || []" size="small" border max-height="420">
         <el-table-column prop="name" label="参数名" width="200" />
         <el-table-column prop="value" label="取值" width="180" />
@@ -204,9 +204,9 @@ onMounted(load)
 
 <style scoped>
 .bar { display: flex; align-items: center; gap: 10px; margin: 4px 0 14px; flex-wrap: wrap; }
-.muted { color: #909399; font-size: 13px; }
-.mono { font-family: Consolas, monospace; }
+.muted { color: var(--wbdz-secondary); font-size: var(--wbdz-font-body); }
+.mono { font-family: var(--wbdz-font-mono); }
 .add-btn { margin-top: 10px; }
-.json { background: #f5f7fa; padding: 12px; font-size: 12px; margin: 0; max-height: 300px; overflow: auto; white-space: pre-wrap; }
-h4 { margin: 20px 0 10px; color: #303133; font-size: 14px; }
+.json { background: var(--wbdz-bg-page); padding: 12px; font-size: var(--wbdz-font-caption); margin: 0; max-height: 300px; overflow: auto; white-space: pre-wrap; }
+h4 { margin: 20px 0 10px; color: var(--wbdz-title); font-size: var(--wbdz-font-body); }
 </style>

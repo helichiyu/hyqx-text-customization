@@ -13,8 +13,8 @@
         <el-button @click="load()">刷新</el-button>
       </div>
 
-      <el-table :data="rows" v-loading="loading" stripe>
-        <el-table-column prop="bizNo" label="复核单号" width="190" />
+      <el-table :data="rows" v-loading="loading">
+        <el-table-column label="复核单号" width="210"><template #default="{ row }"><BizIdText :value="row.bizNo" /></template></el-table-column>
         <el-table-column prop="lineName" label="产线" width="110" />
         <el-table-column prop="stageName" label="触发环节" width="130" />
         <el-table-column label="触发条件" min-width="220" show-overflow-tooltip>
@@ -44,7 +44,7 @@
     </el-card>
 
     <!-- 复核工作台 -->
-    <el-drawer v-model="orderVisible" :title="order ? `条件复核 · ${order.bizNo}` : '条件复核'" size="80%" @closed="onDrawerClosed">
+    <el-drawer v-model="orderVisible" :title="order ? `条件复核 · ${order.bizNo}` : '条件复核'" class="wbdz-drawer wbdz-drawer--wide" @closed="onDrawerClosed">
       <template v-if="order">
         <el-descriptions :column="3" border size="small">
           <el-descriptions-item label="产线">{{ order.lineName }}</el-descriptions-item>
@@ -126,7 +126,7 @@
     </el-drawer>
 
     <!-- 修正弹窗 -->
-    <el-dialog v-model="fixVisible" title="修正条目（仅提交改动字段）" width="640px">
+    <el-dialog v-model="fixVisible" title="修正条目（仅提交改动字段）" class="wbdz-dialog">
       <el-table :data="fixFields" size="small" max-height="52vh">
         <el-table-column prop="key" label="字段" width="160" />
         <el-table-column label="修正后取值" min-width="380">
@@ -146,6 +146,7 @@
 </template>
 
 <script setup lang="ts">
+import BizIdText from '@/components/BizIdText.vue'
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -321,12 +322,12 @@ onMounted(async () => {
 <style scoped>
 .toolbar { display: flex; gap: 10px; margin-bottom: 14px; align-items: center; }
 .pager { margin-top: 14px; justify-content: flex-end; }
-.mono { font-family: Consolas, monospace; }
-.small { font-size: 12px; }
-.muted { color: #909399; }
-.hint { font-size: 12px; color: #909399; }
+.mono { font-family: var(--wbdz-font-mono); }
+.small { font-size: var(--wbdz-font-caption); }
+.muted { color: var(--wbdz-secondary); }
+.hint { font-size: var(--wbdz-font-caption); color: var(--wbdz-secondary); }
 .order-bar { display: flex; align-items: center; gap: 10px; margin: 12px 0; }
 .payload-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding: 8px 16px; }
-.payload-title { font-weight: 600; margin-bottom: 6px; color: #606266; font-size: 13px; }
-.json { background: #f5f7fa; padding: 10px; max-height: 260px; overflow: auto; font-size: 12px; margin: 0; white-space: pre-wrap; word-break: break-all; }
+.payload-title { font-weight: 600; margin-bottom: 6px; color: var(--wbdz-secondary); font-size: var(--wbdz-font-body); }
+.json { background: var(--wbdz-bg-page); padding: 10px; max-height: 260px; overflow: auto; font-size: var(--wbdz-font-caption); margin: 0; white-space: pre-wrap; word-break: break-all; }
 </style>

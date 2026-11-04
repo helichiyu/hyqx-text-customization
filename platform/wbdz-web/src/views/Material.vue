@@ -14,8 +14,8 @@
         <el-button type="primary" @click="uploadVisible = true">上传素材批次</el-button>
       </div>
 
-      <el-table :data="rows" v-loading="loading" stripe>
-        <el-table-column prop="bizNo" label="批次编号" width="190" />
+      <el-table :data="rows" v-loading="loading">
+        <el-table-column label="批次编号" width="210"><template #default="{ row }"><BizIdText :value="row.bizNo" /></template></el-table-column>
         <el-table-column prop="name" label="批次名称" min-width="160" show-overflow-tooltip />
         <el-table-column prop="lineName" label="产线" width="110" />
         <el-table-column label="状态" width="100">
@@ -49,7 +49,7 @@
     </el-card>
 
     <!-- 上传弹窗 -->
-    <el-dialog v-model="uploadVisible" title="上传素材批次" width="560px">
+    <el-dialog v-model="uploadVisible" title="上传素材批次" class="wbdz-dialog">
       <el-form label-width="90px">
         <el-form-item label="产线" required>
           <el-select v-model="uploadForm.line" style="width: 100%">
@@ -72,7 +72,7 @@
     </el-dialog>
 
     <!-- 编辑弹窗 -->
-    <el-dialog v-model="editVisible" title="编辑批次基本信息" width="480px">
+    <el-dialog v-model="editVisible" title="编辑批次基本信息" class="wbdz-dialog">
       <el-form label-width="90px">
         <el-form-item label="批次名称">
           <el-input v-model="editForm.name" />
@@ -91,10 +91,10 @@
     </el-dialog>
 
     <!-- 详情抽屉 -->
-    <el-drawer v-model="detailVisible" title="批次详情" size="620px">
+    <el-drawer v-model="detailVisible" title="批次详情" class="wbdz-drawer">
       <template v-if="detail">
         <el-descriptions :column="2" border size="small">
-          <el-descriptions-item label="批次编号">{{ detail.bizNo }}</el-descriptions-item>
+          <el-descriptions-item label="批次编号"><BizIdText :value="detail.bizNo" /></el-descriptions-item>
           <el-descriptions-item label="名称">{{ detail.name }}</el-descriptions-item>
           <el-descriptions-item label="产线">{{ detail.lineName }}</el-descriptions-item>
           <el-descriptions-item label="状态">
@@ -143,6 +143,7 @@
 </template>
 
 <script setup lang="ts">
+import BizIdText from '@/components/BizIdText.vue'
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
@@ -267,8 +268,8 @@ onMounted(() => load())
 <style scoped>
 .toolbar { display: flex; gap: 10px; margin-bottom: 14px; align-items: center; }
 .pager { margin-top: 14px; justify-content: flex-end; }
-.hint { font-size: 12px; color: #909399; line-height: 1.6; }
-.muted { color: #c0c4cc; }
+.hint { font-size: var(--wbdz-font-caption); color: var(--wbdz-secondary); line-height: 1.6; }
+.muted { color: var(--wbdz-weaker); }
 .reject-tag { margin: 0 8px 6px 0; }
-h4 { margin: 18px 0 8px; color: #303133; }
+h4 { margin: 18px 0 8px; color: var(--wbdz-title); }
 </style>

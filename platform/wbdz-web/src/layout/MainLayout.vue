@@ -111,16 +111,16 @@ function logout() {
 <style scoped>
 .layout { height: 100%; }
 .aside { background: #1d2b36; color: #fff; display: flex; flex-direction: column; }
-.brand { height: 56px; line-height: 56px; text-align: center; font-weight: 600; color: #fff; font-size: 15px; border-bottom: 1px solid rgba(255,255,255,.08); }
+.brand { height: 56px; line-height: 56px; text-align: center; font-weight: 600; color: #fff; font-size: var(--wbdz-font-card-title); border-bottom: 1px solid rgba(255,255,255,.08); }
 .menu { border-right: none; background: transparent; }
 .menu :deep(.el-menu-item) { color: #c6d2dc; height: 44px; }
 .menu :deep(.el-menu-item:hover) { background: rgba(255,255,255,.06); color: #fff; }
-.menu :deep(.el-menu-item.is-active) { background: #256dEb; color: #fff; }
-.menu-group { padding: 12px 20px 4px; font-size: 12px; color: #7f96a5; }
-.header { background: #fff; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e4e7ed; height: 56px; }
+.menu :deep(.el-menu-item.is-active) { background: var(--wbdz-primary); color: #fff; }
+.menu-group { padding: 12px 20px 4px; font-size: var(--wbdz-font-caption); color: #7f96a5; }
+.header { background: #fff; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--wbdz-border); height: 56px; }
 .header-right { display: flex; align-items: center; gap: 12px; }
-.user { color: #606266; font-size: 14px; }
-.tabs-bar { background: #fff; border-bottom: 1px solid #e4e7ed; padding: 6px 16px; display: flex; gap: 8px; flex-wrap: wrap; }
+.user { color: var(--wbdz-secondary); font-size: var(--wbdz-font-body); }
+.tabs-bar { background: #fff; border-bottom: 1px solid var(--wbdz-border); padding: 6px 16px; display: flex; gap: 8px; flex-wrap: wrap; }
 .tab { cursor: pointer; }
 .main { padding: 16px; overflow: auto; }
 </style>

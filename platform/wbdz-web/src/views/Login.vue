@@ -46,6 +46,6 @@ async function doLogin() {
 <style scoped>
 .login-wrap { height: 100%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #1d2b36 0%, #256d8b 100%); }
 .login-card { width: 380px; padding: 12px 8px; }
-.title { text-align: center; margin: 8px 0 24px; color: #303133; }
+.title { text-align: center; margin: 8px 0 24px; color: var(--wbdz-title); }
 .btn { width: 100%; }
 </style>
