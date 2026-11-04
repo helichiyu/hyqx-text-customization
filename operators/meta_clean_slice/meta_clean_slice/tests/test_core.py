@@ -49,6 +49,18 @@ def test_run_on_sample_pool(tmp_path):
     assert len(skip_rows) == 1
 
 
+def test_run_reports_sample_progress(tmp_path):
+    events = []
+    run(SAMPLES, tmp_path, validate_params({}), _noop_log, progress=lambda **update: events.append(update))
+    assert events[0]["total"] == 5
+    assert events[0]["processed"] == 0
+    assert events[-1]["total"] == 5
+    assert events[-1]["processed"] == 5
+    assert events[-1]["succeeded"] == 4
+    assert events[-1]["skipped"] == 1
+    assert events[-1]["failed"] == 0
+
+
 def test_blank_and_short(tmp_path):
     (tmp_path / "blank.html").write_text("<html><body></body></html>", encoding="utf-8")
     (tmp_path / "short.html").write_text("<html><body><p>太短</p></body></html>", encoding="utf-8")

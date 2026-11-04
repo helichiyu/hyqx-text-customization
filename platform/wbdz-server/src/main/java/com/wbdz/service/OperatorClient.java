@@ -106,6 +106,26 @@ public class OperatorClient {
         throw new BizException("算子[" + tag + "] predict 响应缺少 data");
     }
 
+    /** 读取指定 stage_run 的样本级进度；进度尚未生成时返回 null。 */
+    public Map<String, Object> readProgress(Long runId) {
+        if (runId == null) {
+            return null;
+        }
+        java.nio.file.Path runtimeRoot = java.nio.file.Path.of(opRuntimeDir);
+        for (String outputDir : new String[]{"outputs", "output"}) {
+            java.nio.file.Path path = runtimeRoot.resolve(outputDir)
+                    .resolve("_progress").resolve(runId + ".json");
+            if (!java.nio.file.Files.isRegularFile(path)) {
+                continue;
+            }
+            try {
+                return JsonUtil.readMap(java.nio.file.Files.readString(path, StandardCharsets.UTF_8));
+            } catch (Exception e) {
+                log.warn("读取算子进度失败: runId={} path={} err={}", runId, path, e.getMessage());
+            }
+        }
+        return null;
+    }
     /**
      * 算子返回路径 → 平台宿主机路径。
      *

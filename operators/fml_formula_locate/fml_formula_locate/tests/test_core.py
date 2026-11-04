@@ -57,7 +57,13 @@ def _fake_locate(system, user, image, **kwargs):
 
 def test_locate_crop_context(tmp_path, monkeypatch):
     monkeypatch.setattr(op.llm_client, "chat_vision", _fake_locate)
-    result = run(_input(tmp_path), tmp_path / "out", validate_params({}), _noop_log)
+    events = []
+    result = run(_input(tmp_path), tmp_path / "out", validate_params({}), _noop_log,
+                 progress=lambda **update: events.append(update))
+    assert events[0]["total"] == 1 and events[0]["processed"] == 0
+    assert events[-1] == {
+        "total": 1, "processed": 1, "succeeded": 1, "skipped": 2, "failed": 0,
+    }
     assert result["summary"]["located"] == 1 and result["summary"]["instances"] == 1
     assert result["summary"]["skipped"] == 2  # 两个非法 bbox
     rec = json.loads((tmp_path / "out" / "records.jsonl").read_text(encoding="utf-8").splitlines()[0])

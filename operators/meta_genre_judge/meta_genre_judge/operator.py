@@ -88,7 +88,7 @@ def _judge_one(rec: dict[str, Any], threshold: float) -> dict[str, Any]:
     return {"record": merged}
 
 
-def run(input_dir: Path, output_dir: Path, params: dict[str, Any], log) -> dict[str, Any]:
+def run(input_dir: Path, output_dir: Path, params: dict[str, Any], log, progress=None) -> dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
     src = input_dir / RECORDS_FILE
     if not src.exists():
@@ -115,7 +115,7 @@ def run(input_dir: Path, output_dir: Path, params: dict[str, Any], log) -> dict[
     log("规则粗筛跳过 %d 篇，进入模型判定 %d 篇", len(skipped), len(to_model))
     results = llm_client.run_concurrent(
         to_model, lambda r: _judge_one(r, threshold),
-        concurrency=int(params["concurrency"]))
+        concurrency=int(params["concurrency"]), progress=progress)
 
     for rec, outcome in zip(to_model, results):
         base = {"sample_id": rec["docId"], "source_file": rec.get("fileName")}

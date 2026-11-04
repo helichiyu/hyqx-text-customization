@@ -70,7 +70,7 @@ def _classify_one(rec: dict[str, Any], no: int, task_category: str,
     raise ClassifyOutputError(f"判型失败：{last_err}")
 
 
-def run(input_dir: Path, output_dir: Path, params: dict[str, Any], log) -> dict[str, Any]:
+def run(input_dir: Path, output_dir: Path, params: dict[str, Any], log, progress=None) -> dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
     src = input_dir / RECORDS_FILE
     if not src.exists():
@@ -115,7 +115,7 @@ def run(input_dir: Path, output_dir: Path, params: dict[str, Any], log) -> dict[
         return result
 
     results = llm_client.run_concurrent(
-        list(enumerate(records, start=1)), _work, concurrency=int(params["concurrency"]))
+        list(enumerate(records, start=1)), _work, concurrency=int(params["concurrency"]), progress=progress)
 
     for rec, outcome in zip(records, results):
         base = {"sample_id": rec["imageId"], "source_file": rec.get("fileName")}

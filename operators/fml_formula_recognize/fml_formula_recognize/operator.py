@@ -216,7 +216,7 @@ def _process_instance(doc: dict[str, Any], instance: dict[str, Any],
     return result
 
 
-def run(input_dir: Path, output_dir: Path, params: dict[str, Any], log) -> dict[str, Any]:
+def run(input_dir: Path, output_dir: Path, params: dict[str, Any], log, progress=None) -> dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
     src = input_dir / RECORDS_FILE
     if not src.exists():
@@ -234,7 +234,7 @@ def run(input_dir: Path, output_dir: Path, params: dict[str, Any], log) -> dict[
     log("进入公式识别 %d 个实例（%d 份文档）", len(tasks), len(docs))
     results = llm_client.run_concurrent(
         tasks, lambda t: _process_instance(t[0], t[1], input_dir, threshold),
-        concurrency=int(params["concurrency"]))
+        concurrency=int(params["concurrency"]), progress=progress)
 
     for (doc, inst), outcome in zip(tasks, results):
         iid = inst["instanceId"]

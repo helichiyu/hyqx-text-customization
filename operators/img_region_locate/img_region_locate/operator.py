@@ -77,7 +77,7 @@ def _locate_one(src: Path, out_path: Path, tolerance: int, min_size: int) -> dic
     }
 
 
-def run(input_dir: Path, output_dir: Path, params: dict[str, Any], log) -> dict[str, Any]:
+def run(input_dir: Path, output_dir: Path, params: dict[str, Any], log, progress=None) -> dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
     suffixes = tuple(s for s in ALLOWED_SUFFIXES if s != ".zip")
     files = sorted(p for p in input_dir.rglob("*") if p.is_file() and p.suffix.lower() in suffixes)
@@ -87,8 +87,11 @@ def run(input_dir: Path, output_dir: Path, params: dict[str, Any], log) -> dict[
     records: list[dict[str, Any]] = []
     skipped: list[dict[str, str]] = []
     lineage: list[dict[str, Any]] = []
+    total = len(files)
+    if progress:
+        progress(total=total, processed=0, succeeded=0, skipped=0, failed=0)
 
-    for path in files:
+    for index, path in enumerate(files, start=1):
         image_id = path.stem
         base = {"sample_id": image_id, "source_file": path.name}
         out_path = output_dir / REGIONS_DIR / f"{image_id}.png"
@@ -105,6 +108,8 @@ def run(input_dir: Path, output_dir: Path, params: dict[str, Any], log) -> dict[
             reason = f"区域定位失败（重试 {config.MAX_ATTEMPTS - 1} 次）：{last_err}"
             skipped.append({"name": path.name, "reason": reason, "code": "locate_failed"})
             lineage.append({**base, "action": "skip", "reason": reason})
+            if progress:
+                progress(total=total, processed=index, succeeded=len(records), skipped=len(skipped), failed=0)
             continue
         records.append({
             "imageId": image_id, "fileName": path.name,
@@ -114,6 +119,8 @@ def run(input_dir: Path, output_dir: Path, params: dict[str, Any], log) -> dict[
         lineage.append({**base, "action": "keep",
                         "metrics": {"cropped": region["cropped"],
                                     "size": f"{region['width']}x{region['height']}"}})
+        if progress:
+            progress(total=total, processed=index, succeeded=len(records), skipped=len(skipped), failed=0)
 
     with (output_dir / RECORDS_FILE).open("w", encoding="utf-8") as f:
         for rec in records:

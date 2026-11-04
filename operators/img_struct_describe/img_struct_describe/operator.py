@@ -167,7 +167,7 @@ def _process(rec: dict[str, Any], no: int, input_root: Path, threshold: float) -
 DETAIL_FILE = "details.jsonl"
 
 
-def run(input_dir: Path, output_dir: Path, params: dict[str, Any], log) -> dict[str, Any]:
+def run(input_dir: Path, output_dir: Path, params: dict[str, Any], log, progress=None) -> dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
     src = input_dir / RECORDS_FILE
     if not src.exists():
@@ -185,7 +185,7 @@ def run(input_dir: Path, output_dir: Path, params: dict[str, Any], log) -> dict[
     results = llm_client.run_concurrent(
         list(enumerate(records, start=1)),
         lambda item: _process(item[1], item[0], input_dir, threshold),
-        concurrency=int(params["concurrency"]))
+        concurrency=int(params["concurrency"]), progress=progress)
 
     for rec, outcome in zip(records, results):
         base = {"sample_id": rec["imageId"], "source_file": rec.get("fileName")}

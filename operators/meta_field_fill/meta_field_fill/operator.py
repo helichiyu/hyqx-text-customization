@@ -155,7 +155,7 @@ def _process_doc(rec: dict[str, Any], threshold: float, max_chars: int) -> dict[
     return result
 
 
-def run(input_dir: Path, output_dir: Path, params: dict[str, Any], log) -> dict[str, Any]:
+def run(input_dir: Path, output_dir: Path, params: dict[str, Any], log, progress=None) -> dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
     src = input_dir / RECORDS_FILE
     if not src.exists():
@@ -173,7 +173,7 @@ def run(input_dir: Path, output_dir: Path, params: dict[str, Any], log) -> dict[
     log("进入三组补全 %d 篇", len(records))
     results = llm_client.run_concurrent(
         records, lambda r: _process_doc(r, threshold, max_chars),
-        concurrency=int(params["concurrency"]))
+        concurrency=int(params["concurrency"]), progress=progress)
 
     for rec, outcome in zip(records, results):
         base = {"sample_id": rec["docId"], "source_file": rec.get("fileName")}

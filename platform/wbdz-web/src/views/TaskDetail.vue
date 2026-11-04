@@ -60,6 +60,15 @@
           </template>
         </el-table-column>
         <el-table-column prop="attempt" label="尝试" width="60" align="center" />
+        <el-table-column label="样本进度" min-width="220">
+          <template #default="{ row }">
+            <div v-if="row.progress" class="progress-cell">
+              <el-progress :percentage="progressPercent(row.progress)" :stroke-width="6" :status="progressStatus(row.progress)" />
+              <div class="progress-meta">{{ progressText(row.progress) }}</div>
+            </div>
+            <span v-else class="muted">—</span>
+          </template>
+        </el-table-column>
         <el-table-column label="摘要" min-width="220">
           <template #default="{ row }">
             <span v-if="row.summary" class="mono small">{{ summaryText(row.summary) }}</span>
@@ -332,6 +341,29 @@ function runName(s: string) {
   return ({ running: '执行中', done: '完成', error: '失败' } as Record<string, string>)[s] || s
 }
 
+function progressPercent(p: any) {
+  if (p?.status === 'completed') return 100
+  const total = Number(p?.total || 0)
+  const processed = Number(p?.processed || 0)
+  return total > 0 ? Math.min(100, Math.round((processed / total) * 100)) : 0
+}
+
+function progressStatus(p: any) {
+  if (p?.status === 'completed') return 'success'
+  if (p?.status === 'failed') return 'exception'
+  return undefined
+}
+
+function progressText(p: any) {
+  const total = Number(p?.total || 0)
+  const processed = Number(p?.processed || 0)
+  const succeeded = Number(p?.succeeded || 0)
+  const skipped = Number(p?.skipped || 0)
+  const failed = Number(p?.failed || 0)
+  const current = p?.currentItem ? ` · 当前 ${p.currentItem}` : ''
+  if (p?.status === 'running') return `已处理 ${processed}/${total}${current}`
+  return `已处理 ${processed}/${total} · 成功 ${succeeded} · 跳过 ${skipped} · 失败 ${failed}${current}`
+}
 function summaryText(summary: Record<string, any>) {
   return Object.entries(summary).slice(0, 6).map(([k, v]) => `${k}=${typeof v === 'object' ? JSON.stringify(v) : v}`).join('  ')
 }
@@ -501,6 +533,8 @@ onUnmounted(() => {
 .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .toolbar { display: flex; gap: 10px; margin-bottom: 12px; }
 .pager { margin-top: 12px; justify-content: flex-end; }
+.progress-cell { min-width: 180px; }
+.progress-meta { margin-top: 4px; color: var(--wbdz-secondary); font-size: var(--wbdz-font-caption); }
 .preview-text { max-height: 62vh; overflow: auto; background: var(--wbdz-bg-page); padding: 12px; font-size: var(--wbdz-font-caption); line-height: 1.6; white-space: pre-wrap; word-break: break-all; }
 .preview-frame { width: 100%; height: 70vh; border: 0; border-radius: var(--wbdz-radius-control); background: #fff; }
 .hint { font-size: var(--wbdz-font-caption); color: var(--wbdz-secondary); }

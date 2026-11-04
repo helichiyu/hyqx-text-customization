@@ -242,6 +242,7 @@ public class TaskOrchestrator {
         BizException lastError = null;
         for (int attempt = 1; attempt <= maxAttempts; attempt++) {
             TaskStageRun run = newRunRow(task, node, attempt);
+            body.put("progressKey", String.valueOf(run.getId()));
             try {
                 Map<String, Object> data = operatorClient.predict(node.tag(), body);
                 run.setStatus("done");

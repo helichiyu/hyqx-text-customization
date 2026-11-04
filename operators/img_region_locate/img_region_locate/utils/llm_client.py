@@ -12,7 +12,7 @@ import json
 import logging
 import re
 import time
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any, Callable, Iterable
 
@@ -174,12 +174,30 @@ def run_concurrent(
     fn: Callable[[Any], Any],
     *,
     concurrency: int | None = None,
+    progress: Callable[..., None] | None = None,
 ) -> list[Any]:
-    """受限并发执行 fn(item)，保持输入顺序返回结果。并发默认 4，上限 8。"""
+    """受限并发执行 fn(item)，保持输入顺序返回结果，并报告样本级完成数。"""
 
     workers = max(1, min(cfg.MAX_CONCURRENCY, concurrency or cfg.DEFAULT_CONCURRENCY))
     items = list(items)
-    if workers == 1 or len(items) <= 1:
-        return [fn(it) for it in items]
+    total = len(items)
+    if progress:
+        progress(total=total, processed=0)
+    if workers == 1 or total <= 1:
+        results: list[Any] = []
+        for index, item in enumerate(items, start=1):
+            results.append(fn(item))
+            if progress:
+                progress(total=total, processed=index)
+        return results
     with ThreadPoolExecutor(max_workers=workers) as pool:
-        return list(pool.map(fn, items))
+        futures = {pool.submit(fn, item): index for index, item in enumerate(items)}
+        results = [None] * total
+        completed = 0
+        for future in as_completed(futures):
+            index = futures[future]
+            results[index] = future.result()
+            completed += 1
+            if progress:
+                progress(total=total, processed=completed)
+        return results

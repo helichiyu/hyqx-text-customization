@@ -214,7 +214,7 @@ def _process_doc(pdf_path: Path, output_dir: Path, params: dict[str, Any], log) 
     }
 
 
-def run(input_dir: Path, output_dir: Path, params: dict[str, Any], log) -> dict[str, Any]:
+def run(input_dir: Path, output_dir: Path, params: dict[str, Any], log, progress=None) -> dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
     files = sorted(p for p in input_dir.rglob("*") if p.is_file() and p.suffix.lower() == ".pdf")
 
@@ -222,8 +222,11 @@ def run(input_dir: Path, output_dir: Path, params: dict[str, Any], log) -> dict[
     skipped: list[dict[str, str]] = []
     failed: list[dict[str, str]] = []
     lineage: list[dict[str, Any]] = []
+    total = len(files)
+    if progress:
+        progress(total=total, processed=0, succeeded=0, skipped=0, failed=0)
 
-    for path in files:
+    for index, path in enumerate(files, start=1):
         base = {"sample_id": path.stem, "source_file": path.name}
         try:
             record = _process_doc(path, output_dir, params, log)
@@ -236,14 +239,23 @@ def run(input_dir: Path, output_dir: Path, params: dict[str, Any], log) -> dict[
                 default="pdf_open_failed")
             failed.append({"name": path.name, "reason": msg, "code": code})
             lineage.append({**base, "action": "fail", "reason": msg})
+            if progress:
+                progress(total=total, processed=index, succeeded=len(records),
+                         skipped=len(skipped), failed=len(failed))
             continue
         skipped.extend(record.pop("skipped"))
         if record["instanceCount"] == 0:
             failed.append({"name": path.name, "reason": "整份 0 个公式（未定位到公式）", "code": "no_formula"})
             lineage.append({**base, "action": "fail", "reason": "整份 0 个公式"})
+            if progress:
+                progress(total=total, processed=index, succeeded=len(records),
+                         skipped=len(skipped), failed=len(failed))
             continue
         records.append(record)
         lineage.append({**base, "action": "keep", "metrics": {"instances": record["instanceCount"]}})
+        if progress:
+            progress(total=total, processed=index, succeeded=len(records),
+                     skipped=len(skipped), failed=len(failed))
 
     with (output_dir / RECORDS_FILE).open("w", encoding="utf-8") as f:
         for rec in records:

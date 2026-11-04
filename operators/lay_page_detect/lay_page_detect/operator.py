@@ -222,7 +222,7 @@ def _process_page(doc: dict[str, Any], page: dict[str, Any], input_root: Path,
     return result
 
 
-def run(input_dir: Path, output_dir: Path, params: dict[str, Any], log) -> dict[str, Any]:
+def run(input_dir: Path, output_dir: Path, params: dict[str, Any], log, progress=None) -> dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
     src = input_dir / RECORDS_FILE
     if not src.exists():
@@ -256,7 +256,7 @@ def run(input_dir: Path, output_dir: Path, params: dict[str, Any], log) -> dict[
         except LlmError as e:
             return {"error": f"{doc['docId']}-#{page['pageNo']}", "reason": str(e)}
 
-    results = llm_client.run_concurrent(tasks, _work, concurrency=int(params["concurrency"]))
+    results = llm_client.run_concurrent(tasks, _work, concurrency=int(params["concurrency"]), progress=progress)
 
     for (doc, page), outcome in zip(tasks, results):
         page_id = f"{doc['docId']}-#{page['pageNo']}"

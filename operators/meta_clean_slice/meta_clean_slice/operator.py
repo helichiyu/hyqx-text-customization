@@ -98,15 +98,18 @@ def _slice_paragraphs(paragraphs: list[str], heading_flags: list[bool], doc_id: 
     ]
 
 
-def run(input_dir: Path, output_dir: Path, params: dict[str, Any], log) -> dict[str, Any]:
+def run(input_dir: Path, output_dir: Path, params: dict[str, Any], log, progress=None) -> dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
     files = sorted(p for p in input_dir.rglob("*")
                    if p.is_file() and p.suffix.lower() in (".html", ".htm"))
     records: list[dict[str, Any]] = []
     skipped: list[dict[str, str]] = []
     lineage: list[dict[str, Any]] = []
+    total = len(files)
+    if progress:
+        progress(total=total, processed=0, succeeded=0, skipped=0, failed=0)
 
-    for path in files:
+    for index, path in enumerate(files, start=1):
         doc_id = path.stem
         base = {"sample_id": doc_id, "source_file": path.name}
         try:
@@ -114,11 +117,15 @@ def run(input_dir: Path, output_dir: Path, params: dict[str, Any], log) -> dict[
         except ValueError as e:
             skipped.append({"name": path.name, "reason": str(e), "code": "html_decode_failed"})
             lineage.append({**base, "action": "skip", "reason": str(e)})
+            if progress:
+                progress(total=total, processed=index, succeeded=len(records), skipped=len(skipped), failed=0)
             continue
         reason = _check_doc(doc)
         if reason:
             skipped.append({"name": path.name, "reason": reason, "code": _skip_code(reason)})
             lineage.append({**base, "action": "skip", "reason": reason})
+            if progress:
+                progress(total=total, processed=index, succeeded=len(records), skipped=len(skipped), failed=0)
             continue
         slices = _slice_paragraphs(
             doc.paragraphs, doc.heading_flags, doc_id,
@@ -140,6 +147,8 @@ def run(input_dir: Path, output_dir: Path, params: dict[str, Any], log) -> dict[
             "slices": slices,
         })
         lineage.append({**base, "action": "keep", "metrics": {"slices": len(slices)}})
+        if progress:
+            progress(total=total, processed=index, succeeded=len(records), skipped=len(skipped), failed=0)
 
     out_file = output_dir / RECORDS_FILE
     with out_file.open("w", encoding="utf-8") as f:

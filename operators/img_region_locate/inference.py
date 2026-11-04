@@ -38,6 +38,7 @@ import os
 import re
 import shutil
 import sys
+import threading
 import uuid
 import zipfile
 from datetime import datetime, timezone
@@ -224,7 +225,33 @@ def create_app() -> FastAPI:
         unique_id = body.pop("uniqueId", None)
         input_file = body.pop("inputFile", None)
         is_last = bool(body.pop("isLastOperator", False))
+        progress_key = body.pop("progressKey", None)
         params: dict[str, Any] = body
+        progress_data: dict[str, Any] = {}
+        progress_lock = threading.Lock()
+
+        def progress_file_path() -> Path | None:
+            if not progress_key:
+                return None
+            safe_key = re.sub(r"[^A-Za-z0-9._-]", "_", str(progress_key))
+            return OUTPUT_DIR / "_progress" / f"{safe_key}.json"
+
+        def report_progress(**update: Any) -> None:
+            path = progress_file_path()
+            if path is None:
+                return
+            with progress_lock:
+                progress_data.update(update)
+                progress_data.update({
+                    "key": str(progress_key),
+                    "operator": OPERATOR_TAG,
+                    "name": OPERATOR_NAME,
+                    "updatedAt": datetime.now(timezone.utc).isoformat(),
+                })
+                path.parent.mkdir(parents=True, exist_ok=True)
+                temp = path.with_suffix(".tmp")
+                temp.write_text(json.dumps(progress_data, ensure_ascii=False), encoding="utf-8")
+                temp.replace(path)
 
         try:
             if input_file:
@@ -246,8 +273,24 @@ def create_app() -> FastAPI:
             output_dir.mkdir(parents=True, exist_ok=True)
 
             started = datetime.now(timezone.utc)
-            result = core.run(input_dir, output_dir, params, log=log.info)
+            report_progress(status="running", startedAt=started.isoformat(),
+                            total=0, processed=0, skipped=0, failed=0, review=0,
+                            currentItem=None)
+            result = core.run(input_dir, output_dir, params, log=log.info, progress=report_progress)
             finished = datetime.now(timezone.utc)
+            summary = result.get("summary", {})
+            skipped_count = len(result.get("skipped", []))
+            failed_count = len(result.get("failed", []))
+            review_count = len(result.get("review", []))
+            total_count = int(progress_data.get("total") or summary.get("total") or summary.get("pages") or 0)
+            processed_value = progress_data.get("processed")
+            processed_count = int(processed_value) if processed_value is not None else total_count
+            succeeded_value = progress_data.get("succeeded")
+            succeeded_count = (int(succeeded_value) if succeeded_value is not None
+                               else max(0, total_count - skipped_count - failed_count))
+            report_progress(status="completed", total=total_count, processed=processed_count,
+                            succeeded=succeeded_count, skipped=skipped_count, failed=failed_count,
+                            review=review_count, currentItem=None, finishedAt=finished.isoformat())
 
             lineage_file = output_dir / f"lineage_{unique_id or run_id}.jsonl"
             _write_lineage(lineage_file, {
@@ -261,16 +304,23 @@ def create_app() -> FastAPI:
             if is_last:
                 output_file = _package_stage(output_dir, run_id)
 
+            progress_file = progress_file_path()
             return JSONResponse(_envelope(0, "success", {
                 "outputFile": str(output_file),
                 "lineageFile": str(lineage_file),
+                "progressFile": str(progress_file) if progress_file else None,
                 "summary": result.get("summary", {}),
                 "skipped": result.get("skipped", []),
                 "failed": result.get("failed", []),
             }))
         except ValueError as e:
+            if progress_key:
+                report_progress(status="failed", error=str(e), finishedAt=datetime.now(timezone.utc).isoformat())
             return _fail(str(e))
         except Exception as e:  # 核心异常包装为业务失败，不暴露堆栈
+            if progress_key:
+                report_progress(status="failed", error=f"{type(e).__name__}: {e}",
+                                finishedAt=datetime.now(timezone.utc).isoformat())
             return _fail(f"算子执行失败：{type(e).__name__}: {e}")
 
     return app

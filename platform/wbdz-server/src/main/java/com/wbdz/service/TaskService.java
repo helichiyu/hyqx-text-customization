@@ -74,6 +74,8 @@ public class TaskService {
 
     private final TaskOrchestrator orchestrator;
 
+    private final OperatorClient operatorClient;
+
     // ==================== 动作 ====================
 
     /** 创建任务（草稿；锁定参数版本快照）。 */
@@ -266,6 +268,7 @@ public class TaskService {
             rm.put("failed", r.getFailed() == null ? List.of() : com.wbdz.common.JsonUtil.readList(r.getFailed()));
             rm.put("startTime", String.valueOf(r.getStartTime()));
             rm.put("endTime", String.valueOf(r.getEndTime()));
+            rm.put("progress", operatorClient.readProgress(r.getId()));
             runs.add(rm);
         }
         m.put("stageRuns", runs);

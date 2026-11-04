@@ -26,12 +26,17 @@ def demo_app(tmp_path, monkeypatch):
     sys.path.insert(0, str(root))
     pkg = __import__(f"{tag}.operator", fromlist=["operator"])
 
-    def demo_run(input_dir, output_dir, params, log):
+    def demo_run(input_dir, output_dir, params, log, progress=None):
         files = sorted(p.name for p in input_dir.iterdir() if p.is_file())
+        if progress:
+            progress(total=len(files), processed=0, succeeded=0, skipped=0, failed=0)
         (output_dir / "records.jsonl").write_text(
             "".join(json.dumps({"file": f}, ensure_ascii=False) + "\n" for f in files),
             encoding="utf-8",
         )
+        if progress:
+            progress(total=len(files), processed=len(files), succeeded=len(files),
+                     skipped=0, failed=0)
         return {
             "records_file": "records.jsonl",
             "summary": {"total": len(files)},
@@ -78,11 +83,16 @@ def test_three_interfaces(demo_app):
     assert body["data"]["skipped"] and body["data"]["skipped"][0]["name"] == "c.exe"
 
     # predict（阶段首，凭 uniqueId；isLastOperator 打 zip）
-    r = demo_app[0].post("/predict", json={"uniqueId": "t001", "isLastOperator": True})
+    r = demo_app[0].post("/predict", json={"uniqueId": "t001", "isLastOperator": True, "progressKey": "test-progress"})
     body = r.json()
     assert body["code"] == 0, body
     out = Path(body["data"]["outputFile"])
     lin = Path(body["data"]["lineageFile"])
+    progress_file = Path(body["data"]["progressFile"])
+    assert progress_file == tmp_path / "output" / "_progress" / "test-progress.json"
+    progress_data = json.loads(progress_file.read_text(encoding="utf-8"))
+    assert progress_data["status"] == "completed"
+    assert progress_data["total"] == progress_data["processed"] == progress_data["succeeded"] == 2
     assert out.suffix == ".zip" and out.exists()
     assert lin.exists()
     lines = lin.read_text(encoding="utf-8").splitlines()
