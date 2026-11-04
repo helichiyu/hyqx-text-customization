@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="wbdz-init-user-wbdz-20261103" author="wbdz">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="wbdz_user"/></not></preConditions>
+        <createTable tableName="wbdz_user" remarks="用户（单角色）">
+            <column name="id" type="bigint" remarks="主键"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="username" type="varchar(64)" remarks="登录名"><constraints nullable="false"/></column>
+            <column name="password" type="varchar(128)" remarks="BCrypt 密文"><constraints nullable="false"/></column>
+            <column name="nickname" type="varchar(64)" remarks="展示名"/>
+            <column name="create_time" type="datetime" remarks="创建时间" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+        <addUniqueConstraint tableName="wbdz_user" columnNames="username" constraintName="uk_wbdz_user_username"/>
+    </changeSet>
+
+    <changeSet id="wbdz-init-mat-batch-wbdz-20261103" author="wbdz">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="wbdz_mat_batch"/></not></preConditions>
+        <createTable tableName="wbdz_mat_batch" remarks="素材批次">
+            <column name="id" type="bigint" remarks="主键"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="biz_no" type="varchar(32)" remarks="业务编号（产线前缀）"><constraints nullable="false"/></column>
+            <column name="name" type="varchar(128)" remarks="批次名称"><constraints nullable="false"/></column>
+            <column name="line" type="varchar(16)" remarks="产线"><constraints nullable="false"/></column>
+            <column name="status" type="varchar(16)" remarks="uncheked/checked/released/upload_failed"/>
+            <column name="file_count" type="int" remarks="有效条数"/>
+            <column name="total_count" type="int" remarks="原始条数"/>
+            <column name="reject_summary" type="text" remarks="剔除情况 JSON"/>
+            <column name="create_by" type="varchar(64)" remarks="上传人"/>
+            <column name="create_time" type="datetime" remarks="创建时间" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="update_time" type="datetime" remarks="更新时间" defaultValueComputed="CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"/>
+            <column name="del_flag" type="char(1)" remarks="删除标记" defaultValue="F"><constraints nullable="false"/></column>
+        </createTable>
+        <addUniqueConstraint tableName="wbdz_mat_batch" columnNames="biz_no" constraintName="uk_wbdz_mat_batch_biz_no"/>
+        <createIndex tableName="wbdz_mat_batch" indexName="idx_wbdz_mat_batch_line"><column name="line"/></createIndex>
+    </changeSet>
+
+    <changeSet id="wbdz-init-mat-file-wbdz-20261103" author="wbdz">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="wbdz_mat_file"/></not></preConditions>
+        <createTable tableName="wbdz_mat_file" remarks="素材文件">
+            <column name="id" type="bigint" remarks="主键"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="batch_id" type="bigint" remarks="批次 ID"><constraints nullable="false"/></column>
+            <column name="name" type="varchar(255)" remarks="文件名"/>
+            <column name="ext" type="varchar(16)" remarks="扩展名"/>
+            <column name="size_bytes" type="bigint" remarks="大小"/>
+            <column name="sha256" type="varchar(64)" remarks="哈希"/>
+            <column name="page_count" type="int" remarks="PDF 页数"/>
+            <column name="status" type="varchar(16)" remarks="passed/rejected"/>
+            <column name="reject_reason" type="varchar(255)" remarks="剔除原因"/>
+            <column name="store_path" type="varchar(512)" remarks="存储相对路径"/>
+            <column name="create_time" type="datetime" remarks="创建时间" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+        <createIndex tableName="wbdz_mat_file" indexName="idx_wbdz_mat_file_batch"><column name="batch_id"/></createIndex>
+    </changeSet>
+
+    <changeSet id="wbdz-init-mat-change-wbdz-20261103" author="wbdz">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="wbdz_mat_change_log"/></not></preConditions>
+        <createTable tableName="wbdz_mat_change_log" remarks="素材批次变更记录">
+            <column name="id" type="bigint" remarks="主键"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="batch_id" type="bigint" remarks="批次 ID"><constraints nullable="false"/></column>
+            <column name="item" type="varchar(32)" remarks="变更项 name/line"/>
+            <column name="old_value" type="varchar(128)" remarks="改前"/>
+            <column name="new_value" type="varchar(128)" remarks="改后"/>
+            <column name="operator" type="varchar(64)" remarks="操作人"/>
+            <column name="create_time" type="datetime" remarks="时间" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+        <createIndex tableName="wbdz_mat_change_log" indexName="idx_wbdz_mat_change_batch"><column name="batch_id"/></createIndex>
+    </changeSet>
+
+    <changeSet id="wbdz-init-param-wbdz-20261103" author="wbdz">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="wbdz_param_version"/></not></preConditions>
+        <createTable tableName="wbdz_param_version" remarks="参数配置版本">
+            <column name="id" type="bigint" remarks="主键"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="line" type="varchar(16)" remarks="产线或 common"><constraints nullable="false"/></column>
+            <column name="version" type="varchar(16)" remarks="版本号"><constraints nullable="false"/></column>
+            <column name="content" type="text" remarks="参数组 JSON"/>
+            <column name="published_at" type="datetime" remarks="发布时间"/>
+            <column name="published_by" type="varchar(64)" remarks="发布人"/>
+        </createTable>
+        <addUniqueConstraint tableName="wbdz_param_version" columnNames="line,version" constraintName="uk_wbdz_param_line_version"/>
+    </changeSet>
+
+    <changeSet id="wbdz-init-param-draft-wbdz-20261103" author="wbdz">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="wbdz_param_draft"/></not></preConditions>
+        <createTable tableName="wbdz_param_draft" remarks="参数配置草稿（每产线一份）">
+            <column name="id" type="bigint" remarks="主键"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="line" type="varchar(16)" remarks="产线或 common"><constraints nullable="false"/></column>
+            <column name="content" type="text" remarks="参数组 JSON"/>
+            <column name="update_by" type="varchar(64)" remarks="最近编辑人"/>
+            <column name="update_time" type="datetime" remarks="最近编辑时间" defaultValueComputed="CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"/>
+        </createTable>
+        <addUniqueConstraint tableName="wbdz_param_draft" columnNames="line" constraintName="uk_wbdz_param_draft_line"/>
+    </changeSet>
+
+    <changeSet id="wbdz-init-task-wbdz-20261103" author="wbdz">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="wbdz_task"/></not></preConditions>
+        <createTable tableName="wbdz_task" remarks="生产任务">
+            <column name="id" type="bigint" remarks="主键"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="biz_no" type="varchar(32)" remarks="任务编号 TASK.."><constraints nullable="false"/></column>
+            <column name="name" type="varchar(128)" remarks="任务名称"><constraints nullable="false"/></column>
+            <column name="line" type="varchar(16)" remarks="产线"><constraints nullable="false"/></column>
+            <column name="status" type="varchar(16)" remarks="draft/pending/processing/waitreview/quality/collected/reject"/>
+            <column name="priority" type="varchar(8)" remarks="high/mid/low"/>
+            <column name="image_class" type="varchar(16)" remarks="图文任务大类"/>
+            <column name="batch_id" type="bigint" remarks="素材批次"/>
+            <column name="param_version" type="varchar(16)" remarks="参数版本号"/>
+            <column name="param_snapshot" type="text" remarks="参数快照 JSON"/>
+            <column name="threshold" type="decimal(4,2)" remarks="任务级阈值"/>
+            <column name="current_stage" type="int" remarks="当前环节 0-3"/>
+            <column name="create_by" type="varchar(64)" remarks="创建人"/>
+            <column name="create_time" type="datetime" remarks="创建时间" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="update_time" type="datetime" remarks="更新时间" defaultValueComputed="CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"/>
+            <column name="del_flag" type="char(1)" remarks="删除标记" defaultValue="F"><constraints nullable="false"/></column>
+        </createTable>
+        <addUniqueConstraint tableName="wbdz_task" columnNames="biz_no" constraintName="uk_wbdz_task_biz_no"/>
+        <createIndex tableName="wbdz_task" indexName="idx_wbdz_task_line_status"><column name="line"/><column name="status"/></createIndex>
+        <createIndex tableName="wbdz_task" indexName="idx_wbdz_task_batch"><column name="batch_id"/></createIndex>
+    </changeSet>
+
+    <changeSet id="wbdz-init-stage-run-wbdz-20261103" author="wbdz">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="wbdz_task_stage_run"/></not></preConditions>
+        <createTable tableName="wbdz_task_stage_run" remarks="任务环节执行记录">
+            <column name="id" type="bigint" remarks="主键"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="task_id" type="bigint" remarks="任务"><constraints nullable="false"/></column>
+            <column name="stage_no" type="int" remarks="环节号"/>
+            <column name="stage_name" type="varchar(64)" remarks="环节名"/>
+            <column name="operator_tag" type="varchar(64)" remarks="算子目录名"/>
+            <column name="status" type="varchar(16)" remarks="running/done/error"/>
+            <column name="summary" type="text" remarks="summary JSON"/>
+            <column name="skipped" type="text" remarks="skipped JSON"/>
+            <column name="failed" type="text" remarks="failed JSON"/>
+            <column name="output_path" type="varchar(512)" remarks="算子输出路径"/>
+            <column name="attempt" type="int" remarks="尝试次数"/>
+            <column name="start_time" type="datetime" remarks="开始"/>
+            <column name="end_time" type="datetime" remarks="结束"/>
+        </createTable>
+        <createIndex tableName="wbdz_task_stage_run" indexName="idx_wbdz_stage_run_task"><column name="task_id"/></createIndex>
+    </changeSet>
+
+    <changeSet id="wbdz-init-review-wbdz-20261103" author="wbdz">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="wbdz_review_order"/></not></preConditions>
+        <createTable tableName="wbdz_review_order" remarks="条件复核单">
+            <column name="id" type="bigint" remarks="主键"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="biz_no" type="varchar(32)" remarks="复核单编号 CR.."><constraints nullable="false"/></column>
+            <column name="task_id" type="bigint" remarks="来源任务"><constraints nullable="false"/></column>
+            <column name="line" type="varchar(16)" remarks="产线"/>
+            <column name="stage_name" type="varchar(64)" remarks="触发环节"/>
+            <column name="trigger_code" type="varchar(128)" remarks="触发码（逗号分隔）"/>
+            <column name="trigger_desc" type="varchar(512)" remarks="触发描述"/>
+            <column name="item_count" type="int" remarks="条目数"/>
+            <column name="status" type="varchar(16)" remarks="pending/doing/done/void"/>
+            <column name="create_by" type="varchar(64)" remarks="创建（系统）"/>
+            <column name="create_time" type="datetime" remarks="创建时间" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="close_by" type="varchar(64)" remarks="闭环人"/>
+            <column name="close_time" type="datetime" remarks="闭环时间"/>
+        </createTable>
+        <addUniqueConstraint tableName="wbdz_review_order" columnNames="biz_no" constraintName="uk_wbdz_review_biz_no"/>
+        <createIndex tableName="wbdz_review_order" indexName="idx_wbdz_review_task"><column name="task_id"/></createIndex>
+    </changeSet>
+
+    <changeSet id="wbdz-init-review-item-wbdz-20261103" author="wbdz">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="wbdz_review_item"/></not></preConditions>
+        <createTable tableName="wbdz_review_item" remarks="复核条目">
+            <column name="id" type="bigint" remarks="主键"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="order_id" type="bigint" remarks="复核单"><constraints nullable="false"/></column>
+            <column name="task_id" type="bigint" remarks="任务"><constraints nullable="false"/></column>
+            <column name="item_key" type="varchar(128)" remarks="数据集行主键"/>
+            <column name="code" type="varchar(64)" remarks="触发码"/>
+            <column name="reason" type="varchar(512)" remarks="触发说明"/>
+            <column name="payload" type="json" remarks="原始行 JSON"/>
+            <column name="conclusion" type="varchar(2)" remarks="A/B/C，null 未处理"/>
+            <column name="revised_payload" type="json" remarks="B 修正后 JSON"/>
+            <column name="before_value" type="json" remarks="改前值 JSON"/>
+            <column name="after_value" type="json" remarks="改后值 JSON"/>
+            <column name="operator" type="varchar(64)" remarks="结论人"/>
+            <column name="conclude_time" type="datetime" remarks="结论时间"/>
+            <column name="create_time" type="datetime" remarks="创建时间" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+        <createIndex tableName="wbdz_review_item" indexName="idx_wbdz_review_item_order"><column name="order_id"/></createIndex>
+        <createIndex tableName="wbdz_review_item" indexName="idx_wbdz_review_item_task_key"><column name="task_id"/><column name="item_key"/></createIndex>
+    </changeSet>
+
+    <changeSet id="wbdz-init-dataset-wbdz-20261103" author="wbdz">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="wbdz_dataset"/></not></preConditions>
+        <createTable tableName="wbdz_dataset" remarks="数据集版本">
+            <column name="id" type="bigint" remarks="主键"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="biz_no" type="varchar(32)" remarks="数据集编号 DS.."><constraints nullable="false"/></column>
+            <column name="line" type="varchar(16)" remarks="产线"/>
+            <column name="task_id" type="bigint" remarks="来源任务"/>
+            <column name="item_count" type="int" remarks="最终条数"/>
+            <column name="skip_count" type="int" remarks="C 剔除条数"/>
+            <column name="sem_ver" type="varchar(16)" remarks="语义版本 V1.0.."/>
+            <column name="status" type="varchar(16)" remarks="candidate/published/rolledback"/>
+            <column name="publish_by" type="varchar(64)" remarks="发布人"/>
+            <column name="publish_time" type="datetime" remarks="发布时间"/>
+            <column name="create_by" type="varchar(64)" remarks="归集人"/>
+            <column name="create_time" type="datetime" remarks="创建时间" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="rollback_time" type="datetime" remarks="回滚时间"/>
+        </createTable>
+        <addUniqueConstraint tableName="wbdz_dataset" columnNames="biz_no" constraintName="uk_wbdz_dataset_biz_no"/>
+        <createIndex tableName="wbdz_dataset" indexName="idx_wbdz_dataset_task"><column name="task_id"/></createIndex>
+    </changeSet>
+
+    <changeSet id="wbdz-init-dataset-item-wbdz-20261103" author="wbdz">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="wbdz_dataset_item"/></not></preConditions>
+        <createTable tableName="wbdz_dataset_item" remarks="数据集明细行">
+            <column name="id" type="bigint" remarks="主键"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="dataset_id" type="bigint" remarks="数据集"><constraints nullable="false"/></column>
+            <column name="task_id" type="bigint" remarks="任务"/>
+            <column name="item_key" type="varchar(128)" remarks="行主键"/>
+            <column name="payload" type="json" remarks="行 JSON"/>
+            <column name="review_status" type="varchar(16)" remarks="未进入复核/待复核/已确认A/已修正B/已剔除C"/>
+            <column name="revision_status" type="varchar(16)" remarks="-/未修正/已修正/已剔除"/>
+            <column name="confidence" type="decimal(4,2)" remarks="行级最低置信度"/>
+            <column name="create_time" type="datetime" remarks="创建时间" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+        <createIndex tableName="wbdz_dataset_item" indexName="idx_wbdz_ds_item_dataset"><column name="dataset_id"/></createIndex>
+        <createIndex tableName="wbdz_dataset_item" indexName="idx_wbdz_ds_item_task_key"><column name="task_id"/><column name="item_key"/></createIndex>
+    </changeSet>
+
+    <changeSet id="wbdz-init-delivery-wbdz-20261103" author="wbdz">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="wbdz_delivery_log"/></not></preConditions>
+        <createTable tableName="wbdz_delivery_log" remarks="交付记录">
+            <column name="id" type="bigint" remarks="主键"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="biz_no" type="varchar(32)" remarks="交付编号（产线前缀）"><constraints nullable="false"/></column>
+            <column name="dataset_id" type="bigint" remarks="数据集"/>
+            <column name="type" type="varchar(32)" remarks="类型"/>
+            <column name="filename" type="varchar(255)" remarks="文件名"/>
+            <column name="operator" type="varchar(64)" remarks="操作人"/>
+            <column name="create_time" type="datetime" remarks="时间" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+        <createIndex tableName="wbdz_delivery_log" indexName="idx_wbdz_delivery_dataset"><column name="dataset_id"/></createIndex>
+    </changeSet>
+
+    <changeSet id="wbdz-init-rollback-wbdz-20261103" author="wbdz">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="wbdz_rollback_log"/></not></preConditions>
+        <createTable tableName="wbdz_rollback_log" remarks="数据集回滚记录">
+            <column name="id" type="bigint" remarks="主键"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="biz_no" type="varchar(32)" remarks="回滚编号（产线前缀）"><constraints nullable="false"/></column>
+            <column name="dataset_id" type="bigint" remarks="数据集"/>
+            <column name="target" type="varchar(32)" remarks="回滚目标编号或「下线」"/>
+            <column name="reason" type="varchar(512)" remarks="回滚原因"/>
+            <column name="operator" type="varchar(64)" remarks="操作人"/>
+            <column name="create_time" type="datetime" remarks="时间" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+        <createIndex tableName="wbdz_rollback_log" indexName="idx_wbdz_rollback_dataset"><column name="dataset_id"/></createIndex>
+    </changeSet>
+</databaseChangeLog>

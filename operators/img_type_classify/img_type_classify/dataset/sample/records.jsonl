@@ -1,0 +1,5 @@
+{"imageId": "chart_001", "fileName": "chart_001.jpg", "image": "regions\\chart_001.png", "region": {"bbox": [64, 72, 1082, 869], "cropped": true, "width": 1018, "height": 797, "sourceWidth": 1200, "sourceHeight": 900}}
+{"imageId": "geometry_001", "fileName": "geometry_001.jpg", "image": "regions\\geometry_001.png", "region": {"bbox": [169, 200, 823, 552], "cropped": true, "width": 654, "height": 352, "sourceWidth": 1000, "sourceHeight": 800}}
+{"imageId": "lowres_001", "fileName": "lowres_001.jpg", "image": "regions\\lowres_001.png", "region": {"bbox": [40, 40, 285, 204], "cropped": true, "width": 245, "height": 164, "sourceWidth": 320, "sourceHeight": 240}}
+{"imageId": "schematic_001", "fileName": "schematic_001.jpg", "image": "regions\\schematic_001.png", "region": {"bbox": [80, 65, 922, 421], "cropped": true, "width": 842, "height": 356, "sourceWidth": 1000, "sourceHeight": 700}}
+{"imageId": "table_001", "fileName": "table_001.jpg", "image": "regions\\table_001.png", "region": {"bbox": [99, 48, 885, 484], "cropped": true, "width": 786, "height": 436, "sourceWidth": 1000, "sourceHeight": 700}}

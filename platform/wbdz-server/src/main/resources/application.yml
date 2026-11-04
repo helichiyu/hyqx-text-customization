@@ -1,0 +1,44 @@
+server:
+  port: 8090
+
+spring:
+  application:
+    name: wbdz-server
+  threads:
+    virtual:
+      enabled: true
+  servlet:
+    multipart:
+      max-file-size: 200MB
+      max-request-size: 2GB
+  datasource:
+    url: jdbc:mysql://${WBDZ_DB_HOST:127.0.0.1}:${WBDZ_DB_PORT:3306}/wbdz_platform?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useSSL=false
+    username: ${WBDZ_DB_USER:root}
+    password: ${WBDZ_DB_PASSWORD:wbdz123}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/master.xml
+
+mybatis-flex:
+  configuration:
+    map-underscore-to-camel-case: true
+  global-config:
+    print-banner: false
+    normal-value-of-logic-delete: F
+    delete-value-of-logic-delete: T
+
+wbdz:
+  jwt-secret: ${WBDZ_JWT_SECRET:wbdz-platform-secret-key-please-override-in-prod}
+  jwt-expire-hours: 72
+  # 素材与产物存储根目录（开发期本地；生产挂载共享卷）
+  storage-dir: ${WBDZ_STORAGE_DIR:./wbdz-storage}
+  # 算子产物根目录（与 docker-compose 的 ./op-runtime 对应）
+  op-runtime-dir: ${WBDZ_OP_RUNTIME_DIR:./op-runtime}
+  # 算子服务地址（compose 宿主机端口 6301-6311）
+  operator-base: ${WBDZ_OPERATOR_BASE:http://127.0.0.1}
+  operator-ports: '{"meta_clean_slice":6301,"meta_genre_judge":6302,"meta_fact_extract":6303,"meta_field_fill":6304,"lay_page_render":6305,"lay_page_detect":6306,"fml_formula_locate":6307,"fml_formula_recognize":6308,"img_region_locate":6309,"img_type_classify":6310,"img_struct_describe":6311}'
+
+logging:
+  level:
+    com.wbdz: info

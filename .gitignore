@@ -1,0 +1,44 @@
+# ===== 依赖 =====
+node_modules/
+.pnpm-store/
+
+# ===== 构建产物 =====
+dist/
+target/
+build/
+*.class
+*.jar
+*.war
+*.tsbuildinfo
+
+# ===== 前端缓存 =====
+.vite/
+.vite-cache/
+
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ===== 运行 / 测试产物 =====
+logs/
+*.log
+platform/scripts/e2e_out/
+
+# ===== .scratch：临时验证脚本与运行期产物，整体不入库 =====
+.scratch/
+
+# ===== 打包产物 =====
+*.zip
+
+# ===== IDE / 系统 =====
+.idea/
+*.iml
+.vscode/
+.DS_Store
+Thumbs.db

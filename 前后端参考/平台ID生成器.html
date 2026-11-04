@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>平台 ID 生成器 · 标准规范</title>
+<style>
+:root{
+  --primary:#4169f6;--primary-hover:#3358e8;
+  --ink:#1f2937;--body:#475467;--muted:#667085;--weak:#98a2b3;
+  --border:#e4edf8;--line:#eef2f8;--bg:#f6f9fe;
+  --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:"Helvetica Neue","PingFang SC","Microsoft YaHei",sans-serif;
+  background:var(--bg);color:var(--body);font-size:14px;line-height:1.6;
+  min-height:100vh;padding:32px 16px;}
+.wrap{max-width:820px;margin:0 auto;}
+.head{margin-bottom:22px;}
+.head h1{font-size:24px;font-weight:700;color:var(--ink);}
+.head p{color:var(--muted);margin-top:6px;font-size:14px;}
+
+/* 对象选择 */
+.pick-label{font-size:13px;color:var(--muted);margin-bottom:8px;}
+.pick{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px;}
+.pick button{height:34px;padding:0 14px;border-radius:8px;border:1px solid var(--border);
+  background:#fff;color:var(--body);font-size:14px;cursor:pointer;transition:all .15s;}
+.pick button:hover{border-color:var(--primary);color:var(--primary);}
+.pick button.active{background:var(--primary);border-color:var(--primary);color:#fff;}
+
+/* ID 卡片 */
+.card{background:#fff;border:1px solid var(--border);border-radius:10px;
+  padding:18px 20px;margin-bottom:14px;}
+.card-top{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.layer-tag{font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px;}
+.t1{background:#eef4ff;color:#175cd3;}
+.t2{background:#e8f7ef;color:#087443;}
+.t3{background:#f3f4f6;color:#475467;}
+.card-title{font-size:14px;font-weight:600;color:var(--ink);}
+.card-desc{font-size:12px;color:var(--muted);margin-left:auto;}
+.id-row{display:flex;align-items:center;gap:10px;}
+.id-val{font-family:var(--mono);font-size:16px;color:var(--ink);
+  background:#f8fbff;border:1px solid var(--line);border-radius:6px;
+  padding:10px 14px;flex:1;word-break:break-all;}
+.id-val.small{font-size:14px;}
+.act{display:flex;gap:6px;}
+.mini-btn{height:34px;padding:0 14px;border-radius:6px;border:1px solid var(--border);
+  background:#fff;color:var(--body);font-size:13px;cursor:pointer;white-space:nowrap;}
+.mini-btn:hover{border-color:var(--primary);color:var(--primary);}
+.mini-btn.primary{background:var(--primary);border-color:var(--primary);color:#fff;}
+.mini-btn.primary:hover{background:var(--primary-hover);}
+.note{font-size:12px;color:var(--muted);margin-top:8px;}
+
+/* 规则 */
+.rules{background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px 22px;margin-top:18px;}
+.rules h3{font-size:15px;color:var(--ink);margin-bottom:10px;}
+.rules ul{list-style:none;}
+.rules li{font-size:13px;color:var(--body);padding:5px 0 5px 20px;position:relative;}
+.rules li::before{content:"";position:absolute;left:4px;top:13px;width:6px;height:6px;
+  border-radius:50%;background:var(--primary);}
+.toast{position:fixed;left:50%;top:40px;transform:translateX(-50%);
+  background:rgba(31,41,55,.92);color:#fff;font-size:13px;padding:8px 16px;
+  border-radius:6px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:99;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <h1>平台 ID 生成器</h1>
+    <p>按《UI 设计规范手册 · 32.1》生成统一 ID。选择对象类型，点击生成。</p>
+  </div>
+
+  <div class="pick-label">选择业务对象类型（决定前缀）</div>
+  <div class="pick" id="pick"></div>
+
+  <div class="card">
+    <div class="card-top">
+      <span class="layer-tag t1">第一层</span>
+      <span class="card-title">内部主键 · Snowflake</span>
+      <span class="card-desc">系统内部，不对外</span>
+    </div>
+    <div class="id-row">
+      <div class="id-val" id="snowId">—</div>
+      <div class="act">
+        <button class="mini-btn" onclick="genAll()">重新生成</button>
+        <button class="mini-btn" onclick="copy('snowId')">复制</button>
+      </div>
+    </div>
+    <div class="note">19 位长整型，全局唯一、趋势递增；不暴露在对外 URL / 分享中。</div>
+  </div>
+
+  <div class="card">
+    <div class="card-top">
+      <span class="layer-tag t2">第二层</span>
+      <span class="card-title">业务编号 · 前缀+日期+随机</span>
+      <span class="card-desc">用户可见、可搜索</span>
+    </div>
+    <div class="id-row">
+      <div class="id-val" id="bizId">—</div>
+      <div class="act">
+        <button class="mini-btn primary" onclick="genAll()">生成</button>
+        <button class="mini-btn" onclick="copy('bizId')">复制</button>
+      </div>
+    </div>
+    <div class="note">格式：前缀(2–4) + yyMMdd(6) + 6 位安全随机码；去掉 0/O/1/I/L，CSPRNG 生成。</div>
+  </div>
+
+  <div class="card">
+    <div class="card-top">
+      <span class="layer-tag t3">第三层</span>
+      <span class="card-title">语义化编码 · 程序对接</span>
+      <span class="card-desc">稳定不变</span>
+    </div>
+    <div class="id-row">
+      <div class="id-val small" id="semId">—</div>
+      <div class="act"><button class="mini-btn" onclick="copy('semId')">复制</button></div>
+    </div>
+    <div class="note">小写字母+数字+下划线，模块前缀_英文语义；发布后不可更改。</div>
+  </div>
+
+  <div class="rules">
+    <h3>ID 安全铁律</h3>
+    <ul>
+      <li>对外禁止用自增 ID（1,2,3…），会暴露总量、可被遍历抓取。</li>
+      <li>对外 / 分享 ID 必须无规律、不可预测、不可枚举。</li>
+      <li>ID 中不含敏感信息（手机号、身份证、姓名、邮箱、单位名）。</li>
+      <li>随机数用密码学安全随机（crypto.getRandomValues），不用普通 rand。</li>
+      <li>新对象类型必须先申请前缀、登记到字典，长度与格式全站统一。</li>
+    </ul>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+var TYPES=[
+  {name:"任务",p:"TASK",sem:"task_discrimination_check"},
+  {name:"数据集",p:"DS",sem:"dataset_text_corpus"},
+  {name:"策略",p:"STG",sem:"strategy_content_filter"},
+  {name:"算子",p:"OP",sem:"operator_text_discrimination"},
+  {name:"算子分类",p:"CAT",sem:"category_text_detect"},
+  {name:"模型",p:"MDL",sem:"model_quality_base"},
+  {name:"模板",p:"TPL",sem:"template_detect_report"},
+  {name:"配置",p:"CFG",sem:"config_pipeline_param"},
+  {name:"知识库",p:"KB",sem:"kb_negative_sample"},
+  {name:"负向数据",p:"NEG",sem:"negative_wrong_value"},
+  {name:"检索记录",p:"SRH",sem:"search_crossmodal_query"},
+  {name:"评估评测",p:"EVAL",sem:"eval_recall_at_k"},
+  {name:"数据源",p:"SRC",sem:"source_video_library"},
+  {name:"数据资产",p:"AST",sem:"asset_data_inventory"},
+  {name:"质量规则",p:"QR",sem:"rule_denoise_check"},
+  {name:"报表大屏",p:"RPT",sem:"report_quality_stat"},
+  {name:"工单",p:"WO",sem:"workorder_data_governance"},
+  {name:"准入申诉",p:"APL",sem:"appeal_data_admission"},
+  {name:"文件附件",p:"FILE",sem:"file_evidence_upload"},
+  {name:"日志",p:"LOG",sem:"log_operation_trace"},
+  {name:"菜单",p:"MENU",sem:"menu_nav_config"}
+];
+var cur=0;
+var CHARS="23456789ABCDEFGHJKMNPQRSTUVWXYZ"; // 31 个安全字符
+
+// 渲染类型按钮
+var pick=document.getElementById('pick');
+TYPES.forEach(function(t,i){
+  var b=document.createElement('button');
+  b.textContent=t.name+" · "+t.p;
+  b.onclick=function(){setType(i);};
+  pick.appendChild(b);
+});
+function setType(i){
+  cur=i;
+  pick.querySelectorAll('button').forEach(function(b,k){b.classList.toggle('active',k===i);});
+  genAll();
+}
+
+// 密码学安全随机 0..n-1
+function secureInt(n){
+  var a=new Uint32Array(1);
+  crypto.getRandomValues(a);
+  return a[0]%n;
+}
+
+// 雪花 ID（模拟）
+function genSnowflake(){
+  var epoch=1577836800000;
+  var ts=BigInt(Date.now()-epoch);
+  var worker=BigInt(secureInt(32));
+  var seq=BigInt(secureInt(4096));
+  return (ts<<22n)|(worker<<12n)|seq;
+}
+
+// 业务编号
+function genBiz(prefix){
+  var d=new Date();
+  var yy=String(d.getFullYear()).slice(2);
+  var mm=String(d.getMonth()+1).padStart(2,'0');
+  var dd=String(d.getDate()).padStart(2,'0');
+  var r='';
+  for(var i=0;i<6;i++) r+=CHARS[secureInt(CHARS.length)];
+  return prefix+yy+mm+dd+r;
+}
+
+function genAll(){
+  var t=TYPES[cur];
+  document.getElementById('snowId').textContent=genSnowflake().toString();
+  document.getElementById('bizId').textContent=genBiz(t.p);
+  document.getElementById('semId').textContent=t.sem;
+}
+
+function copy(id){
+  var el=document.getElementById(id);
+  navigator.clipboard.writeText(el.textContent).then(function(){
+    showToast('已复制：'+el.textContent);
+  }).catch(function(){showToast('复制失败，请手动选择');});
+}
+
+var toastTimer;
+function showToast(msg){
+  var t=document.getElementById('toast');
+  t.textContent=msg;t.style.opacity='1';
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(function(){t.style.opacity='0';},1800);
+}
+
+setType(0);
+</script>
+</body>
+</html>
