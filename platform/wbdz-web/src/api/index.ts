@@ -134,6 +134,7 @@ export interface TaskView {
   paramVersion: string
   threshold: number
   currentStage: number
+  batchId?: string
   batchBizNo?: string
   batchName?: string
   datasetCount?: number
@@ -145,6 +146,7 @@ export const taskPage = (params: Record<string, any>) =>
 export const taskDetail = (id: string) => get<any>(`/api/task/${id}`)
 
 export const taskCreate = (body: Record<string, any>) => post('/api/task', body)
+export const taskUpdate = (id: string, body: Record<string, any>) => put(`/api/task/${id}`, body)
 export const taskSubmit = (id: string) => post(`/api/task/${id}/submit`)
 export const taskStart = (id: string) => post(`/api/task/${id}/start`)
 export const taskReject = (id: string, fromStage: number) =>

@@ -1,16 +1,27 @@
 <template>
-  <div>
+  <div class="page-stack">
+    <PageHeader title="条件复核" description="集中处理低置信、冲突和输出修复样本，完成 A/B/C 结论与整单闭环。" />
+
     <el-card shadow="never">
-      <div class="toolbar">
-        <el-select v-model="query.line" placeholder="产线" clearable style="width: 160px">
-          <el-option v-for="(n, l) in LINE_NAMES" :key="l" :label="n" :value="l" />
-        </el-select>
-        <el-select v-model="query.status" placeholder="状态" clearable style="width: 140px">
-          <el-option v-for="(s, k) in REVIEW_STATUS" :key="k" :label="s.name" :value="k" />
-        </el-select>
-        <el-button type="primary" @click="load(1)">查询</el-button>
-        <div style="flex: 1" />
-        <el-button @click="load()">刷新</el-button>
+      <div class="search-panel">
+        <div class="search-fields">
+          <div class="filter-field">
+            <label class="filter-label">产线</label>
+            <el-select v-model="query.line" placeholder="全部产线" clearable style="width: 160px" @change="load(1)">
+              <el-option v-for="(n, l) in LINE_NAMES" :key="l" :label="n" :value="l" />
+            </el-select>
+          </div>
+          <div class="filter-field">
+            <label class="filter-label">状态</label>
+            <el-select v-model="query.status" placeholder="全部状态" clearable style="width: 160px" @change="load(1)">
+              <el-option v-for="(s, k) in REVIEW_STATUS" :key="k" :label="s.name" :value="k" />
+            </el-select>
+          </div>
+        </div>
+        <div class="search-actions">
+          <el-button @click="resetQuery">重置</el-button>
+          <el-button @click="load()">刷新</el-button>
+        </div>
       </div>
 
       <el-table :data="rows" v-loading="loading">
@@ -33,7 +44,7 @@
         <el-table-column prop="closeBy" label="闭环人" width="90" />
         <el-table-column label="操作" width="110" fixed="right">
           <template #default="{ row }">
-            <el-button size="small" type="primary" @click="openOrder(row.id)">
+            <el-button link type="primary" size="small" @click="openOrder(row.id)">
               {{ row.status === 'done' || row.status === 'void' ? '查看' : '复核' }}
             </el-button>
           </template>
@@ -65,6 +76,7 @@
           <el-tag size="small" type="success">已确认A {{ metrics.A }}</el-tag>
           <el-tag size="small" type="warning">已修正B {{ metrics.B }}</el-tag>
           <el-tag size="small" type="danger">已剔除C {{ metrics.C }}</el-tag>
+          <el-button v-if="order.status !== 'done' && order.status !== 'void'" type="warning" plain @click="rerunSourceTask">重跑来源任务</el-button>
           <el-button type="success" :disabled="!allConcluded || order.status === 'done' || order.status === 'void'" @click="doClose">
             整单闭环
           </el-button>
@@ -73,18 +85,53 @@
         <el-table :data="order.items || []" size="small" border>
           <el-table-column type="expand">
             <template #default="{ row }">
-              <div class="payload-wrap">
-                <div class="payload-col">
-                  <div class="payload-title">原始行（payload）</div>
-                  <pre class="json">{{ pretty(row.payload) }}</pre>
+              <div class="review-grid">
+                <div class="review-col">
+                  <div class="payload-title">复核条目</div>
+                  <el-descriptions :column="1" border size="small">
+                    <el-descriptions-item label="行标识">{{ row.itemKey || '—' }}</el-descriptions-item>
+                    <el-descriptions-item label="触发码">{{ row.code || '—' }}</el-descriptions-item>
+                    <el-descriptions-item label="触发原因">{{ row.reason || '—' }}</el-descriptions-item>
+                    <el-descriptions-item label="当前结论">{{ row.conclusion ? conclusionName(row.conclusion) : '待复核' }}</el-descriptions-item>
+                    <el-descriptions-item label="复核人">{{ row.operator || '—' }}</el-descriptions-item>
+                  </el-descriptions>
+                  <el-collapse class="raw-collapse">
+                    <el-collapse-item title="原始 JSON" name="raw">
+                      <pre class="json">{{ pretty(row.payload) }}</pre>
+                    </el-collapse-item>
+                  </el-collapse>
                 </div>
-                <div class="payload-col" v-if="row.conclusion === 'B'">
-                  <div class="payload-title">修正差异（改前 → 改后）</div>
-                  <el-table :data="diffRows(row)" size="small">
-                    <el-table-column prop="key" label="字段" width="140" />
-                    <el-table-column prop="before" label="改前" min-width="150" />
-                    <el-table-column prop="after" label="改后" min-width="150" />
+
+                <div class="review-col">
+                  <SourcePreview :item="row" :line="order.line" :run-id="order.runId" :image-run-id="order.imageRunId" />
+                </div>
+
+                <div class="review-col">
+                  <div class="payload-title">字段与置信度</div>
+                  <el-table :data="fieldRows(row.payload)" size="small" border max-height="320">
+                    <el-table-column prop="field" label="字段" min-width="150" show-overflow-tooltip />
+                    <el-table-column label="值" min-width="180">
+                      <template #default="{ row: field }">
+                        <span class="mono small">{{ fieldText(field.value) }}</span>
+                      </template>
+                    </el-table-column>
+                    <el-table-column label="置信度" width="80" align="center">
+                      <template #default="{ row: field }">
+                        <el-tag v-if="field.confidence != null" size="small" :type="confTag(field.confidence)">
+                          {{ field.confidence }}
+                        </el-tag>
+                        <span v-else class="muted">—</span>
+                      </template>
+                    </el-table-column>
                   </el-table>
+                  <template v-if="row.conclusion === 'B'">
+                    <div class="payload-title diff-title">修正差异（改前 → 改后）</div>
+                    <el-table :data="diffRows(row)" size="small" border>
+                      <el-table-column prop="key" label="字段" width="120" />
+                      <el-table-column prop="before" label="改前" min-width="120" />
+                      <el-table-column prop="after" label="改后" min-width="120" />
+                    </el-table>
+                  </template>
                 </div>
               </div>
             </template>
@@ -146,13 +193,15 @@
 </template>
 
 <script setup lang="ts">
+import PageHeader from '@/components/PageHeader.vue'
 import BizIdText from '@/components/BizIdText.vue'
+import SourcePreview from '@/components/SourcePreview.vue'
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   LINE_NAMES, REVIEW_STATUS,
-  reviewPage, reviewDetail, reviewConclude, reviewUnconclude, reviewClose,
+  reviewPage, reviewDetail, reviewConclude, reviewUnconclude, reviewClose, taskReject,
 } from '@/api'
 
 const route = useRoute()
@@ -186,11 +235,59 @@ const allConcluded = computed(() => {
   return items.length > 0 && items.every((i: any) => !!i.conclusion)
 })
 
+function resetQuery() {
+  query.line = ''
+  query.status = ''
+  load(1)
+}
 function timeFmt(_r: any, _c: any, v: string) {
   if (!v || v === 'null') return '—'
   return v.replace('T', ' ').slice(0, 19)
 }
 
+function fieldRows(payload: any) {
+  const rows: { field: string; value: any; confidence?: number | null }[] = []
+  const seen = new Set<string>()
+  const add = (field: string, value: any, confidence?: number | null) => {
+    if (seen.has(field)) return
+    seen.add(field)
+    rows.push({ field, value, confidence })
+  }
+  const fields = payload?.fields
+  if (fields && typeof fields === 'object') {
+    for (const [group, groupValue] of Object.entries(fields)) {
+      if (!groupValue || typeof groupValue !== 'object') continue
+      for (const [field, raw] of Object.entries(groupValue as Record<string, any>)) {
+        if (raw && typeof raw === 'object' && ('value' in raw || 'confidence' in raw)) {
+          add(`${group}.${field}`, raw.value, raw.confidence)
+        }
+      }
+    }
+  }
+  for (const [key, value] of Object.entries(payload || {})) {
+    if (['fields', 'confidence', 'beforeValue', 'afterValue', 'slices', 'symbols', 'elements'].includes(key)) continue
+    if (value && typeof value === 'object') {
+      if ('value' in (value as any) || 'confidence' in (value as any)) {
+        add(key, (value as any).value, (value as any).confidence)
+      }
+      continue
+    }
+    add(key, value)
+  }
+  return rows.slice(0, 40)
+}
+
+function fieldText(value: any) {
+  if (value === null || value === undefined || value === '') return '—'
+  if (Array.isArray(value)) return value.map((v) => typeof v === 'object' ? JSON.stringify(v) : String(v)).join('；')
+  return typeof value === 'object' ? JSON.stringify(value) : String(value)
+}
+
+function confTag(value: number) {
+  if (value >= 0.8) return 'success'
+  if (value >= 0.6) return 'warning'
+  return 'danger'
+}
 function pretty(v: any) {
   return JSON.stringify(v || {}, null, 2)
 }
@@ -232,12 +329,24 @@ async function load(page?: number) {
       pageNum: query.pageNum, pageSize: query.pageSize,
     })
     rows.value = res.records
-    total.value = res.total
+    total.value = Number(res.total)
   } finally {
     loading.value = false
   }
 }
 
+async function rerunSourceTask() {
+  if (!order.value?.taskId) return
+  await ElMessageBox.confirm(
+    '确认重跑来源任务？重跑后当前未闭环复核单将自动作废，已有结论仍保留留痕。',
+    '重跑来源任务',
+    { type: 'warning' },
+  )
+  await taskReject(String(order.value.taskId), 1)
+  ElMessage.success('已触发来源任务重跑')
+  orderVisible.value = false
+  await load()
+}
 async function openOrder(id: string) {
   order.value = await reviewDetail(id)
   orderVisible.value = true
@@ -320,14 +429,18 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.toolbar { display: flex; gap: 10px; margin-bottom: 14px; align-items: center; }
+
 .pager { margin-top: 14px; justify-content: flex-end; }
 .mono { font-family: var(--wbdz-font-mono); }
 .small { font-size: var(--wbdz-font-caption); }
 .muted { color: var(--wbdz-secondary); }
 .hint { font-size: var(--wbdz-font-caption); color: var(--wbdz-secondary); }
 .order-bar { display: flex; align-items: center; gap: 10px; margin: 12px 0; }
-.payload-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding: 8px 16px; }
-.payload-title { font-weight: 600; margin-bottom: 6px; color: var(--wbdz-secondary); font-size: var(--wbdz-font-body); }
+.review-grid { display: grid; grid-template-columns: minmax(200px, 0.72fr) minmax(300px, 1.2fr) minmax(300px, 1fr); gap: 16px; padding: 12px 16px; }
+.review-col { min-width: 0; }
+.payload-title { font-weight: 600; margin-bottom: 8px; color: var(--wbdz-title); font-size: var(--wbdz-font-body); }
+.diff-title { margin-top: 14px; }
+.raw-collapse { margin-top: 10px; }
 .json { background: var(--wbdz-bg-page); padding: 10px; max-height: 260px; overflow: auto; font-size: var(--wbdz-font-caption); margin: 0; white-space: pre-wrap; word-break: break-all; }
+@media (max-width: 1200px) { .review-grid { grid-template-columns: 1fr; } }
 </style>

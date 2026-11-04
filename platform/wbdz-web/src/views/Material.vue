@@ -1,17 +1,31 @@
 <template>
-  <div>
+  <div class="page-stack">
+    <PageHeader title="素材管理" description="跨产线管理素材批次，完成上传、准入校验、移交和任务关联追溯。" />
+
     <el-card shadow="never">
-      <div class="toolbar">
-        <el-select v-model="query.line" placeholder="产线" clearable style="width: 160px">
-          <el-option v-for="(n, l) in LINE_NAMES" :key="l" :label="n" :value="l" />
-        </el-select>
-        <el-input v-model="query.name" placeholder="批次名称" clearable style="width: 200px" @keyup.enter="load(1)" />
-        <el-select v-model="query.status" placeholder="状态" clearable style="width: 140px">
-          <el-option v-for="(s, k) in MAT_STATUS" :key="k" :label="s.name" :value="k" />
-        </el-select>
-        <el-button type="primary" @click="load(1)">查询</el-button>
-        <div style="flex: 1" />
-        <el-button type="primary" @click="uploadVisible = true">上传素材批次</el-button>
+      <div class="search-panel">
+        <div class="search-fields">
+          <div class="filter-field">
+            <label class="filter-label">产线</label>
+            <el-select v-model="query.line" placeholder="全部产线" clearable style="width: 160px" @change="load(1)">
+              <el-option v-for="(n, l) in LINE_NAMES" :key="l" :label="n" :value="l" />
+            </el-select>
+          </div>
+          <div class="filter-field">
+            <label class="filter-label">批次名称</label>
+            <el-input v-model="query.name" placeholder="请输入批次名称" clearable style="width: 200px" @keyup.enter="load(1)" />
+          </div>
+          <div class="filter-field">
+            <label class="filter-label">状态</label>
+            <el-select v-model="query.status" placeholder="全部状态" clearable style="width: 160px" @change="load(1)">
+              <el-option v-for="(s, k) in MAT_STATUS" :key="k" :label="s.name" :value="k" />
+            </el-select>
+          </div>
+        </div>
+        <div class="search-actions">
+          <el-button @click="resetQuery">重置</el-button>
+          <el-button type="primary" @click="uploadVisible = true">+ 上传素材</el-button>
+        </div>
       </div>
 
       <el-table :data="rows" v-loading="loading">
@@ -36,11 +50,11 @@
         <el-table-column prop="createTime" label="上传时间" width="170" :formatter="timeFmt" />
         <el-table-column label="操作" width="300" fixed="right">
           <template #default="{ row }">
-            <el-button v-if="row.status === 'uncheked'" size="small" type="primary" @click="doCheck(row)">准入校验</el-button>
-            <el-button v-if="row.status === 'checked'" size="small" type="success" @click="doRelease(row)">移交</el-button>
-            <el-button size="small" @click="openDetail(row)">详情</el-button>
-            <el-button v-if="row.status !== 'upload_failed'" size="small" @click="openEdit(row)">编辑</el-button>
-            <el-button v-if="!row.linked && row.status !== 'released'" size="small" type="danger" plain @click="doDelete(row)">删除</el-button>
+            <el-button v-if="row.status === 'uncheked'" link type="primary" size="small" @click="doCheck(row)">准入校验</el-button>
+            <el-button v-if="row.status === 'checked'" link type="primary" size="small" @click="doRelease(row)">移交</el-button>
+            <el-button link type="primary" size="small" @click="openDetail(row)">详情</el-button>
+            <el-button v-if="row.status !== 'upload_failed'" link type="primary" size="small" @click="openEdit(row)">编辑</el-button>
+            <el-button v-if="!row.linked && row.status !== 'released'" link type="danger" size="small" @click="doDelete(row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -143,6 +157,7 @@
 </template>
 
 <script setup lang="ts">
+import PageHeader from '@/components/PageHeader.vue'
 import BizIdText from '@/components/BizIdText.vue'
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -169,6 +184,12 @@ const editForm = reactive({ name: '', line: '' })
 const detailVisible = ref(false)
 const detail = ref<any>(null)
 
+function resetQuery() {
+  query.line = ''
+  query.name = ''
+  query.status = ''
+  load(1)
+}
 function statusOf(row: MatBatchView) {
   if (row.linked) return { name: '已关联', tag: 'success' }
   return MAT_STATUS[row.status] || { name: row.status, tag: 'info' }
@@ -195,7 +216,7 @@ async function load(page?: number) {
       pageNum: query.pageNum, pageSize: query.pageSize,
     })
     rows.value = res.records
-    total.value = res.total
+    total.value = Number(res.total)
   } finally {
     loading.value = false
   }
@@ -266,7 +287,7 @@ onMounted(() => load())
 </script>
 
 <style scoped>
-.toolbar { display: flex; gap: 10px; margin-bottom: 14px; align-items: center; }
+
 .pager { margin-top: 14px; justify-content: flex-end; }
 .hint { font-size: var(--wbdz-font-caption); color: var(--wbdz-secondary); line-height: 1.6; }
 .muted { color: var(--wbdz-weaker); }

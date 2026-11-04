@@ -3,37 +3,7 @@
     <template v-if="item">
       <div class="viewer">
         <div class="pane left">
-          <h4>原图 / 原文</h4>
-
-          <template v-if="line === 'layout'">
-            <div v-if="imageUrl" class="page-image">
-              <img :src="imageUrl" alt="版面页图" />
-            </div>
-            <el-empty v-else description="未找到页图（需末环节执行记录）" :image-size="64" />
-          </template>
-
-          <template v-else-if="line === 'formula'">
-            <div class="latex-box">{{ payload.latex || '—' }}</div>
-            <p class="hint">公式裁切图由算子产物提供，这里仅展示 LaTeX 与语义标注。</p>
-          </template>
-
-          <template v-else-if="line === 'graphic'">
-            <el-descriptions :column="1" border size="small">
-              <el-descriptions-item label="条目编号">{{ payload.imageId || item.itemKey }}</el-descriptions-item>
-              <el-descriptions-item label="图片类型">{{ payload.type || '—' }}</el-descriptions-item>
-              <el-descriptions-item label="子类">{{ payload.subtype || '—' }}</el-descriptions-item>
-            </el-descriptions>
-            <p class="hint">原图位于上传素材中，数据集查看只展示结构化描述。</p>
-          </template>
-
-          <template v-else>
-            <el-descriptions :column="1" border size="small">
-              <el-descriptions-item label="文档编号">{{ payload.docId || item.itemKey }}</el-descriptions-item>
-              <el-descriptions-item label="来源文件">{{ payload.fileName || '—' }}</el-descriptions-item>
-              <el-descriptions-item label="触发原因">{{ payload.reviewReason || payload.code || '—' }}</el-descriptions-item>
-            </el-descriptions>
-            <p class="hint">原文对照在条件复核抽屉中查看。</p>
-          </template>
+          <SourcePreview :item="item" :line="line" :run-id="runId" :image-run-id="imageRunId" />
         </div>
 
         <div class="pane right">
@@ -139,8 +109,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onUnmounted, ref, watch } from 'vue'
-import { artifactBlob } from '@/api'
+import { computed } from 'vue'
+import SourcePreview from '@/components/SourcePreview.vue'
 
 const props = defineProps<{
   modelValue: boolean
@@ -171,42 +141,6 @@ const title = computed(() => {
   return `数据集明细查看${key}`
 })
 
-const imageUrl = ref('')
-let lastUrl = ''
-
-function release() {
-  if (lastUrl) URL.revokeObjectURL(lastUrl)
-  lastUrl = ''
-  imageUrl.value = ''
-}
-
-watch(
-  () => [props.item, props.line, props.runId, props.imageRunId, props.modelValue],
-  async () => {
-    release()
-    if (!props.modelValue || props.line !== 'layout') return
-    const candidates = [
-      { name: payload.value.overlay, runId: props.runId },
-      { name: payload.value.image, runId: props.imageRunId || props.runId },
-    ]
-    for (const c of candidates) {
-      const name = String(c.name || '').replace(/\\/g, '/')
-      if (!name || !c.runId) continue
-      try {
-        const blob = await artifactBlob(String(c.runId), name)
-        lastUrl = URL.createObjectURL(blob)
-        imageUrl.value = lastUrl
-        return
-      } catch {
-        // 换下一个候选（框选图层缺失时回退到原始页图）
-      }
-    }
-    imageUrl.value = ''
-  },
-  { immediate: true },
-)
-
-onUnmounted(release)
 
 function confTag(v: number) {
   if (v >= 0.8) return 'success'
@@ -254,18 +188,6 @@ const graphicRows = computed(() =>
 .left {
   border-right: 1px solid var(--el-border-color-lighter);
   padding-right: 18px;
-}
-.page-image img {
-  max-width: 100%;
-  border: 1px solid var(--el-border-color);
-}
-.latex-box {
-  font-family: var(--wbdz-font-mono);
-  background: var(--el-fill-color-light);
-  padding: 12px;
-  border-radius: 4px;
-  white-space: pre-wrap;
-  word-break: break-all;
 }
 .hint {
   color: var(--el-text-color-secondary);

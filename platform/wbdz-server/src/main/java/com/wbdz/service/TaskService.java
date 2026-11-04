@@ -6,6 +6,7 @@ import com.wbdz.common.BizException;
 import com.wbdz.common.BizId;
 import com.wbdz.common.PageResult;
 import com.wbdz.dto.TaskCreateDTO;
+import com.wbdz.dto.TaskUpdateDTO;
 import com.wbdz.entity.Dataset;
 import com.wbdz.entity.MatBatch;
 import com.wbdz.entity.ParamVersion;
@@ -107,6 +108,38 @@ public class TaskService {
         task.setCurrentStage(0);
         task.setCreateBy(AuthContext.username());
         taskMapper.insert(task);
+        return task;
+    }
+
+    /** 修改草稿任务；重新校验批次、参数版本和图文大类。 */
+    @Transactional(rollbackFor = Exception.class)
+    public TaskMain update(Long id, TaskUpdateDTO dto) {
+        TaskMain task = load(id);
+        require("draft".equals(task.getStatus()), "仅草稿任务可编辑");
+        if (dto.priority() != null && !dto.priority().isBlank()
+                && !PRIORITIES.contains(dto.priority())) {
+            throw new BizException("优先级取值：high/mid/low");
+        }
+        if ("graphic".equals(task.getLine())) {
+            require(dto.imageClass() != null && LineRegistry.IMAGE_CLASSES.contains(dto.imageClass()),
+                    "图文融合任务必须选择大类：" + String.join("/", LineRegistry.IMAGE_CLASSES));
+        }
+        MatBatch batch = batchMapper.selectOneById(dto.batchId());
+        require(batch != null, "素材批次不存在");
+        require(batch.getLine().equals(task.getLine()), "素材批次与任务产线不一致");
+        require("released".equals(batch.getStatus()), "素材批次未移交，不能保存任务");
+
+        ParamVersion param = resolveParam(task.getLine(), dto.paramVersion());
+        task.setName(dto.name().trim());
+        task.setPriority(dto.priority() == null || dto.priority().isBlank() ? "mid" : dto.priority());
+        task.setImageClass("graphic".equals(task.getLine()) ? dto.imageClass() : null);
+        task.setBatchId(dto.batchId());
+        task.setParamVersion(param.getVersion());
+        task.setParamSnapshot(param.getContent());
+        if (dto.threshold() != null) {
+            task.setThreshold(dto.threshold());
+        }
+        taskMapper.update(task);
         return task;
     }
 
@@ -308,6 +341,7 @@ public class TaskService {
         m.put("statusName", STATUS_NAMES.get(t.getStatus()));
         m.put("priority", t.getPriority());
         m.put("imageClass", t.getImageClass());
+        m.put("batchId", t.getBatchId());
         m.put("paramVersion", t.getParamVersion());
         m.put("threshold", t.getThreshold());
         m.put("currentStage", t.getCurrentStage());

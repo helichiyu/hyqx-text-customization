@@ -1,17 +1,33 @@
 <template>
-  <div>
+  <div class="page-stack">
+    <PageHeader title="数据集管理" description="管理候选、已发布和已回滚数据集，查看质量报告、交付记录与回滚留痕。" />
+
     <el-tabs v-model="tab" @tab-change="onTabChange">
       <el-tab-pane label="数据集" name="datasets">
         <el-card shadow="never">
-          <div class="toolbar">
-            <el-select v-model="query.line" placeholder="产线" clearable style="width: 160px">
-              <el-option v-for="(n, l) in LINE_NAMES" :key="l" :label="n" :value="l" />
-            </el-select>
-            <el-select v-model="query.status" placeholder="状态" clearable style="width: 130px">
-              <el-option v-for="(s, k) in DS_STATUS" :key="k" :label="s.name" :value="k" />
-            </el-select>
-            <el-input v-model="query.keyword" placeholder="编号/版本" clearable style="width: 180px" @keyup.enter="load(1)" />
-            <el-button type="primary" @click="load(1)">查询</el-button>
+          <div class="search-panel">
+            <div class="search-fields">
+              <div class="filter-field">
+                <label class="filter-label">产线</label>
+                <el-select v-model="query.line" placeholder="全部产线" clearable style="width: 160px" @change="load(1)">
+                  <el-option v-for="(n, l) in LINE_NAMES" :key="l" :label="n" :value="l" />
+                </el-select>
+              </div>
+              <div class="filter-field">
+                <label class="filter-label">状态</label>
+                <el-select v-model="query.status" placeholder="全部状态" clearable style="width: 160px" @change="load(1)">
+                  <el-option v-for="(s, k) in DS_STATUS" :key="k" :label="s.name" :value="k" />
+                </el-select>
+              </div>
+              <div class="filter-field">
+                <label class="filter-label">编号 / 版本</label>
+                <el-input v-model="query.keyword" placeholder="请输入编号或版本" clearable style="width: 200px" @keyup.enter="load(1)" />
+              </div>
+            </div>
+            <div class="search-actions">
+              <el-button @click="resetQuery">重置</el-button>
+              <el-button @click="load()">刷新</el-button>
+            </div>
           </div>
 
           <el-table :data="rows" v-loading="loading">
@@ -31,10 +47,10 @@
             <el-table-column prop="createTime" label="创建时间" width="170" :formatter="timeFmt" />
             <el-table-column label="操作" width="300" fixed="right">
               <template #default="{ row }">
-                <el-button size="small" @click="openDetail(row)">预览</el-button>
-                <el-button v-if="row.status === 'candidate'" size="small" type="success" @click="doPublish(row)">发布</el-button>
-                <el-button v-if="row.status === 'published'" size="small" @click="downloadReport(row)">报告</el-button>
-                <el-button v-if="row.status === 'published'" size="small" type="danger" plain @click="doRollback(row)">回滚</el-button>
+                <el-button link type="primary" size="small" @click="openDetail(row)">预览</el-button>
+                <el-button v-if="row.status === 'candidate'" link type="primary" size="small" @click="doPublish(row)">发布</el-button>
+                <el-button v-if="row.status === 'published'" link type="primary" size="small" @click="downloadReport(row)">报告</el-button>
+                <el-button v-if="row.status === 'published'" link type="danger" size="small" @click="doRollback(row)">回滚</el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -182,6 +198,7 @@
 </template>
 
 <script setup lang="ts">
+import PageHeader from '@/components/PageHeader.vue'
 import BizIdText from '@/components/BizIdText.vue'
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -215,6 +232,12 @@ const skipRows = ref<any[]>([])
 const viewerVisible = ref(false)
 const viewerIndex = ref(0)
 
+function resetQuery() {
+  query.line = ''
+  query.status = ''
+  query.keyword = ''
+  load(1)
+}
 function timeFmt(_r: any, _c: any, v: string) {
   return fmtTime(v)
 }
@@ -246,7 +269,7 @@ async function load(page?: number) {
       keyword: query.keyword || undefined, pageNum: query.pageNum, pageSize: query.pageSize,
     })
     rows.value = res.records
-    total.value = res.total
+    total.value = Number(res.total)
   } finally {
     loading.value = false
   }
@@ -313,7 +336,7 @@ async function loadDeliveries(page?: number) {
   try {
     const res = await deliveryPage({ pageNum: deliveryPageNum.value, pageSize: 10 })
     deliveries.value = res.records
-    deliveryTotal.value = res.total
+    deliveryTotal.value = Number(res.total)
   } finally {
     deliveryLoading.value = false
   }
@@ -374,7 +397,7 @@ onMounted(() => load())
 </script>
 
 <style scoped>
-.toolbar { display: flex; gap: 10px; margin-bottom: 14px; align-items: center; }
+
 .pager { margin-top: 14px; justify-content: flex-end; }
 .mono { font-family: var(--wbdz-font-mono); }
 .small { font-size: var(--wbdz-font-caption); }

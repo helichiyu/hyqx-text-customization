@@ -3,6 +3,7 @@ package com.wbdz.controller;
 import com.wbdz.common.ApiResult;
 import com.wbdz.common.PageResult;
 import com.wbdz.dto.TaskCreateDTO;
+import com.wbdz.dto.TaskUpdateDTO;
 import com.wbdz.entity.TaskMain;
 import com.wbdz.service.TaskService;
 import jakarta.validation.Valid;
@@ -54,6 +55,12 @@ public class TaskController {
     @GetMapping("/{id}")
     public ApiResult<Map<String, Object>> detail(@PathVariable Long id) {
         return ApiResult.success(taskService.detail(id));
+    }
+
+    /** 修改草稿任务。 */
+    @PutMapping("/{id}")
+    public ApiResult<TaskMain> update(@PathVariable Long id, @RequestBody @Valid TaskUpdateDTO dto) {
+        return ApiResult.success(taskService.update(id, dto));
     }
 
     /** 提交（草稿 → 待处理）。 */

@@ -1,5 +1,7 @@
 <template>
-  <div>
+  <div class="page-stack">
+    <PageHeader title="参数配置" description="维护公共素材规则和四条产线参数，草稿发布后由新任务锁定版本快照。" />
+
     <el-card shadow="never">
       <el-tabs v-model="active" @tab-change="load">
         <el-tab-pane v-for="t in tabs" :key="t.line" :label="t.name" :name="t.line" />
@@ -89,6 +91,7 @@
 </template>
 
 <script setup lang="ts">
+import PageHeader from '@/components/PageHeader.vue'
 import { computed, onMounted, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { LINE_NAMES, paramLineConfig, paramSaveDraft, paramPublish } from '@/api'

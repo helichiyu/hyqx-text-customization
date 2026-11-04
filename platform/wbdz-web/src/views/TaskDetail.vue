@@ -1,28 +1,27 @@
 <template>
-  <div v-loading="loading">
-    <el-card shadow="never" v-if="task">
-      <div class="head">
-        <div>
-          <h3 class="title">{{ task.name }}</h3>
-          <div class="sub">
-            <BizIdText :value="task.bizNo" />
-            <el-tag :type="TASK_STATUS[task.status]?.tag" effect="light">{{ task.statusName }}</el-tag>
-            <el-tag :type="PRIORITIES[task.priority]?.tag" size="small">{{ PRIORITIES[task.priority]?.name }}</el-tag>
-            <el-tag v-if="task.imageClass" size="small" type="info">{{ task.imageClass }}</el-tag>
-            <span class="muted">{{ task.lineName }} · 第 {{ task.currentStage }}/3 环节</span>
-            <el-tag v-if="task.running" type="warning" size="small" effect="dark">执行中</el-tag>
-          </div>
-        </div>
-        <div class="actions">
-          <el-button v-if="task.status === 'draft'" type="primary" @click="act('submit')">提交</el-button>
-          <el-button v-if="task.status === 'pending'" type="primary" @click="act('start')">启动执行</el-button>
-          <el-button v-if="task.status === 'quality'" type="success" @click="act('collect')">归集</el-button>
-          <el-button v-if="task.status === 'waitreview' || task.status === 'quality'" type="warning" @click="openReject">驳回重跑</el-button>
-          <el-button v-if="task.status === 'draft'" type="danger" plain @click="act('delete')">删除</el-button>
-          <el-button @click="load">刷新</el-button>
-        </div>
-      </div>
+  <div class="page-stack" v-loading="loading">
+    <PageHeader v-if="task" :title="task.name" eyebrow="任务详情">
+      <template #description>
+        <span class="sub">
+          <BizIdText :value="task.bizNo" />
+          <el-tag :type="TASK_STATUS[task.status]?.tag" effect="light">{{ task.statusName }}</el-tag>
+          <el-tag :type="PRIORITIES[task.priority]?.tag" size="small">{{ PRIORITIES[task.priority]?.name }}</el-tag>
+          <el-tag v-if="task.imageClass" size="small" type="info">{{ task.imageClass }}</el-tag>
+          <span class="muted">{{ task.lineName }} · 第 {{ task.currentStage }}/3 环节</span>
+          <el-tag v-if="task.running" type="warning" size="small" effect="dark">执行中</el-tag>
+        </span>
+      </template>
+      <template #actions>
+        <el-button v-if="task.status === 'draft'" type="primary" @click="act('submit')">提交</el-button>
+        <el-button v-if="task.status === 'pending'" type="primary" @click="act('start')">启动执行</el-button>
+        <el-button v-if="task.status === 'quality'" type="success" @click="act('collect')">归集</el-button>
+        <el-button v-if="task.status === 'waitreview' || task.status === 'quality'" type="warning" @click="openReject">驳回重跑</el-button>
+        <el-button v-if="task.status === 'draft'" type="danger" plain @click="act('delete')">删除</el-button>
+        <el-button @click="load">刷新</el-button>
+      </template>
+    </PageHeader>
 
+    <el-card shadow="never" v-if="task">
       <el-descriptions :column="3" border size="small" class="desc">
         <el-descriptions-item label="素材批次">
           {{ task.batch ? `${task.batch.bizNo} · ${task.batch.name}` : '—' }}
@@ -189,6 +188,7 @@
     <!-- 文件预览 -->
     <el-dialog v-model="previewVisible" :title="previewName" width="70%" top="6vh">
       <img v-if="previewKind === 'image'" :src="previewUrl" style="max-width: 100%" />
+      <iframe v-else-if="previewKind === 'pdf'" :src="previewUrl" class="preview-frame" />
       <pre v-else class="preview-text">{{ previewText }}</pre>
     </el-dialog>
 
@@ -244,6 +244,7 @@
 </template>
 
 <script setup lang="ts">
+import PageHeader from '@/components/PageHeader.vue'
 import BizIdText from '@/components/BizIdText.vue'
 import { computed, onUnmounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -276,7 +277,7 @@ const files = ref<{ name: string; size: number }[]>([])
 
 const previewVisible = ref(false)
 const previewName = ref('')
-const previewKind = ref<'text' | 'image' | 'other'>('text')
+const previewKind = ref<'text' | 'image' | 'pdf' | 'other'>('text')
 const previewText = ref('')
 const previewUrl = ref('')
 
@@ -438,12 +439,16 @@ async function previewFile(file: { name: string; size: number }) {
     closePreview()
     previewKind.value = 'image'
     previewUrl.value = URL.createObjectURL(blob)
+  } else if (ext === 'pdf') {
+    closePreview()
+    previewKind.value = 'pdf'
+    previewUrl.value = URL.createObjectURL(blob)
   } else if (['json', 'jsonl', 'txt', 'md', 'csv'].includes(ext)) {
     previewKind.value = 'text'
     previewText.value = await blob.text()
   } else {
     previewKind.value = 'other'
-    previewText.value = '该类型不支持在线预览，请下载后查看。'
+    previewText.value = '该文件类型暂不支持站内预览。可查看产物清单或联系管理员处理。'
   }
   previewVisible.value = true
 }
@@ -476,13 +481,13 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
-.title { margin: 0 0 8px; font-size: var(--wbdz-font-banner); color: var(--wbdz-title); }
+
+
 .sub { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .mono { font-family: var(--wbdz-font-mono); }
 .small { font-size: var(--wbdz-font-caption); }
 .muted { color: var(--wbdz-secondary); }
-.actions { display: flex; flex-wrap: wrap; gap: 4px; }
+
 .desc { margin-top: 14px; }
 .block { margin-top: 14px; }
 .stages { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
@@ -497,5 +502,6 @@ onUnmounted(() => {
 .toolbar { display: flex; gap: 10px; margin-bottom: 12px; }
 .pager { margin-top: 12px; justify-content: flex-end; }
 .preview-text { max-height: 62vh; overflow: auto; background: var(--wbdz-bg-page); padding: 12px; font-size: var(--wbdz-font-caption); line-height: 1.6; white-space: pre-wrap; word-break: break-all; }
+.preview-frame { width: 100%; height: 70vh; border: 0; border-radius: var(--wbdz-radius-control); background: #fff; }
 .hint { font-size: var(--wbdz-font-caption); color: var(--wbdz-secondary); }
 </style>

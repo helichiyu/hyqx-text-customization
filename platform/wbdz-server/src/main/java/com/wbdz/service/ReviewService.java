@@ -11,11 +11,13 @@ import com.wbdz.entity.DatasetItem;
 import com.wbdz.entity.ReviewItem;
 import com.wbdz.entity.ReviewOrder;
 import com.wbdz.entity.TaskMain;
+import com.wbdz.entity.TaskStageRun;
 import com.wbdz.mapper.DatasetItemMapper;
 import com.wbdz.mapper.DatasetMapper;
 import com.wbdz.mapper.ReviewItemMapper;
 import com.wbdz.mapper.ReviewOrderMapper;
 import com.wbdz.mapper.TaskMainMapper;
+import com.wbdz.mapper.TaskStageRunMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -30,6 +32,7 @@ import static com.wbdz.entity.table.DatasetItemTableDef.DATASET_ITEM;
 import static com.wbdz.entity.table.DatasetTableDef.DATASET;
 import static com.wbdz.entity.table.ReviewItemTableDef.REVIEW_ITEM;
 import static com.wbdz.entity.table.ReviewOrderTableDef.REVIEW_ORDER;
+import static com.wbdz.entity.table.TaskStageRunTableDef.TASK_STAGE_RUN;
 
 /**
  * 条件复核：条目结论（A 确认 / B 修正 / C 剔除，B 保留改前改后值）、
@@ -56,6 +59,8 @@ public class ReviewService {
     private final DatasetMapper datasetMapper;
 
     private final DatasetItemMapper datasetItemMapper;
+
+    private final TaskStageRunMapper stageRunMapper;
 
     // ==================== 查询 ====================
 
@@ -86,6 +91,13 @@ public class ReviewService {
         m.put("items", itemMapper.selectListByQuery(QueryWrapper.create()
                         .where(REVIEW_ITEM.ORDER_ID.eq(orderId)).orderBy(REVIEW_ITEM.ID.asc())).stream()
                 .map(this::itemView).toList());
+        TaskStageRun sourceRun = stageRunMapper.selectOneByQuery(QueryWrapper.create()
+                .where(TASK_STAGE_RUN.TASK_ID.eq(order.getTaskId()))
+                .and(TASK_STAGE_RUN.STAGE_NAME.eq(order.getStageName()))
+                .and(TASK_STAGE_RUN.STATUS.eq("done"))
+                .orderBy(TASK_STAGE_RUN.ID.desc()).limit(1));
+        m.put("runId", sourceRun == null ? null : sourceRun.getId());
+        m.put("imageRunId", sourceRun == null ? null : sourceRun.getId());
         return m;
     }
 
