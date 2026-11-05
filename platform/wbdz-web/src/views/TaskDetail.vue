@@ -24,7 +24,7 @@
     <el-card shadow="never" v-if="task">
       <el-descriptions :column="3" border size="small" class="desc">
         <el-descriptions-item label="素材批次">
-          {{ task.batch ? `${task.batch.bizNo} · ${task.batch.name}` : '—' }}
+          <template v-if="task.batch"><BizIdText :value="task.batch.bizNo" /> · {{ task.batch.name }}</template><template v-else>—</template>
           <span class="muted">（有效 {{ task.batch?.fileCount ?? 0 }} 条）</span>
         </el-descriptions-item>
         <el-descriptions-item label="参数版本">{{ task.paramVersion || '—' }}</el-descriptions-item>
@@ -112,7 +112,7 @@
           </el-table-column>
           <el-table-column label="操作" width="80">
             <template #default="{ row }">
-              <el-button link type="primary" size="small" @click="openDataset(row.id)">明细</el-button>
+              <el-button link type="primary" size="small" @click="openDataset(row.bizNo)">明细</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -132,7 +132,7 @@
           <el-table-column prop="itemCount" label="条目" width="60" align="center" />
           <el-table-column label="操作" width="80">
             <template #default="{ row }">
-              <el-button link type="primary" size="small" @click="openReview(row.id)">去复核</el-button>
+              <el-button link type="primary" size="small" @click="openReview(row.bizNo)">去复核</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -265,10 +265,10 @@ import {
   artifactList, artifactBlob, datasetDetail, reviewAddFromDataset,
 } from '@/api'
 
-const props = defineProps<{ id: string }>()
+const props = defineProps<{ bizNo: string }>()
 const route = useRoute()
 const router = useRouter()
-const taskId = String(props.id || route.params.id)
+const taskBizNo = String(props.bizNo || route.params.bizNo)
 
 const task = ref<any>(null)
 const loading = ref(false)
@@ -391,7 +391,7 @@ function reviewTag(s?: string) {
 async function load() {
   loading.value = true
   try {
-    task.value = await taskDetail(taskId)
+    task.value = await taskDetail(taskBizNo)
     schedulePoll()
   } finally {
     loading.value = false
@@ -408,18 +408,18 @@ function schedulePoll() {
 async function act(kind: 'submit' | 'start' | 'collect' | 'delete') {
   if (kind === 'delete') {
     await ElMessageBox.confirm(`确认删除任务「${task.value.name}」？`, '删除确认', { type: 'warning' })
-    await taskDelete(taskId)
+    await taskDelete(taskBizNo)
     ElMessage.success('已删除')
     router.push(route.query.fromWb as string || '/')
     return
   }
   if (kind === 'start') {
     await ElMessageBox.confirm('确认启动任务？将按算子链依次执行全部环节。', '启动确认', { type: 'warning' })
-    await taskStart(taskId)
+    await taskStart(taskBizNo)
     ElMessage.success('已启动')
   }
-  if (kind === 'submit') { await taskSubmit(taskId); ElMessage.success('已提交') }
-  if (kind === 'collect') { await taskCollect(taskId); ElMessage.success('已归集') }
+  if (kind === 'submit') { await taskSubmit(taskBizNo); ElMessage.success('已提交') }
+  if (kind === 'collect') { await taskCollect(taskBizNo); ElMessage.success('已归集') }
   load()
 }
 
@@ -429,7 +429,7 @@ function openReject() {
 }
 
 async function doReject() {
-  await taskReject(taskId, rejectStage.value)
+  await taskReject(taskBizNo, rejectStage.value)
   ElMessage.success('已驳回，从所选环节重跑')
   rejectVisible.value = false
   load()
@@ -441,7 +441,7 @@ function openThreshold() {
 }
 
 async function saveThreshold() {
-  await taskThreshold(taskId, thresholdValue.value)
+  await taskThreshold(taskBizNo, thresholdValue.value)
   ElMessage.success('阈值已更新')
   thresholdVisible.value = false
   load()
@@ -501,8 +501,8 @@ async function loadDatasetItems(page?: number) {
   dsTotal.value = d.items.total
 }
 
-function openReview(orderId: string) {
-  router.push({ path: '/review', query: { orderId } })
+function openReview(orderBizNo: string) {
+  router.push({ path: '/review', query: { orderBizNo } })
 }
 
 load()

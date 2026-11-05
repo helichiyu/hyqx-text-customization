@@ -23,6 +23,9 @@ public interface TaskService {
             "draft", "草稿", "pending", "待处理", "processing", "加工中",
             "waitreview", "待复核", "quality", "待归集", "collected", "已归集", "reject", "已驳回");
 
+    /** 将 Long ID 或 bizNo 解析为内部主键。 */
+    Long resolveId(String reference);
+
     /** 创建草稿任务。 */
     TaskVO create(TaskCreateDTO dto);
 

@@ -15,7 +15,7 @@ const routes: RouteRecordRaw[] = [
         meta: { title: '产线工作台' },
       },
       {
-        path: 'task/:id',
+        path: 'task/:bizNo',
         component: () => import('@/views/TaskDetail.vue'),
         props: true,
         meta: { title: '任务详情' },

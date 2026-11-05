@@ -33,7 +33,6 @@ public class ReviewController {
 
     private final ReviewService reviewService;
 
-    /** 复核单分页。 */
     @Operation(summary = "分页查询复核单")
     @GetMapping
     public ApiResult<PageResult<ReviewOrderVO>> page(@RequestParam(required = false) String status,
@@ -44,21 +43,24 @@ public class ReviewController {
         return ApiResult.success(reviewService.page(status, line, taskId, pageNum, pageSize));
     }
 
-    /** 复核单详情（含条目）。 */
-    @Operation(summary = "查询复核单详情")
-    @GetMapping("/{id}")
-    public ApiResult<ReviewDetailVO> detail(@PathVariable Long id) {
-        return ApiResult.success(reviewService.detail(id));
+    @Operation(summary = "按业务编号查询复核单详情")
+    @GetMapping("/by-no/{bizNo}")
+    public ApiResult<ReviewDetailVO> detailByBizNo(@PathVariable String bizNo) {
+        return detail(bizNo);
     }
 
-    /** 数据集明细「加入复核任务」（无未闭环单时新建）。 */
+    @Operation(summary = "查询复核单详情")
+    @GetMapping("/{reference}")
+    public ApiResult<ReviewDetailVO> detail(@PathVariable String reference) {
+        return ApiResult.success(reviewService.detail(reviewService.resolveId(reference)));
+    }
+
     @Operation(summary = "将数据集条目加入复核")
     @PostMapping("/item/{datasetItemId}/add")
     public ApiResult<ReviewAddResultVO> addFromDatasetItem(@PathVariable Long datasetItemId) {
         return ApiResult.success(reviewService.addFromDatasetItem(datasetItemId));
     }
 
-    /** 条目结论（保存不闭环）。 */
     @Operation(summary = "保存复核条目结论")
     @PostMapping("/item/{itemId}/conclude")
     public ApiResult<Void> conclude(@PathVariable Long itemId, @RequestBody @Valid ReviewConcludeDTO dto) {
@@ -66,7 +68,6 @@ public class ReviewController {
         return ApiResult.success();
     }
 
-    /** 撤销条目结论（闭环前）。 */
     @Operation(summary = "撤销复核条目结论")
     @PostMapping("/item/{itemId}/unconclude")
     public ApiResult<Void> unconclude(@PathVariable Long itemId) {
@@ -74,11 +75,10 @@ public class ReviewController {
         return ApiResult.success();
     }
 
-    /** 整单闭环（全部条目出结论后；回写数据集与任务状态）。 */
     @Operation(summary = "复核单闭环")
-    @PostMapping("/{id}/close")
-    public ApiResult<Void> close(@PathVariable Long id) {
-        reviewService.close(id);
+    @PostMapping("/{reference}/close")
+    public ApiResult<Void> close(@PathVariable String reference) {
+        reviewService.close(reviewService.resolveId(reference));
         return ApiResult.success();
     }
 }

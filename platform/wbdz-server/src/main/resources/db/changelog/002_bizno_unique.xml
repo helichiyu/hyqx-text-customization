@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <changeSet id="wbdz-bizno-unique-delivery-20261105" author="wbdz">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="wbdz_delivery_log"/>
+        </preConditions>
+        <addUniqueConstraint tableName="wbdz_delivery_log"
+                             columnNames="biz_no"
+                             constraintName="uk_wbdz_delivery_biz_no"/>
+    </changeSet>
+
+    <changeSet id="wbdz-bizno-unique-rollback-20261105" author="wbdz">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="wbdz_rollback_log"/>
+        </preConditions>
+        <addUniqueConstraint tableName="wbdz_rollback_log"
+                             columnNames="biz_no"
+                             constraintName="uk_wbdz_rollback_biz_no"/>
+    </changeSet>
+</databaseChangeLog>

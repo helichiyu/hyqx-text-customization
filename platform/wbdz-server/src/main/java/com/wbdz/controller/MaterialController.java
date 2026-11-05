@@ -38,7 +38,6 @@ public class MaterialController {
 
     private final MaterialService materialService;
 
-    /** 上传素材批次（文件与 ZIP 混合；服务端解包并完成文件级校验）。 */
     @Operation(summary = "上传素材批次")
     @PostMapping("/upload")
     public ApiResult<MaterialVO> upload(@RequestParam String line,
@@ -47,7 +46,6 @@ public class MaterialController {
         return ApiResult.success(materialService.upload(line, name, files));
     }
 
-    /** 批次分页列表（支持产线/名称/状态筛选，含派生态「已关联」）。 */
     @Operation(summary = "分页查询素材批次")
     @GetMapping
     public ApiResult<PageResult<MaterialRowVO>> page(@RequestParam(required = false) String line,
@@ -58,39 +56,41 @@ public class MaterialController {
         return ApiResult.success(materialService.page(line, name, status, pageNum, pageSize));
     }
 
-    /** 批次详情：基本信息 + 文件清单（剔除情况）+ 变更记录 + 关联任务。 */
+    @Operation(summary = "按业务编号查询素材批次详情")
+    @GetMapping("/by-no/{bizNo}")
+    public ApiResult<MaterialDetailVO> detailByBizNo(@PathVariable String bizNo) {
+        return detail(bizNo);
+    }
+
     @Operation(summary = "查询素材批次详情")
-    @GetMapping("/{id}")
-    public ApiResult<MaterialDetailVO> detail(@PathVariable Long id) {
-        return ApiResult.success(materialService.detail(id));
+    @GetMapping("/{reference}")
+    public ApiResult<MaterialDetailVO> detail(@PathVariable String reference) {
+        return ApiResult.success(materialService.detail(materialService.resolveId(reference)));
     }
 
-    /** 准入校验（未校验 → 已校验 / 上传失败）。 */
     @Operation(summary = "执行素材准入校验")
-    @PostMapping("/{id}/check")
-    public ApiResult<MaterialVO> check(@PathVariable Long id) {
-        return ApiResult.success(materialService.check(id));
+    @PostMapping("/{reference}/check")
+    public ApiResult<MaterialVO> check(@PathVariable String reference) {
+        return ApiResult.success(materialService.check(materialService.resolveId(reference)));
     }
 
-    /** 移交（已校验 → 已移交）。 */
     @Operation(summary = "移交素材批次")
-    @PostMapping("/{id}/release")
-    public ApiResult<MaterialVO> release(@PathVariable Long id) {
-        return ApiResult.success(materialService.release(id));
+    @PostMapping("/{reference}/release")
+    public ApiResult<MaterialVO> release(@PathVariable String reference) {
+        return ApiResult.success(materialService.release(materialService.resolveId(reference)));
     }
 
-    /** 编辑基本信息（名称/产线）。 */
     @Operation(summary = "编辑素材批次")
-    @PutMapping("/{id}")
-    public ApiResult<MaterialVO> edit(@PathVariable Long id, @RequestBody @Valid MaterialEditDTO dto) {
-        return ApiResult.success(materialService.edit(id, dto.name(), dto.line()));
+    @PutMapping("/{reference}")
+    public ApiResult<MaterialVO> edit(@PathVariable String reference, @RequestBody @Valid MaterialEditDTO dto) {
+        return ApiResult.success(materialService.edit(materialService.resolveId(reference),
+                dto.name(), dto.line()));
     }
 
-    /** 删除批次（已移交/已关联不可删）。 */
     @Operation(summary = "删除素材批次")
-    @DeleteMapping("/{id}")
-    public ApiResult<Void> delete(@PathVariable Long id) {
-        materialService.delete(id);
+    @DeleteMapping("/{reference}")
+    public ApiResult<Void> delete(@PathVariable String reference) {
+        materialService.delete(materialService.resolveId(reference));
         return ApiResult.success();
     }
 }

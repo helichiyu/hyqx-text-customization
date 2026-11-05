@@ -19,6 +19,9 @@ public interface DatasetService {
     Map<String, String> STATUS_NAMES = Map.of(
             "candidate", "候选", "published", "已发布", "rolledback", "已回滚");
 
+    /** 将 Long ID 或 bizNo 解析为内部主键。 */
+    Long resolveId(String reference);
+
     /** 分页查询数据集。 */
     PageResult<DatasetVO> page(String line, String status, String keyword, int pageNum, int pageSize);
 

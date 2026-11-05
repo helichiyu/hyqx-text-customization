@@ -88,7 +88,7 @@ export interface MatBatchView {
 export const materialPage = (params: Record<string, any>) =>
   get<PageResult<MatBatchView>>('/api/material', params)
 
-export const materialDetail = (id: string) => get<any>(`/api/material/${id}`)
+export const materialDetail = (ref: string) => get<any>(`/api/material/by-no/${ref}`)
 
 export const materialUpload = (line: string, name: string, files: File[]) => {
   const form = new FormData()
@@ -143,7 +143,7 @@ export interface TaskView {
 export const taskPage = (params: Record<string, any>) =>
   get<PageResult<TaskView>>('/api/task', params)
 
-export const taskDetail = (id: string) => get<any>(`/api/task/${id}`)
+export const taskDetail = (ref: string) => get<any>(`/api/task/by-no/${ref}`)
 
 export const taskCreate = (body: Record<string, any>) => post('/api/task', body)
 export const taskUpdate = (id: string, body: Record<string, any>) => put(`/api/task/${id}`, body)
@@ -160,7 +160,7 @@ export const taskDelete = (id: string) => del(`/api/task/${id}`)
 
 export const reviewPage = (params: Record<string, any>) =>
   get<PageResult<any>>('/api/review', params)
-export const reviewDetail = (id: string) => get<any>(`/api/review/${id}`)
+export const reviewDetail = (ref: string) => get<any>(`/api/review/by-no/${ref}`)
 export const reviewConclude = (itemId: string, conclusion: string, revisedPayload?: any) =>
   post(`/api/review/item/${itemId}/conclude`, { conclusion, revisedPayload })
 export const reviewUnconclude = (itemId: string) => post(`/api/review/item/${itemId}/unconclude`)
@@ -172,8 +172,8 @@ export const reviewClose = (id: string) => post(`/api/review/${id}/close`)
 
 export const datasetPage = (params: Record<string, any>) =>
   get<PageResult<any>>('/api/dataset', params)
-export const datasetDetail = (id: string, params?: Record<string, any>) =>
-  get<any>(`/api/dataset/${id}`, params)
+export const datasetDetail = (ref: string, params?: Record<string, any>) =>
+  get<any>(`/api/dataset/by-no/${ref}`, params)
 export const datasetPublish = (id: string) => post(`/api/dataset/${id}/publish`)
 export const datasetRollback = (id: string, reason: string) =>
   post(`/api/dataset/${id}/rollback`, { reason })

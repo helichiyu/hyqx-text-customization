@@ -44,7 +44,7 @@
         <el-table-column prop="closeBy" label="闭环人" width="90" />
         <el-table-column label="操作" width="110" fixed="right">
           <template #default="{ row }">
-            <el-button link type="primary" size="small" @click="openOrder(row.id)">
+            <el-button link type="primary" size="small" @click="openOrder(row.bizNo)">
               {{ row.status === 'done' || row.status === 'void' ? '查看' : '复核' }}
             </el-button>
           </template>
@@ -55,9 +55,14 @@
     </el-card>
 
     <!-- 复核工作台 -->
-    <el-drawer v-model="orderVisible" :title="order ? `条件复核 · ${order.bizNo}` : '条件复核'" class="wbdz-drawer wbdz-drawer--wide" @closed="onDrawerClosed">
+    <el-drawer v-model="orderVisible" class="wbdz-drawer wbdz-drawer--wide" @closed="onDrawerClosed">
+      <template #header>
+        <span>条件复核 <template v-if="order"> · <BizIdText :value="order.bizNo" /></template></span>
+      </template>
       <template v-if="order">
         <el-descriptions :column="3" border size="small">
+          <el-descriptions-item label="复核单号"><BizIdText :value="order.bizNo" /></el-descriptions-item>
+          <el-descriptions-item label="来源任务"><BizIdText :value="order.taskBizNo" /></el-descriptions-item>
           <el-descriptions-item label="产线">{{ order.lineName }}</el-descriptions-item>
           <el-descriptions-item label="触发环节">{{ order.stageName }}</el-descriptions-item>
           <el-descriptions-item label="状态">
@@ -336,13 +341,13 @@ async function load(page?: number) {
 }
 
 async function rerunSourceTask() {
-  if (!order.value?.taskId) return
+  if (!order.value?.taskBizNo && !order.value?.taskId) return
   await ElMessageBox.confirm(
     '确认重跑来源任务？重跑后当前未闭环复核单将自动作废，已有结论仍保留留痕。',
     '重跑来源任务',
     { type: 'warning' },
   )
-  await taskReject(String(order.value.taskId), 1)
+  await taskReject(String(order.value.taskBizNo || order.value.taskId), 1)
   ElMessage.success('已触发来源任务重跑')
   orderVisible.value = false
   await load()
@@ -353,7 +358,7 @@ async function openOrder(id: string) {
 }
 
 async function refreshOrder() {
-  if (order.value) order.value = await reviewDetail(order.value.id)
+  if (order.value) order.value = await reviewDetail(order.value.bizNo)
 }
 
 async function conclude(row: any, conclusion: 'A' | 'C') {
@@ -408,14 +413,14 @@ async function submitFix() {
 
 async function doClose() {
   await ElMessageBox.confirm('整单闭环后将回写数据集条目并联动任务状态，确认闭环？', '闭环确认', { type: 'warning' })
-  await reviewClose(order.value.id)
+  await reviewClose(order.value.bizNo)
   ElMessage.success('复核单已闭环')
   await refreshOrder()
   load()
 }
 
 function onDrawerClosed() {
-  if (route.query.orderId) {
+  if (route.query.orderBizNo || route.query.orderId) {
     router.replace({ path: '/review' })
   }
   load()
@@ -423,8 +428,8 @@ function onDrawerClosed() {
 
 onMounted(async () => {
   await load()
-  const orderId = String(route.query.orderId || '')
-  if (orderId) openOrder(orderId)
+  const orderBizNo = String(route.query.orderBizNo || route.query.orderId || '')
+  if (orderBizNo) openOrder(orderBizNo)
 })
 </script>
 

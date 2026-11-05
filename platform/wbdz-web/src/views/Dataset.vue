@@ -89,7 +89,7 @@
           <el-descriptions-item label="有效条数">{{ detail.itemCount }}</el-descriptions-item>
           <el-descriptions-item label="跳过条数">{{ detail.skipCount }}</el-descriptions-item>
           <el-descriptions-item label="来源任务">
-            {{ detail.task ? `${detail.task.bizNo} · ${detail.task.name}` : '—' }}
+            <template v-if="detail.task"><BizIdText :value="detail.task.bizNo" /> · {{ detail.task.name }}</template><template v-else>—</template>
           </el-descriptions-item>
           <el-descriptions-item label="发布人">{{ detail.publishBy || '—' }}</el-descriptions-item>
           <el-descriptions-item label="发布时间">{{ fmtTime(detail.publishTime) }}</el-descriptions-item>
@@ -149,7 +149,7 @@
             <el-empty v-if="!detail.deliveries?.length" description="暂无交付" :image-size="48" />
             <el-timeline v-else style="padding-left: 6px">
               <el-timeline-item v-for="d in detail.deliveries" :key="d.bizNo" :timestamp="fmtTime(d.time)">
-                {{ d.type }}：{{ d.filename }}（{{ d.operator }}）
+                <BizIdText :value="d.bizNo" /> {{ d.type }}：{{ d.filename }}（{{ d.operator }}）
               </el-timeline-item>
             </el-timeline>
           </div>
@@ -158,7 +158,7 @@
             <el-empty v-if="!detail.rollbacks?.length" description="暂无回滚" :image-size="48" />
             <el-timeline v-else style="padding-left: 6px">
               <el-timeline-item v-for="r in detail.rollbacks" :key="r.bizNo" :timestamp="fmtTime(r.time)" type="danger">
-                {{ r.reason }}（{{ r.operator }}）
+                <BizIdText :value="r.bizNo" /> {{ r.reason }}（{{ r.operator }}）
               </el-timeline-item>
             </el-timeline>
           </div>
@@ -277,16 +277,16 @@ async function load(page?: number) {
 
 /** 任务级低置信阈值：任一复核结论后后端拒绝修改（阈值锁定）。 */
 async function editThreshold() {
-  const taskId = detail.value?.task?.id
-  if (!taskId) return
+  const taskRef = detail.value?.task?.bizNo || detail.value?.task?.id
+  if (!taskRef) return
   const { value } = await ElMessageBox.prompt('阈值取值 (0,1]，已有复核结论后锁定。', '调整置信度阈值', {
     inputValue: String(detail.value.task.threshold || 0.8),
     inputPattern: /^(0?\.\d+|1(\.0+)?)$/,
     inputErrorMessage: '请输入 0–1 之间的数值',
   })
-  await taskThreshold(String(taskId), Number(value))
+  await taskThreshold(String(taskRef), Number(value))
   ElMessage.success('阈值已更新')
-  detail.value = await datasetDetail(detail.value.id)
+  detail.value = await datasetDetail(detail.value.bizNo)
 }
 
 async function addToReview() {
@@ -295,7 +295,7 @@ async function addToReview() {
   await reviewAddFromDataset(String(item.id))
   ElMessage.success('已加入复核任务')
   viewerVisible.value = false
-  detail.value = await datasetDetail(detail.value.id)
+  detail.value = await datasetDetail(detail.value.bizNo)
   await loadItems()
 }
 
@@ -307,9 +307,9 @@ function openViewer(row: any) {
 
 /** 跳过/失败清单：聚合来源任务各环节执行记录（重跑记录同样展示，带环节名）。 */
 async function openSkips() {
-  const taskId = detail.value?.task?.id
-  if (!taskId) return
-  const t = await taskDetail(taskId)
+  const taskRef = detail.value?.task?.bizNo || detail.value?.task?.id
+  if (!taskRef) return
+  const t = await taskDetail(taskRef)
   const out: any[] = []
   for (const run of t.stageRuns || []) {
     const collect = (arr: any[], kind: string) => {
@@ -348,7 +348,7 @@ function onTabChange(name: string | number) {
 }
 
 async function openDetail(row: any) {
-  detail.value = await datasetDetail(row.id)
+  detail.value = await datasetDetail(row.bizNo)
   itemFilter.value = ''
   items.value = []
   itemTotal.value = 0
@@ -360,7 +360,7 @@ async function openDetail(row: any) {
 async function loadItems(page?: number) {
   if (!detail.value) return
   if (page) itemPage.value = page
-  const d = await datasetDetail(detail.value.id, {
+  const d = await datasetDetail(detail.value.bizNo, {
     reviewStatus: itemFilter.value || undefined, pageNum: itemPage.value, pageSize: 10,
   })
   items.value = d.items.records
@@ -369,9 +369,9 @@ async function loadItems(page?: number) {
 
 async function doPublish(row: any) {
   await ElMessageBox.confirm(`确认发布数据集「${row.bizNo}」？发布前须复核单全部闭环；发布后版本号将计入交付。`, '发布确认', { type: 'warning' })
-  await datasetPublish(row.id)
+  await datasetPublish(row.bizNo)
   ElMessage.success('已发布')
-  if (detail.value?.id === row.id) detail.value = await datasetDetail(row.id)
+  if (detail.value?.bizNo === row.bizNo) detail.value = await datasetDetail(row.bizNo)
   load()
 }
 
@@ -380,17 +380,17 @@ async function doRollback(row: any) {
     inputPlaceholder: '如：复核遗漏，需重新加工',
     inputValidator: (v) => (!!v && v.trim().length > 0) || '回滚原因不能为空',
   })
-  await datasetRollback(row.id, value.trim())
+  await datasetRollback(row.bizNo, value.trim())
   ElMessage.success('已回滚')
-  if (detail.value?.id === row.id) detail.value = await datasetDetail(row.id)
+  if (detail.value?.bizNo === row.bizNo) detail.value = await datasetDetail(row.bizNo)
   load()
 }
 
 async function downloadReport(row: any) {
-  const blob = await downloadBlob(`/api/dataset/${row.id}/report`)
+  const blob = await downloadBlob(`/api/dataset/${row.bizNo}/report`)
   saveBlob(blob, `质量报告_${row.bizNo}_${row.semVer || ''}.txt`)
   ElMessage.success('报告已下载（含交付记录）')
-  if (detailVisible.value && detail.value?.id === row.id) detail.value = await datasetDetail(row.id)
+  if (detailVisible.value && detail.value?.bizNo === row.bizNo) detail.value = await datasetDetail(row.bizNo)
 }
 
 onMounted(() => load())

@@ -83,6 +83,22 @@ public class DatasetServiceImpl implements DatasetService {
 
     private final RollbackLogMapper rollbackLogMapper;
 
+    public Long resolveId(String reference) {
+        String ref = reference == null ? "" : reference.trim();
+        if (ref.matches("\\d+")) {
+            try {
+                return Long.valueOf(ref);
+            } catch (NumberFormatException e) {
+                throw new BizException("数据集引用格式错误", e);
+            }
+        }
+        Dataset dataset = datasetMapper.selectOneByQuery(QueryWrapper.create()
+                .where(DATASET.BIZ_NO.eq(ref)));
+        if (dataset == null) {
+            throw new BizException("数据集不存在");
+        }
+        return dataset.getId();
+    }
     // ==================== 查询 ====================
 
     public PageResult<DatasetVO> page(String line, String status, String keyword,
@@ -200,7 +216,9 @@ public class DatasetServiceImpl implements DatasetService {
         ds.setRollbackTime(LocalDateTime.now());
         datasetMapper.update(ds);
         RollbackLog logRow = new RollbackLog();
-        logRow.setBizNo(BizId.next(LineRegistry.LINE_PREFIX.get(ds.getLine())));
+        String prefix = LineRegistry.LINE_PREFIX.get(ds.getLine());
+        logRow.setBizNo(BizId.nextUnique(prefix, candidate -> rollbackLogMapper.selectCountByQuery(
+                QueryWrapper.create().where(ROLLBACK_LOG.BIZ_NO.eq(candidate))) > 0));
         logRow.setDatasetId(id);
         logRow.setTarget("下线");
         logRow.setReason(reason.trim());
@@ -265,7 +283,9 @@ public class DatasetServiceImpl implements DatasetService {
                 contentCount, cCount, publishTime, open, closed, confirmed, revised, excluded);
         String filename = "质量报告_" + ds.getBizNo() + "_" + ds.getSemVer() + ".txt";
         DeliveryLog logRow = new DeliveryLog();
-        logRow.setBizNo(BizId.next(LineRegistry.LINE_PREFIX.get(ds.getLine())));
+        String prefix = LineRegistry.LINE_PREFIX.get(ds.getLine());
+        logRow.setBizNo(BizId.nextUnique(prefix, candidate -> deliveryLogMapper.selectCountByQuery(
+                QueryWrapper.create().where(DELIVERY_LOG.BIZ_NO.eq(candidate))) > 0));
         logRow.setDatasetId(id);
         logRow.setType("质量报告TXT");
         logRow.setFilename(filename);

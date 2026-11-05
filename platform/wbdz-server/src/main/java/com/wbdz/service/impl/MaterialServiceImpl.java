@@ -117,7 +117,9 @@ public class MaterialServiceImpl implements MaterialService {
         require(dup == 0, "批次名称与同产线已有批次重复");
 
         MatBatch batch = new MatBatch();
-        batch.setBizNo(BizId.next(LineRegistry.LINE_PREFIX.get(line)));
+        String prefix = LineRegistry.LINE_PREFIX.get(line);
+        batch.setBizNo(BizId.nextUnique(prefix, candidate -> batchMapper.selectCountByQuery(
+                QueryWrapper.create().where(MAT_BATCH.BIZ_NO.eq(candidate))) > 0));
         batch.setName(name.trim());
         batch.setLine(line);
         batch.setStatus("uncheked");
@@ -421,6 +423,22 @@ public class MaterialServiceImpl implements MaterialService {
         changeLogMapper.deleteByQuery(QueryWrapper.create().where(MAT_CHANGE_LOG.BATCH_ID.eq(batchId)));
     }
 
+    public Long resolveId(String reference) {
+        String ref = reference == null ? "" : reference.trim();
+        if (ref.matches("\\d+")) {
+            try {
+                return Long.valueOf(ref);
+            } catch (NumberFormatException e) {
+                throw new BizException("素材批次引用格式错误", e);
+            }
+        }
+        MatBatch batch = batchMapper.selectOneByQuery(QueryWrapper.create()
+                .where(MAT_BATCH.BIZ_NO.eq(ref)));
+        if (batch == null) {
+            throw new BizException("批次不存在");
+        }
+        return batch.getId();
+    }
     // ==================== 查询 ====================
 
     public PageResult<MaterialRowVO> page(String line, String name, String status,

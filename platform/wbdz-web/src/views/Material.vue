@@ -240,13 +240,13 @@ async function doUpload() {
 }
 
 async function doCheck(row: MatBatchView) {
-  await materialCheck(row.id)
+  await materialCheck(row.bizNo)
   ElMessage.success('准入校验完成')
   load()
 }
 
 async function doRelease(row: MatBatchView) {
-  await materialRelease(row.id)
+  await materialRelease(row.bizNo)
   ElMessage.success('已移交')
   load()
 }
@@ -260,7 +260,7 @@ function openEdit(row: MatBatchView) {
 
 async function doEdit() {
   if (!editing.value) return
-  await materialEdit(editing.value.id, { name: editForm.name, line: editForm.line })
+  await materialEdit(editing.value.bizNo, { name: editForm.name, line: editForm.line })
   ElMessage.success('已保存（变更已记录）')
   editVisible.value = false
   load()
@@ -268,13 +268,13 @@ async function doEdit() {
 
 async function doDelete(row: MatBatchView) {
   await ElMessageBox.confirm(`确认删除批次「${row.name}」？仅未移交且未被任务关联的批次可删除。`, '删除确认', { type: 'warning' })
-  await materialDelete(row.id)
+  await materialDelete(row.bizNo)
   ElMessage.success('已删除')
   load()
 }
 
 async function openDetail(row: MatBatchView) {
-  detail.value = await materialDetail(row.id)
+  detail.value = await materialDetail(row.bizNo)
   detailVisible.value = true
 }
 

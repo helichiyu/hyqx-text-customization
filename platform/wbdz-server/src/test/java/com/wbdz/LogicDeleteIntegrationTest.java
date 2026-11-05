@@ -3,6 +3,7 @@ package com.wbdz;
 import com.wbdz.entity.TaskMain;
 import com.wbdz.mapper.TaskMainMapper;
 import com.wbdz.service.DataSeeder;
+import com.wbdz.service.TaskService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

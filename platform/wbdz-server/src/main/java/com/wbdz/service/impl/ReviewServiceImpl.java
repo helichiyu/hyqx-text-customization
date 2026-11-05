@@ -74,6 +74,22 @@ public class ReviewServiceImpl implements ReviewService {
 
     private final TaskStageRunMapper stageRunMapper;
 
+    public Long resolveId(String reference) {
+        String ref = reference == null ? "" : reference.trim();
+        if (ref.matches("\\d+")) {
+            try {
+                return Long.valueOf(ref);
+            } catch (NumberFormatException e) {
+                throw new BizException("复核单引用格式错误", e);
+            }
+        }
+        ReviewOrder order = orderMapper.selectOneByQuery(QueryWrapper.create()
+                .where(REVIEW_ORDER.BIZ_NO.eq(ref)));
+        if (order == null) {
+            throw new BizException("复核单不存在");
+        }
+        return order.getId();
+    }
     // ==================== 查询 ====================
 
     public PageResult<ReviewOrderVO> page(String status, String line, Long taskId,
@@ -143,7 +159,8 @@ public class ReviewServiceImpl implements ReviewService {
                 .orderBy(REVIEW_ORDER.ID.desc()).limit(1));
         if (order == null) {
             order = new ReviewOrder();
-            order.setBizNo(BizId.next("CR"));
+            order.setBizNo(BizId.nextUnique("CR", candidate -> orderMapper.selectCountByQuery(
+                    QueryWrapper.create().where(REVIEW_ORDER.BIZ_NO.eq(candidate))) > 0));
             order.setTaskId(task.getId());
             order.setLine(task.getLine());
             order.setStageName("人工加入");

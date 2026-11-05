@@ -74,14 +74,16 @@
     </el-card>
 
     <!-- 新建任务 -->
-    <el-dialog v-model="createVisible" :title="editingTaskId ? '编辑任务' : '新建任务'" class="wbdz-dialog">
+    <el-dialog v-model="createVisible" :title="editingTaskRef ? '编辑任务' : '新建任务'" class="wbdz-dialog">
       <el-form label-width="100px">
         <el-form-item label="任务名称" required>
           <el-input v-model="form.name" placeholder="如：2026Q4 政策文本元信息批次" />
         </el-form-item>
         <el-form-item label="素材批次" required>
           <el-select v-model="form.batchId" style="width: 100%" placeholder="仅可选择已移交批次" no-data-text="暂无已移交批次，请先在素材管理中完成校验与移交">
-            <el-option v-for="b in batches" :key="b.id" :label="`${b.bizNo} · ${b.name}（${b.fileCount} 条）`" :value="b.id" />
+            <el-option v-for="b in batches" :key="b.id" :label="`${b.bizNo} · ${b.name}（${b.fileCount} 条）`" :value="b.id">
+              <span><BizIdText :value="b.bizNo" :copyable="false" /> · {{ b.name }}（{{ b.fileCount }} 条）</span>
+            </el-option>
           </el-select>
         </el-form-item>
         <el-form-item v-if="line === 'graphic'" label="图片大类" required>
@@ -107,7 +109,7 @@
       </el-form>
       <template #footer>
         <el-button @click="createVisible = false">取消</el-button>
-        <template v-if="editingTaskId">
+        <template v-if="editingTaskRef">
           <el-button :loading="creating" @click="doCreate(false)">保存草稿</el-button>
           <el-button type="primary" :loading="creating" @click="doCreate(true)">保存并待启动</el-button>
         </template>
@@ -157,7 +159,7 @@ const stats = ref([
 ])
 
 const createVisible = ref(false)
-const editingTaskId = ref<string | null>(null)
+const editingTaskRef = ref<string | null>(null)
 const creating = ref(false)
 const batches = ref<MatBatchView[]>([])
 const versions = ref<any[]>([])
@@ -201,7 +203,7 @@ async function loadTaskDialogOptions() {
 }
 
 async function openCreate() {
-  editingTaskId.value = null
+  editingTaskRef.value = null
   form.name = ''
   form.batchId = undefined
   form.priority = 'mid'
@@ -213,7 +215,7 @@ async function openCreate() {
 }
 
 async function openEdit(row: TaskView) {
-  editingTaskId.value = row.id
+  editingTaskRef.value = row.bizNo
   form.name = row.name
   form.batchId = row.batchId
   form.priority = row.priority || 'mid'
@@ -235,14 +237,14 @@ async function doCreate(submitAfter: boolean) {
       priority: form.priority, imageClass: form.imageClass || undefined,
       paramVersion: form.paramVersion || undefined, threshold: form.threshold,
     }
-    const task: any = editingTaskId.value
-      ? await taskUpdate(editingTaskId.value, body)
+    const task: any = editingTaskRef.value
+      ? await taskUpdate(editingTaskRef.value, body)
       : await taskCreate({ ...body, line: line.value })
     if (submitAfter) {
-      await taskSubmit(String(task.id))
-      ElMessage.success(editingTaskId.value ? `任务已保存并进入待处理：${task.bizNo}` : `任务已创建并进入待处理：${task.bizNo}`)
+      await taskSubmit(String(task.bizNo))
+      ElMessage.success(editingTaskRef.value ? `任务已保存并进入待处理：${task.bizNo}` : `任务已创建并进入待处理：${task.bizNo}`)
     } else {
-      ElMessage.success(editingTaskId.value ? `任务已保存：${task.bizNo}` : `任务已保存草稿：${task.bizNo}`)
+      ElMessage.success(editingTaskRef.value ? `任务已保存：${task.bizNo}` : `任务已保存草稿：${task.bizNo}`)
     }
     createVisible.value = false
     load(1)
@@ -254,14 +256,14 @@ async function doCreate(submitAfter: boolean) {
 
 async function doStart(row: TaskView) {
   await ElMessageBox.confirm(`确认启动任务「${row.name}」？启动后将按算子链依次执行。`, '启动确认', { type: 'warning' })
-  await taskStart(row.id)
+  await taskStart(row.bizNo)
   ElMessage.success('任务已启动')
   load()
 }
 
 async function doDelete(row: TaskView) {
   await ElMessageBox.confirm(`确认删除草稿任务「${row.name}」？`, '删除确认', { type: 'warning' })
-  await taskDelete(row.id)
+  await taskDelete(row.bizNo)
   ElMessage.success('已删除')
   load()
 }
@@ -278,7 +280,7 @@ function goDataset() {
   router.push('/dataset')
 }
 function goDetail(row: TaskView) {
-  router.push({ path: `/task/${row.id}`, query: { fromWb: `/wb/${line.value}` } })
+  router.push({ path: `/task/${row.bizNo}`, query: { fromWb: `/wb/${line.value}` } })
 }
 
 function timeFmt(_r: any, _c: any, v: string) {

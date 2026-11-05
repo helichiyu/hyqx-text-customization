@@ -117,7 +117,8 @@ public class TaskServiceImpl implements TaskService {
 
         ParamVersion param = resolveParam(dto.line(), dto.paramVersion());
         TaskMain task = new TaskMain();
-        task.setBizNo(BizId.next("TASK"));
+        task.setBizNo(BizId.nextUnique("TASK", candidate -> taskMapper.selectCountByQuery(
+                QueryWrapper.create().where(TASK_MAIN.BIZ_NO.eq(candidate))) > 0));
         task.setName(dto.name().trim());
         task.setLine(dto.line());
         task.setStatus("draft");
@@ -223,6 +224,22 @@ public class TaskServiceImpl implements TaskService {
         taskMapper.deleteById(id);
     }
 
+    public Long resolveId(String reference) {
+        String ref = reference == null ? "" : reference.trim();
+        if (ref.matches("\\d+")) {
+            try {
+                return Long.valueOf(ref);
+            } catch (NumberFormatException e) {
+                throw new BizException("任务引用格式错误", e);
+            }
+        }
+        TaskMain task = taskMapper.selectOneByQuery(QueryWrapper.create()
+                .where(TASK_MAIN.BIZ_NO.eq(ref)));
+        if (task == null) {
+            throw new BizException("任务不存在");
+        }
+        return task.getId();
+    }
     // ==================== 查询 ====================
 
     public PageResult<TaskRowVO> page(String line, String status, String name,

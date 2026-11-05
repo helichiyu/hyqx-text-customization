@@ -16,6 +16,9 @@ import java.util.List;
  */
 public interface MaterialService {
 
+    /** 将 Long ID 或 bizNo 解析为内部主键。 */
+    Long resolveId(String reference);
+
     /** 上传并完成文件级校验。 */
     MaterialVO upload(String line, String name, List<MultipartFile> files);
 

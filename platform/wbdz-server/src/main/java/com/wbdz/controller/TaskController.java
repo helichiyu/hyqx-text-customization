@@ -38,14 +38,12 @@ public class TaskController {
 
     private final TaskService taskService;
 
-    /** 创建任务（草稿）。 */
     @Operation(summary = "创建任务")
     @PostMapping
     public ApiResult<TaskVO> create(@RequestBody @Valid TaskCreateDTO dto) {
         return ApiResult.success(taskService.create(dto));
     }
 
-    /** 任务分页（产线/状态/名称/优先级筛选）。 */
     @Operation(summary = "分页查询任务")
     @GetMapping
     public ApiResult<PageResult<TaskRowVO>> page(@RequestParam(required = false) String line,
@@ -57,67 +55,65 @@ public class TaskController {
         return ApiResult.success(taskService.page(line, status, name, priority, pageNum, pageSize));
     }
 
-    /** 任务详情（环节执行/数据集/复核单/参数快照）。 */
+    @Operation(summary = "按业务编号查询任务详情")
+    @GetMapping("/by-no/{bizNo}")
+    public ApiResult<TaskDetailVO> detailByBizNo(@PathVariable String bizNo) {
+        return detail(bizNo);
+    }
+
     @Operation(summary = "查询任务详情")
-    @GetMapping("/{id}")
-    public ApiResult<TaskDetailVO> detail(@PathVariable Long id) {
-        return ApiResult.success(taskService.detail(id));
+    @GetMapping("/{reference}")
+    public ApiResult<TaskDetailVO> detail(@PathVariable String reference) {
+        return ApiResult.success(taskService.detail(taskService.resolveId(reference)));
     }
 
-    /** 修改草稿任务。 */
     @Operation(summary = "编辑草稿任务")
-    @PutMapping("/{id}")
-    public ApiResult<TaskVO> update(@PathVariable Long id, @RequestBody @Valid TaskUpdateDTO dto) {
-        return ApiResult.success(taskService.update(id, dto));
+    @PutMapping("/{reference}")
+    public ApiResult<TaskVO> update(@PathVariable String reference, @RequestBody @Valid TaskUpdateDTO dto) {
+        return ApiResult.success(taskService.update(taskService.resolveId(reference), dto));
     }
 
-    /** 提交（草稿 → 待处理）。 */
     @Operation(summary = "提交任务")
-    @PostMapping("/{id}/submit")
-    public ApiResult<Void> submit(@PathVariable Long id) {
-        taskService.submit(id);
+    @PostMapping("/{reference}/submit")
+    public ApiResult<Void> submit(@PathVariable String reference) {
+        taskService.submit(taskService.resolveId(reference));
         return ApiResult.success();
     }
 
-    /** 启动执行（异步编排整链）。 */
     @Operation(summary = "启动任务")
-    @PostMapping("/{id}/start")
-    public ApiResult<Void> start(@PathVariable Long id) {
-        taskService.start(id);
+    @PostMapping("/{reference}/start")
+    public ApiResult<Void> start(@PathVariable String reference) {
+        taskService.start(taskService.resolveId(reference));
         return ApiResult.success();
     }
 
-    /** 驳回重跑（默认从第 1 环节整链重跑）。 */
     @Operation(summary = "驳回并重跑任务")
-    @PostMapping("/{id}/reject")
-    public ApiResult<Void> reject(@PathVariable Long id,
+    @PostMapping("/{reference}/reject")
+    public ApiResult<Void> reject(@PathVariable String reference,
                                   @RequestBody(required = false) @Valid TaskRejectDTO dto) {
         Integer fromStage = dto == null ? null : dto.fromStage();
-        taskService.reject(id, fromStage == null ? 1 : fromStage);
+        taskService.reject(taskService.resolveId(reference), fromStage == null ? 1 : fromStage);
         return ApiResult.success();
     }
 
-    /** 归集（待归集 → 已归集）。 */
     @Operation(summary = "归集任务")
-    @PostMapping("/{id}/collect")
-    public ApiResult<Void> collect(@PathVariable Long id) {
-        taskService.collect(id);
+    @PostMapping("/{reference}/collect")
+    public ApiResult<Void> collect(@PathVariable String reference) {
+        taskService.collect(taskService.resolveId(reference));
         return ApiResult.success();
     }
 
-    /** 调整任务级阈值（有结论后锁定）。 */
     @Operation(summary = "调整任务阈值")
-    @PutMapping("/{id}/threshold")
-    public ApiResult<Void> threshold(@PathVariable Long id, @RequestBody @Valid TaskThresholdDTO dto) {
-        taskService.updateThreshold(id, dto.threshold());
+    @PutMapping("/{reference}/threshold")
+    public ApiResult<Void> threshold(@PathVariable String reference, @RequestBody @Valid TaskThresholdDTO dto) {
+        taskService.updateThreshold(taskService.resolveId(reference), dto.threshold());
         return ApiResult.success();
     }
 
-    /** 删除草稿任务。 */
     @Operation(summary = "删除草稿任务")
-    @DeleteMapping("/{id}")
-    public ApiResult<Void> delete(@PathVariable Long id) {
-        taskService.delete(id);
+    @DeleteMapping("/{reference}")
+    public ApiResult<Void> delete(@PathVariable String reference) {
+        taskService.delete(taskService.resolveId(reference));
         return ApiResult.success();
     }
 }

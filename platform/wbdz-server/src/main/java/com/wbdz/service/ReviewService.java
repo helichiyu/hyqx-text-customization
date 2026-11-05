@@ -19,6 +19,9 @@ public interface ReviewService {
     Map<String, String> ORDER_STATUS_NAMES = Map.of(
             "pending", "待复核", "doing", "复核中", "done", "已闭环", "void", "已作废");
 
+    /** 将 Long ID 或 bizNo 解析为内部主键。 */
+    Long resolveId(String reference);
+
     /** 分页查询复核单。 */
     PageResult<ReviewOrderVO> page(String status, String line, Long taskId, int pageNum, int pageSize);
 

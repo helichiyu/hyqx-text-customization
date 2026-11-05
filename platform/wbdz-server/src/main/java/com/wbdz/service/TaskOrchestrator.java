@@ -378,7 +378,8 @@ public class TaskOrchestrator {
                 .where(DATASET.TASK_ID.eq(task.getId())));
         int base = hadReview ? 2 : 1;
         Dataset ds = new Dataset();
-        ds.setBizNo(BizId.next("DS"));
+        ds.setBizNo(BizId.nextUnique("DS", candidate -> datasetMapper.selectCountByQuery(
+                QueryWrapper.create().where(DATASET.BIZ_NO.eq(candidate))) > 0));
         ds.setLine(task.getLine());
         ds.setTaskId(task.getId());
         ds.setItemCount(itemCount);
@@ -406,7 +407,8 @@ public class TaskOrchestrator {
         }
         List<String> stageNames = LineRegistry.STAGE_NAMES.get(task.getLine());
         ReviewOrder order = new ReviewOrder();
-        order.setBizNo(BizId.next("CR"));
+        order.setBizNo(BizId.nextUnique("CR", candidate -> reviewOrderMapper.selectCountByQuery(
+                QueryWrapper.create().where(REVIEW_ORDER.BIZ_NO.eq(candidate))) > 0));
         order.setTaskId(task.getId());
         order.setLine(task.getLine());
         order.setStageName(stageNames.get(stageNames.size() - 1));

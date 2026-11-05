@@ -4,6 +4,7 @@ import com.wbdz.common.GlobalExceptionHandler;
 import com.wbdz.dto.TaskCreateDTO;
 import com.wbdz.dto.TaskUpdateDTO;
 import com.wbdz.service.TaskService;
+import com.wbdz.vo.TaskDetailVO;
 import com.wbdz.vo.TaskVO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,6 +20,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -65,6 +67,7 @@ class TaskControllerTest {
 
     @Test
     void updatePassesTypedDto() throws Exception {
+        when(taskService.resolveId("9")).thenReturn(9L);
         when(taskService.update(eq(9L), any(TaskUpdateDTO.class))).thenReturn(new TaskVO());
 
         mockMvc.perform(put("/api/task/9")
@@ -80,6 +83,8 @@ class TaskControllerTest {
 
     @Test
     void rejectPassesFromStage() throws Exception {
+        when(taskService.resolveId("9")).thenReturn(9L);
+
         mockMvc.perform(post("/api/task/9/reject")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"fromStage\":2}"))
@@ -89,6 +94,23 @@ class TaskControllerTest {
         verify(taskService).reject(9L, 2);
     }
 
+@Test
+    void detailAcceptsBizNoAndLegacyNumericReference() throws Exception {
+        when(taskService.resolveId("TASK261105ABCDEF")).thenReturn(9L);
+        when(taskService.resolveId("9")).thenReturn(9L);
+        TaskDetailVO detail = new TaskDetailVO();
+        detail.setId(9L);
+        detail.setBizNo("TASK261105ABCDEF");
+        when(taskService.detail(9L)).thenReturn(detail);
+
+        mockMvc.perform(get("/api/task/by-no/TASK261105ABCDEF"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.bizNo").value("TASK261105ABCDEF"));
+
+        mockMvc.perform(get("/api/task/9"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.bizNo").value("TASK261105ABCDEF"));
+    }
     @Test
     void thresholdRejectsValueAboveOne() throws Exception {
         mockMvc.perform(put("/api/task/9/threshold")

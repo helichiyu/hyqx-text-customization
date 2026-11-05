@@ -39,7 +39,6 @@ public class DatasetController {
 
     private final DatasetService datasetService;
 
-    /** 数据集分页。 */
     @Operation(summary = "分页查询数据集")
     @GetMapping
     public ApiResult<PageResult<DatasetVO>> page(@RequestParam(required = false) String line,
@@ -50,36 +49,42 @@ public class DatasetController {
         return ApiResult.success(datasetService.page(line, status, keyword, pageNum, pageSize));
     }
 
-    /** 数据集详情（含明细分页与交付/回滚记录）。 */
+    @Operation(summary = "按业务编号查询数据集详情")
+    @GetMapping("/by-no/{bizNo}")
+    public ApiResult<DatasetDetailVO> detailByBizNo(@PathVariable String bizNo,
+                                                    @RequestParam(required = false) String reviewStatus,
+                                                    @RequestParam(defaultValue = "1") int pageNum,
+                                                    @RequestParam(defaultValue = "10") int pageSize) {
+        return detail(bizNo, reviewStatus, pageNum, pageSize);
+    }
+
     @Operation(summary = "查询数据集详情")
-    @GetMapping("/{id}")
-    public ApiResult<DatasetDetailVO> detail(@PathVariable Long id,
+    @GetMapping("/{reference}")
+    public ApiResult<DatasetDetailVO> detail(@PathVariable String reference,
                                              @RequestParam(required = false) String reviewStatus,
                                              @RequestParam(defaultValue = "1") int pageNum,
                                              @RequestParam(defaultValue = "10") int pageSize) {
-        return ApiResult.success(datasetService.detail(id, reviewStatus, pageNum, pageSize));
+        return ApiResult.success(datasetService.detail(datasetService.resolveId(reference),
+                reviewStatus, pageNum, pageSize));
     }
 
-    /** 发布（候选 → 已发布，复核单须全部闭环）。 */
     @Operation(summary = "发布数据集")
-    @PostMapping("/{id}/publish")
-    public ApiResult<DatasetVO> publish(@PathVariable Long id) {
-        return ApiResult.success(datasetService.publish(id));
+    @PostMapping("/{reference}/publish")
+    public ApiResult<DatasetVO> publish(@PathVariable String reference) {
+        return ApiResult.success(datasetService.publish(datasetService.resolveId(reference)));
     }
 
-    /** 回滚（原因必填留痕）。 */
     @Operation(summary = "回滚数据集")
-    @PostMapping("/{id}/rollback")
-    public ApiResult<DatasetVO> rollback(@PathVariable Long id,
+    @PostMapping("/{reference}/rollback")
+    public ApiResult<DatasetVO> rollback(@PathVariable String reference,
                                          @RequestBody @Valid DatasetRollbackDTO dto) {
-        return ApiResult.success(datasetService.rollback(id, dto.reason()));
+        return ApiResult.success(datasetService.rollback(datasetService.resolveId(reference), dto.reason()));
     }
 
-    /** 质量报告 TXT 下载（仅已发布；记录交付）。 */
     @Operation(summary = "下载数据集质量报告")
-    @GetMapping("/{id}/report")
-    public ResponseEntity<byte[]> report(@PathVariable Long id) {
-        DatasetService.ReportFile file = datasetService.report(id);
+    @GetMapping("/{reference}/report")
+    public ResponseEntity<byte[]> report(@PathVariable String reference) {
+        DatasetService.ReportFile file = datasetService.report(datasetService.resolveId(reference));
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION,
                         ContentDisposition.attachment()
@@ -88,7 +93,6 @@ public class DatasetController {
                 .body(file.bytes());
     }
 
-    /** 交付记录分页。 */
     @Operation(summary = "分页查询交付记录")
     @GetMapping("/deliveries")
     public ApiResult<PageResult<DatasetDeliveryRowVO>> deliveries(

@@ -7,8 +7,10 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * 业务编号生成器：格式 / 字符集（无 0 O 1 I L）/ 唯一性。
@@ -35,6 +37,32 @@ class BizIdTest {
                 assertThat(SAFE.indexOf(c)).as("字符 %s 不在安全字符集", c).isGreaterThanOrEqualTo(0);
             }
         }
+    }
+
+@Test
+    void prefixMustBeTwoToFourUppercaseLetters() {
+        assertThatThrownBy(() -> BizId.next(null)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> BizId.next("A")).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> BizId.next("ABCDE")).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> BizId.next("task")).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> BizId.next("TA1")).isInstanceOf(IllegalArgumentException.class);
+        assertThat(BizId.next("AB")).hasSize(14);
+        assertThat(BizId.next("ABCD")).hasSize(16);
+    }
+
+    @Test
+    void collisionStrategyRetriesBoundedTimes() {
+        AtomicInteger attempts = new AtomicInteger();
+        String id = BizId.nextUnique("TASK", candidate -> attempts.getAndIncrement() < 2);
+        assertThat(id).startsWith("TASK");
+        assertThat(attempts).hasValue(3);
+    }
+
+    @Test
+    void collisionStrategyFailsAfterRetryLimit() {
+        assertThatThrownBy(() -> BizId.nextUnique("TASK", candidate -> true))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("连续冲突超过 8 次");
     }
 
     @Test
