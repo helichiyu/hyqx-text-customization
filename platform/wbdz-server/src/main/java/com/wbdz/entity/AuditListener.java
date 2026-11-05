@@ -3,6 +3,7 @@ package com.wbdz.entity;
 import com.mybatisflex.annotation.InsertListener;
 import com.mybatisflex.annotation.UpdateListener;
 import com.wbdz.common.AuthContext;
+import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Field;
 import java.time.LocalDateTime;
@@ -16,6 +17,7 @@ import java.time.LocalDateTime;
  * @author wbdz
  * @since 2026-11-03
  */
+@Slf4j
 public class AuditListener implements InsertListener, UpdateListener {
 
     @Override
@@ -50,6 +52,7 @@ public class AuditListener implements InsertListener, UpdateListener {
             f.setAccessible(true);
             return f.get(entity);
         } catch (ReflectiveOperationException e) {
+            log.debug("审计字段读取失败: entity={} field={}", entity.getClass().getSimpleName(), name, e);
             return null;
         }
     }
@@ -59,8 +62,8 @@ public class AuditListener implements InsertListener, UpdateListener {
             Field f = entity.getClass().getDeclaredField(name);
             f.setAccessible(true);
             f.set(entity, value);
-        } catch (ReflectiveOperationException ignored) {
-            // 实体无该字段时跳过
+        } catch (ReflectiveOperationException e) {
+            log.debug("审计字段跳过: entity={} field={}", entity.getClass().getSimpleName(), name, e);
         }
     }
 }

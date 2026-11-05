@@ -266,6 +266,7 @@ public class TaskOrchestrator {
                         Thread.sleep(backoff[attempt - 1]);
                     } catch (InterruptedException ie) {
                         Thread.currentThread().interrupt();
+                        log.debug("算子重试等待被中断", ie);
                         break;
                     }
                 }
@@ -456,12 +457,12 @@ public class TaskOrchestrator {
                     try {
                         (isRecord ? out.get("records") : out.get("review")).add(JsonUtil.readMap(line));
                     } catch (Exception e) {
-                        log.warn("jsonl 行解析失败（跳过）: {} => {}", name, safeCut(line));
+                        log.warn("jsonl 行解析失败（跳过）: {} => {}", name, safeCut(line), e);
                     }
                 }
             }
         } catch (Exception e) {
-            throw new BizException("阶段产物读取失败: " + zipPath + " - " + e.getMessage());
+            throw new BizException("阶段产物读取失败: " + zipPath + " - " + e.getMessage(), e);
         }
         return out;
     }
@@ -495,7 +496,7 @@ public class TaskOrchestrator {
             zout.finish();
             return buf.toByteArray();
         } catch (IOException e) {
-            throw new BizException("素材打包失败: " + e.getMessage());
+            throw new BizException("素材打包失败: " + e.getMessage(), e);
         }
     }
 
@@ -574,7 +575,7 @@ public class TaskOrchestrator {
         try {
             operatorClient.removeFile(firstTag, uniqueId);
         } catch (Exception e) {
-            log.warn("任务收尾清理失败（不影响结果）: taskId={} {}", task.getId(), e.getMessage());
+            log.warn("任务收尾清理失败（不影响结果）: taskId={} err={}", task.getId(), e.getMessage(), e);
         }
     }
 

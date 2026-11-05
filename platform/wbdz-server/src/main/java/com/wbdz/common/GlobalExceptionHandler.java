@@ -1,9 +1,13 @@
 package com.wbdz.common;
 
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 /**
@@ -29,8 +33,20 @@ public class GlobalExceptionHandler {
         return ApiResult.error(1, msg);
     }
 
+    @ExceptionHandler({ConstraintViolationException.class, HandlerMethodValidationException.class})
+    public ApiResult<Void> constraint(Exception e) {
+        return ApiResult.error(1, e.getMessage() == null ? "参数校验失败" : e.getMessage());
+    }
+
+    @ExceptionHandler({HttpMessageNotReadableException.class, MethodArgumentTypeMismatchException.class})
+    public ApiResult<Void> malformed(Exception e) {
+        log.warn("请求参数格式错误: {}", e.getMessage());
+        return ApiResult.error(1, "请求参数格式错误");
+    }
+
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public ApiResult<Void> uploadTooLarge(MaxUploadSizeExceededException e) {
+        log.warn("上传文件超过大小限制", e);
         return ApiResult.error(1, "上传文件超过大小限制");
     }
 

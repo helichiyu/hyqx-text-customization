@@ -3,6 +3,7 @@ package com.wbdz.common;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -17,6 +18,7 @@ import java.util.Date;
  * @author wbdz
  * @since 2026-11-03
  */
+@Slf4j
 @Component
 public class JwtUtil {
 
@@ -47,6 +49,7 @@ public class JwtUtil {
                     .parseSignedClaims(token).getPayload();
             return Long.valueOf(claims.getSubject());
         } catch (Exception e) {
+            log.debug("JWT 解析失败", e);
             return null;
         }
     }

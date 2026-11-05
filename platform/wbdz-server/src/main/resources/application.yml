@@ -25,8 +25,9 @@ mybatis-flex:
     map-underscore-to-camel-case: true
   global-config:
     print-banner: false
+    logic-delete-column: del_flag
     normal-value-of-logic-delete: F
-    delete-value-of-logic-delete: T
+    deleted-value-of-logic-delete: T
 
 wbdz:
   jwt-secret: ${WBDZ_JWT_SECRET:wbdz-platform-secret-key-please-override-in-prod}
@@ -38,6 +39,12 @@ wbdz:
   # 算子服务地址（compose 宿主机端口 6301-6311）
   operator-base: ${WBDZ_OPERATOR_BASE:http://127.0.0.1}
   operator-ports: '{"meta_clean_slice":6301,"meta_genre_judge":6302,"meta_fact_extract":6303,"meta_field_fill":6304,"lay_page_render":6305,"lay_page_detect":6306,"fml_formula_locate":6307,"fml_formula_recognize":6308,"img_region_locate":6309,"img_type_classify":6310,"img_struct_describe":6311}'
+
+springdoc:
+  api-docs:
+    enabled: ${WBDZ_OPENAPI_ENABLED:true}
+  swagger-ui:
+    enabled: ${WBDZ_OPENAPI_ENABLED:true}
 
 logging:
   level:

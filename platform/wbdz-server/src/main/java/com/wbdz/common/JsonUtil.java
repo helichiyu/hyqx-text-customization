@@ -24,7 +24,7 @@ public final class JsonUtil {
         try {
             return MAPPER.writeValueAsString(value);
         } catch (Exception e) {
-            throw new BizException("JSON 序列化失败");
+            throw new BizException("JSON 序列化失败", e);
         }
     }
 
@@ -32,7 +32,7 @@ public final class JsonUtil {
         try {
             return MAPPER.readValue(json, type);
         } catch (Exception e) {
-            throw new BizException("JSON 解析失败");
+            throw new BizException("JSON 解析失败", e);
         }
     }
 
@@ -40,7 +40,7 @@ public final class JsonUtil {
         try {
             return MAPPER.readTree(json);
         } catch (Exception e) {
-            throw new BizException("JSON 解析失败");
+            throw new BizException("JSON 解析失败", e);
         }
     }
 
@@ -49,7 +49,7 @@ public final class JsonUtil {
             return MAPPER.readValue(json, new TypeReference<>() {
             });
         } catch (Exception e) {
-            throw new BizException("JSON 解析失败");
+            throw new BizException("JSON 解析失败", e);
         }
     }
 
@@ -58,7 +58,7 @@ public final class JsonUtil {
             return MAPPER.readValue(json, new TypeReference<>() {
             });
         } catch (Exception e) {
-            throw new BizException("JSON 解析失败");
+            throw new BizException("JSON 解析失败", e);
         }
     }
 

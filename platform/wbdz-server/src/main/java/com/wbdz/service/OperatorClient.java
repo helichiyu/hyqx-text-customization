@@ -51,6 +51,7 @@ public class OperatorClient {
                     HttpResponse.BodyHandlers.ofString());
             return resp.statusCode() == 200;
         } catch (Exception e) {
+            log.warn("算子健康检查失败: tag={} err={}", tag, e.getMessage(), e);
             return false;
         }
     }
@@ -78,7 +79,7 @@ public class OperatorClient {
                     "removeFile");
             requireOk(tag, resp, "removeFile");
         } catch (Exception e) {
-            log.warn("removeFile 失败（忽略，幂等可重试）: tag={} {}", tag, e.getMessage());
+            log.warn("removeFile 失败（幂等可重试）: tag={} err={}", tag, e.getMessage(), e);
         }
     }
 
@@ -121,7 +122,7 @@ public class OperatorClient {
             try {
                 return JsonUtil.readMap(java.nio.file.Files.readString(path, StandardCharsets.UTF_8));
             } catch (Exception e) {
-                log.warn("读取算子进度失败: runId={} path={} err={}", runId, path, e.getMessage());
+                log.warn("读取算子进度失败: runId={} path={} err={}", runId, path, e.getMessage(), e);
             }
         }
         return null;
@@ -159,7 +160,7 @@ public class OperatorClient {
             if (e instanceof InterruptedException) {
                 Thread.currentThread().interrupt();
             }
-            throw new BizException("算子[" + tag + "] " + action + " 连接失败: " + e.getMessage());
+            throw new BizException("算子[" + tag + "] " + action + " 连接失败: " + e.getMessage(), e);
         }
     }
 
@@ -175,7 +176,7 @@ public class OperatorClient {
         } catch (BizException e) {
             throw e;
         } catch (Exception e) {
-            throw new BizException("算子[" + tag + "] " + action + " 响应解析失败: " + resp.body());
+            throw new BizException("算子[" + tag + "] " + action + " 响应解析失败: " + resp.body(), e);
         }
     }
 
@@ -198,7 +199,7 @@ public class OperatorClient {
             out.write(("\r\n--" + boundary + "--\r\n").getBytes(StandardCharsets.UTF_8));
             return out.toByteArray();
         } catch (IOException e) {
-            throw new BizException("构造上传请求失败");
+            throw new BizException("构造上传请求失败", e);
         }
     }
 }

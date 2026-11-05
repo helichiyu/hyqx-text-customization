@@ -1,11 +1,16 @@
 package com.wbdz.controller;
 
 import com.mybatisflex.core.query.QueryWrapper;
+import com.wbdz.common.ApiResult;
 import com.wbdz.common.BizException;
 import com.wbdz.entity.TaskStageRun;
 import com.wbdz.mapper.TaskStageRunMapper;
 import com.wbdz.service.OperatorClient;
+import com.wbdz.vo.ArtifactFileVO;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -21,7 +26,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Stream;
 
 import static com.wbdz.entity.table.TaskStageRunTableDef.TASK_STAGE_RUN;
@@ -34,6 +38,8 @@ import static com.wbdz.entity.table.TaskStageRunTableDef.TASK_STAGE_RUN;
  * @author wbdz
  * @since 2026-11-03
  */
+@Slf4j
+@Tag(name = "产物文件", description = "算子环节产物文件列表和预览")
 @RestController
 @RequestMapping("/api/artifact")
 @RequiredArgsConstructor
@@ -44,29 +50,30 @@ public class ArtifactController {
     private final OperatorClient operatorClient;
 
     /** 环节输出目录内文件清单（递归，相对路径 + 大小）。 */
+    @Operation(summary = "查询环节产物文件列表")
     @GetMapping("/list")
-    public List<Map<String, Object>> list(@RequestParam Long runId) {
+    public ApiResult<List<ArtifactFileVO>> list(@RequestParam Long runId) {
         Path dir = runDir(runId);
-        List<Map<String, Object>> out = new ArrayList<>();
+        List<ArtifactFileVO> out = new ArrayList<>();
         try (Stream<Path> walk = Files.walk(dir)) {
-            walk.filter(Files::isRegularFile).forEach(p -> {
-                Map<String, Object> m = new java.util.LinkedHashMap<>();
-                m.put("name", dir.relativize(p).toString().replace('\\', '/'));
+            walk.filter(Files::isRegularFile).forEach(path -> {
+                long size = 0;
                 try {
-                    m.put("size", Files.size(p));
-                } catch (IOException ignored) {
-                    m.put("size", 0);
+                    size = Files.size(path);
+                } catch (IOException e) {
+                    log.warn("读取产物文件大小失败: path={} err={}", path, e.getMessage());
                 }
-                out.add(m);
+                out.add(new ArtifactFileVO(dir.relativize(path).toString().replace('\\', '/'), size));
             });
         } catch (IOException e) {
             throw new BizException("读取输出目录失败: " + e.getMessage());
         }
-        out.sort((a, b) -> String.valueOf(a.get("name")).compareTo(String.valueOf(b.get("name"))));
-        return out;
+        out.sort((a, b) -> a.name().compareTo(b.name()));
+        return ApiResult.success(out);
     }
 
     /** 读取/下载环节输出目录内文件（download=true 附件）。 */
+    @Operation(summary = "读取或下载环节产物文件")
     @GetMapping("/file")
     public ResponseEntity<byte[]> file(@RequestParam Long runId,
                                        @RequestParam String name,
@@ -113,10 +120,10 @@ public class ArtifactController {
                 try (Stream<Path> children = Files.list(parent)) {
                     runDir = children
                             .filter(Files::isDirectory)
-                            .filter(p -> !token.equals(zipName) && p.getFileName().toString().endsWith(token))
+                            .filter(path -> !token.equals(zipName) && path.getFileName().toString().endsWith(token))
                             .findFirst().orElse(null);
-                } catch (IOException ignored) {
-                    runDir = null;
+                } catch (IOException e) {
+                    log.warn("匹配环节运行目录失败: zip={} err={}", zip, e.getMessage());
                 }
             }
             dir = runDir != null ? runDir : parent;
