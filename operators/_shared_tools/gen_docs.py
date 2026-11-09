@@ -570,7 +570,7 @@ SPECS["img_type_classify"] = {
     "output_desc": "records.jsonl（匹配图片，imageType 并入，图片随记录复制保持输出自包含）+ review.jsonl（低置信）+ 血缘 JSONL",
     "tech_stack": "Python 3.12、requests（VL 调用）+ ThreadPoolExecutor；HTTP 层 FastAPI + uvicorn。模型 Qwen/Qwen3-VL-8B-Instruct",
     "definition": "交付说明环节① #3#4 + §4.3.1 Prompt 原文：大类一致性校验（与任务所选比对，不一致跳过）+ 子类判定（match/子类/置信度/依据）",
-    "boundary": "大类不一致 match=false → 跳过该图记录「大类不一致」；判型置信度 <0.8 → 进复核（继续下游）；子类只能从给定列表选。不做要素提取与描述（环节②③职责）",
+    "boundary": "大类不一致（模型 match=false，或 category 与任务大类矛盾的规则兜底）→ 跳过该图记录「大类不一致」；判型置信度 <0.8 → 进复核（继续下游）；子类只能从给定列表选。不做要素提取与描述（环节②③职责）",
     "scene": "图文融合产线的分类闸：任务选了大类，只有匹配的图进要素提取与描述",
     "content_src": "判定结论由模型基于处理后图片生成；图片与上游记录原样透传（匹配图片复制进本算子输出，链路自包含）",
     "route": """```text

@@ -103,7 +103,9 @@ def run(input_dir: Path, output_dir: Path, params: dict[str, Any], log, progress
             "reason": obj.get("reason"),
             "taskCategory": task_category,
         }
-        if not image_type["match"]:
+        # 规则兜底：模型 match=true 但 category 与任务大类矛盾时按不一致处理
+        #（Qwen3-VL-8B 实测 2026-11-09 偶发自相矛盾；32B 未见）
+        if not image_type["match"] or obj["category"] != task_category:
             return {"skip": {"name": rec["imageId"], "code": "category_mismatch",
                              "reason": f"大类不一致（任务={task_category}，实判={obj['category']}）"}}
         merged = {**rec, "imageType": image_type}

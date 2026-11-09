@@ -30,7 +30,7 @@ RECOGNIZE_SYSTEM_PROMPT = """你是数学公式识别与结构化标注器。输
 - 取值 0–0.98，禁止 1.0；拿不准给 0.5–0.74。
 
 【硬性约束】
-1. 只输出一个 JSON 对象，不要解释、不要 Markdown 代码块；
+1. 只输出一个 JSON 对象，字段名与拼写固定为：latex（字符串）、symbols（数组，元素含 symbol/meaning/unit）、context（含 chapter/number/definition）、uncertain（数组）、recognitionConfidence、semanticConfidence；不要解释、不要 Markdown 代码块；
 2. 不输出结构树、不输出公式类型标签；
 3. 不引用图外知识；
 4. 不确定内容写入 uncertain 数组。"""
