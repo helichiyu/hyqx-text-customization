@@ -20,7 +20,7 @@
 | `img_type_classify` | 图片判型 | 图文融合 ① | 视觉大模型 | 是 |
 | `img_struct_describe` | 图文要素与描述生成 | 图文融合 ②③（末位） | 视觉大模型 + 规则回核 | 是 |
 
-模型接入统一走硅基流动（OpenAI 兼容）：视觉 `Qwen/Qwen3-VL-32B-Instruct`，文本 `deepseek-ai/DeepSeek-V3.2`；密钥已内置，`SILICONFLOW_BASE_URL` / `SILICONFLOW_API_KEY` 环境变量可覆盖。
+模型接入统一走硅基流动（OpenAI 兼容）：视觉 `Qwen/Qwen3-VL-8B-Instruct`，文本 `deepseek-ai/DeepSeek-V3.2`；密钥已内置，`SILICONFLOW_BASE_URL` / `SILICONFLOW_API_KEY` 环境变量可覆盖。
 
 ## 链路编排（四条产线）
 

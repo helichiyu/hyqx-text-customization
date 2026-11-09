@@ -18,7 +18,7 @@
 | 基础信息 | 链路位置 | 阶段首算子：凭 uniqueId 取上传素材；输出供 fml_formula_recognize 接续 |
 | 基础信息 | 输入类型 | 一个 zip 或散文件（PDF：混合文档，含正文与公式） |
 | 基础信息 | 输出类型 | crops/ 公式裁切图 + pages/ 页图 + records.jsonl（FormulaInstance 登记）+ 血缘 JSONL |
-| 基础信息 | 技术栈 | Python 3.12、PyMuPDF（渲染 + 页文本块）+ Pillow（裁切）+ requests（VL grounding）；HTTP 层 FastAPI + uvicorn。模型 Qwen/Qwen3-VL-32B-Instruct |
+| 基础信息 | 技术栈 | Python 3.12、PyMuPDF（渲染 + 页文本块）+ Pillow（裁切）+ requests（VL grounding）；HTTP 层 FastAPI + uvicorn。模型 Qwen/Qwen3-VL-8B-Instruct |
 | 功能定义 | 模型定义 | 交付说明环节① #1–#3：接收校验素材 → 定位混合文档中的公式区域（只处理独立成行或带编号的公式，行内公式不处理）→ 裁切并登记可回溯公式实例（页码、bbox、上下文文本范围） |
 | 功能定义 | 能力边界 | 定位 Prompt 由本侧按环节①职责自行设计（交付说明只给识别 Prompt §4.2）；单页定位失败跳过该页并记录；裁切/坐标校验失败跳过该实例并记录；整份 0 公式按交付说明进失败清单（任务待处理口径） |
 | 功能定义 | 适用场景 | 公式文本产线第一环：从混合 PDF 里把独立公式连图带上下文摘出来，登记成可回溯实例 |
@@ -65,7 +65,7 @@
 | 分类 | 字段 | 值 |
 | --- | --- | --- |
 | 训练方式 | 不涉及。本算子无训练过程；阈值、枚举、Prompt 全文以集中显式常量实现（configs/config.py、configs/prompts.py），逐项可查、可审计 |
-| 基础模型 | 外部大模型 API：Qwen/Qwen3-VL-32B-Instruct |
+| 基础模型 | 外部大模型 API：Qwen/Qwen3-VL-8B-Instruct |
 | 训练数据集 | 不涉及。不使用任何训练语料 |
 | 测试数据集 | 包内自带（dataset/sample/）：dataset/sample/ = formula_sample.pdf（第二章：无编号分式+根式、带编号 E=mc²(2-3)、两行配方、行内提及不处理、第 2 页无公式）；由样本生成脚本确定性生成（_shared_tools/make_samples/）。离线用例 mock 模型调用，联网冒烟用例直连真实 API |
 

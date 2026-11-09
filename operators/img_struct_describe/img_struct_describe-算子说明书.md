@@ -18,7 +18,7 @@
 | 基础信息 | 链路位置 | 链路第 3 环（末位）：接 img_type_classify 产物；isLastOperator=true 收口 |
 | 基础信息 | 输入类型 | 上游 records.jsonl + regions/ 图片（含 imageType 判型结果） |
 | 基础信息 | 输出类型 | records.jsonl（一张一行数据集）+ details.jsonl（OCR/要素明细）+ review.jsonl + 血缘 JSONL + 阶段 zip |
-| 基础信息 | 技术栈 | Python 3.12、requests（VL 调用）+ 正则回核；HTTP 层 FastAPI + uvicorn。模型 Qwen/Qwen3-VL-32B-Instruct |
+| 基础信息 | 技术栈 | Python 3.12、requests（VL 调用）+ 正则回核；HTTP 层 FastAPI + uvicorn。模型 Qwen/Qwen3-VL-8B-Instruct |
 | 功能定义 | 模型定义 | 交付说明环节②③ + §4.3.2–§4.3.5 四套大类 Prompt 原文（几何 4 字段/统计 6 字段/表格 4 字段/示意 6 字段）：一次调用同时返回要素（OCR/结构）与描述；回核字母数字来源；逐字段置信度 |
 | 功能定义 | 能力边界 | 描述字段缺失/字段置信度缺失 → 进复核（§4.3.7）；数值缺失写 null 不估算；提取文字必须与 OCR 一致；不做证明推理（几何）、不猜色值（示意）。「无/不适用」是合法值 |
 | 功能定义 | 适用场景 | 图文融合产线终点：一张一行数据集（类型/子类/表格结构/字段化描述/三个置信度） |
@@ -66,7 +66,7 @@ isLastOperator=true 收口阶段 zip
 | 分类 | 字段 | 值 |
 | --- | --- | --- |
 | 训练方式 | 不涉及。本算子无训练过程；阈值、枚举、Prompt 全文以集中显式常量实现（configs/config.py、configs/prompts.py），逐项可查、可审计 |
-| 基础模型 | 外部大模型 API：Qwen/Qwen3-VL-32B-Instruct |
+| 基础模型 | 外部大模型 API：Qwen/Qwen3-VL-8B-Instruct |
 | 训练数据集 | 不涉及。不使用任何训练语料 |
 | 测试数据集 | 包内自带（dataset/sample/）：dataset/sample/ = 上游真实产物（records.jsonl + regions/，任务大类=几何：2 张图）；上游算子真实产物副本（链路冒烟实跑输出）。离线用例 mock 模型调用，联网冒烟用例直连真实 API |
 

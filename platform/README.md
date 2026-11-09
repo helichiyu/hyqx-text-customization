@@ -124,7 +124,7 @@ for p in $(seq 6301 6311); do curl -s http://127.0.0.1:$p/healthz; echo; done
 | --- | --- | --- |
 | `SILICONFLOW_BASE_URL` | `https://api.siliconflow.cn/v1` | 可替换为私有网关 / 代理地址 |
 | `SILICONFLOW_API_KEY` | 内置交付密钥 | 生产必须改为环境变量注入，不写进镜像/仓库 |
-| `VISION_MODEL` | `Qwen/Qwen3-VL-32B-Instruct` | 视觉类算子模型 |
+| `VISION_MODEL` | `Qwen/Qwen3-VL-8B-Instruct` | 视觉类算子模型 |
 | `TEXT_MODEL` | `deepseek-ai/DeepSeek-V3.2` | 文本类算子模型 |
 
 给 11 个算子进程统一注入即可，例如 Docker compose 的 `environment`，或本地启动前 `export`。

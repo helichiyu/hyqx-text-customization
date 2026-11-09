@@ -15,8 +15,9 @@ API_KEY = os.getenv(
 )
 
 #: 视觉模型默认值（版面检测 / 公式定位与识别 / 图片判型与描述）。
-#: 冒烟验证：Qwen3-VL-32B-Instruct 的 grounding（bbox 0-1000 归一化）与 LaTeX 识别可用。
-VISION_MODEL = os.getenv("VISION_MODEL", "Qwen/Qwen3-VL-32B-Instruct")
+#: 冒烟验证：grounding（bbox 0-1000 归一化）与 LaTeX 识别在 32B 与 8B 上均可用
+#:（8B 复验 2026-11-09，.scratch/smoke_vision_8b.py）；2026-11-09 起默认 8B。
+VISION_MODEL = os.getenv("VISION_MODEL", "Qwen/Qwen3-VL-8B-Instruct")
 
 #: 文本模型默认值（体裁判定 / 事实抽取 / 元信息补全）。
 #: 冒烟验证：DeepSeek-V3.2 的 response_format=json_object 可用。

@@ -18,7 +18,7 @@
 | 基础信息 | 链路位置 | 链路第 2 环（末位）：接 fml_formula_locate 产物；isLastOperator=true 收口 |
 | 基础信息 | 输入类型 | 上游 records.jsonl + crops/ 公式裁切图（inputFile 指向上游输出目录） |
 | 基础信息 | 输出类型 | records.jsonl（一个公式一行数据集）+ trace.jsonl（回溯字段）+ review.jsonl + 血缘 JSONL + 阶段 zip |
-| 基础信息 | 技术栈 | Python 3.12、requests（VL 识别 + 文本修复）+ 正则规则解析器；HTTP 层 FastAPI + uvicorn。识别 Qwen/Qwen3-VL-32B-Instruct、修复 deepseek-ai/DeepSeek-V3.2 |
+| 基础信息 | 技术栈 | Python 3.12、requests（VL 识别 + 文本修复）+ 正则规则解析器；HTTP 层 FastAPI + uvicorn。识别 Qwen/Qwen3-VL-8B-Instruct、修复 deepseek-ai/DeepSeek-V3.2 |
 | 功能定义 | 模型定义 | 交付说明环节②③ + §4.2/§4.3/§4.5 Prompt 原文：一次调用出 latex/symbols/context/双置信度（②③是逻辑环节不是两次调用）；LaTeX 语法校验是规则，失败走修复 Prompt |
 | 功能定义 | 能力边界 | 含义/单位为 null 不算失败（已确认口径 10）；回溯信息（页码/bbox/上下文范围）不进数据集（已确认口径 7）；修复只修语法不改内容；渲染回比不一致进复核由平台复核环节承担（B 修正的规则校验） |
 | 功能定义 | 适用场景 | 公式文本产线终点：一个公式一行的数据集行（LaTeX + 符号表 + 上下文 + 双置信度） |
@@ -66,7 +66,7 @@ isLastOperator=true 收口阶段 zip
 | 分类 | 字段 | 值 |
 | --- | --- | --- |
 | 训练方式 | 不涉及。本算子无训练过程；阈值、枚举、Prompt 全文以集中显式常量实现（configs/config.py、configs/prompts.py），逐项可查、可审计 |
-| 基础模型 | 外部大模型 API：识别 Qwen/Qwen3-VL-32B-Instruct、修复 deepseek-ai/DeepSeek-V3.2 |
+| 基础模型 | 外部大模型 API：识别 Qwen/Qwen3-VL-8B-Instruct、修复 deepseek-ai/DeepSeek-V3.2 |
 | 训练数据集 | 不涉及。不使用任何训练语料 |
 | 测试数据集 | 包内自带（dataset/sample/）：dataset/sample/ = 上游真实产物（records.jsonl + crops/ 3 张裁切图 + pages/）；上游算子真实产物副本（链路冒烟实跑输出）。离线用例 mock 模型调用，联网冒烟用例直连真实 API |
 

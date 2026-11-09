@@ -18,7 +18,7 @@
 | 基础信息 | 链路位置 | 链路第 2 环（末位）：接 lay_page_render 产物；isLastOperator=true 收口 |
 | 基础信息 | 输入类型 | 上游 records.jsonl + pages/ 页图（inputFile 指向上游输出目录） |
 | 基础信息 | 输出类型 | records.jsonl（一页一行数据集）+ review.jsonl（问题页）+ visual/ 框选图层 + 血缘 JSONL + 阶段 zip |
-| 基础信息 | 技术栈 | Python 3.12、requests（VL 模型多模态调用）+ Pillow（框选图层）+ ThreadPoolExecutor；HTTP 层 FastAPI + uvicorn。模型 Qwen/Qwen3-VL-32B-Instruct（硅基流动） |
+| 基础信息 | 技术栈 | Python 3.12、requests（VL 模型多模态调用）+ Pillow（框选图层）+ ThreadPoolExecutor；HTTP 层 FastAPI + uvicorn。模型 Qwen/Qwen3-VL-8B-Instruct（硅基流动） |
 | 功能定义 | 模型定义 | 交付说明环节②③ + §4.1/§4.2 Prompt 原文：逐页输出元素（type/bbox/readingOrder/structureTree/双置信度）→ §4.6 后处理校验 → 规则分流（六类）→ 汇总（环节③只汇总不自检） |
 | 功能定义 | 能力边界 | 不做 OCR 不提取文字（§4.1 硬性约束 2）；只排本页阅读顺序；规则分流只标记不裁决（复核人工裁定）；系统性错误重跑②时旧复核单作废是平台侧职责 |
 | 功能定义 | 适用场景 | 复杂版面产线核心环：页图 → 结构化版面元素 + 问题页分流，一页一行进数据集 |
@@ -65,7 +65,7 @@ isLastOperator=true 收口阶段 zip
 | 分类 | 字段 | 值 |
 | --- | --- | --- |
 | 训练方式 | 不涉及。本算子无训练过程；阈值、枚举、Prompt 全文以集中显式常量实现（configs/config.py、configs/prompts.py），逐项可查、可审计 |
-| 基础模型 | 外部大模型 API：Qwen/Qwen3-VL-32B-Instruct（硅基流动） |
+| 基础模型 | 外部大模型 API：Qwen/Qwen3-VL-8B-Instruct（硅基流动） |
 | 训练数据集 | 不涉及。不使用任何训练语料 |
 | 测试数据集 | 包内自带（dataset/sample/）：dataset/sample/ = 上游真实产物（records.jsonl + pages/ 页图 3 张）；上游算子真实产物副本（链路冒烟实跑输出）。离线用例 mock 模型调用，联网冒烟用例直连真实 API |
 

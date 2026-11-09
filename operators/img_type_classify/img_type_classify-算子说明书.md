@@ -18,7 +18,7 @@
 | 基础信息 | 链路位置 | 链路第 2 环：接 img_region_locate 产物；输出供 img_struct_describe 接续 |
 | 基础信息 | 输入类型 | 上游 records.jsonl + regions/ 图片；predict 必带参数 category（任务大类） |
 | 基础信息 | 输出类型 | records.jsonl（匹配图片，imageType 并入，图片随记录复制保持输出自包含）+ review.jsonl（低置信）+ 血缘 JSONL |
-| 基础信息 | 技术栈 | Python 3.12、requests（VL 调用）+ ThreadPoolExecutor；HTTP 层 FastAPI + uvicorn。模型 Qwen/Qwen3-VL-32B-Instruct |
+| 基础信息 | 技术栈 | Python 3.12、requests（VL 调用）+ ThreadPoolExecutor；HTTP 层 FastAPI + uvicorn。模型 Qwen/Qwen3-VL-8B-Instruct |
 | 功能定义 | 模型定义 | 交付说明环节① #3#4 + §4.3.1 Prompt 原文：大类一致性校验（与任务所选比对，不一致跳过）+ 子类判定（match/子类/置信度/依据） |
 | 功能定义 | 能力边界 | 大类不一致 match=false → 跳过该图记录「大类不一致」；判型置信度 <0.8 → 进复核（继续下游）；子类只能从给定列表选。不做要素提取与描述（环节②③职责） |
 | 功能定义 | 适用场景 | 图文融合产线的分类闸：任务选了大类，只有匹配的图进要素提取与描述 |
@@ -57,7 +57,7 @@
 | 分类 | 字段 | 值 |
 | --- | --- | --- |
 | 训练方式 | 不涉及。本算子无训练过程；阈值、枚举、Prompt 全文以集中显式常量实现（configs/config.py、configs/prompts.py），逐项可查、可审计 |
-| 基础模型 | 外部大模型 API：Qwen/Qwen3-VL-32B-Instruct |
+| 基础模型 | 外部大模型 API：Qwen/Qwen3-VL-8B-Instruct |
 | 训练数据集 | 不涉及。不使用任何训练语料 |
 | 测试数据集 | 包内自带（dataset/sample/）：dataset/sample/ = 上游真实产物（records.jsonl + regions/ 5 张图）；上游算子真实产物副本（链路冒烟实跑输出）。离线用例 mock 模型调用，联网冒烟用例直连真实 API |
 
