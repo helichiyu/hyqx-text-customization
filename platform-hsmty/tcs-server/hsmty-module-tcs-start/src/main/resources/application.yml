@@ -1,0 +1,166 @@
+# 数据库类型，默认为 mysql，可选项：mysql、postgresql（通过 Maven profile 切换驱动）。
+# 环境相关值一律支持环境变量覆盖；敏感值使用 Jasypt ENC(...) 或环境变量注入，不得明文提交。
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    context-path: /hs-api
+spring:
+  application:
+    name: hsmty-tcs-server
+  threads:
+    virtual:
+      # 启用虚拟线程
+      enabled: true
+  servlet:
+    multipart:
+      max-file-size: 200MB
+      max-request-size: 2GB
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${TCS_DB_URL:jdbc:mysql://127.0.0.1:3306/sd_data_engineering?autoReconnect=true&useUnicode=true&characterEncoding=UTF-8&useSSL=false&allowMultiQueries=true&allowPublicKeyRetrieval=true}
+    username: ${TCS_DB_USERNAME:ai}
+    password: ${TCS_DB_PASSWORD:}
+    hikari:
+      # 连接池名
+      pool-name: HikariCP_MYSQL
+      # 最小空闲连接数
+      minimum-idle: 5
+      # 空闲连接存活最大时间，默认10分钟
+      idle-timeout: 600000
+      # 连接池最大连接数，默认是10
+      maximum-pool-size: 10
+      # 此属性控制从池返回的连接的默认自动提交行为，默认值：true
+      auto-commit: true
+      # 此属性控制池中连接的最长生命周期，值0表示无限生命周期，默认30分钟
+      max-lifetime: 540000
+      # Keep idle connections fresh before MySQL/proxy idle timeout closes them.
+      keepalive-time: 300000
+      # 数据库连接超时时间，默认30秒
+      connection-timeout: 30000
+      # 连接测试 query
+      connection-test-query: SELECT 1
+  liquibase:
+    change-log: classpath:db/changelog/changelog-master.xml
+    enabled: ${LIQUIBASE_ENABLED:false}
+    database-change-log-lock-table: databasechangeloglock
+    database-change-log-table: databasechangelog
+  # redis
+  data:
+    redis:
+      database: ${REDIS_DATABASE:3}
+      password: ${REDIS_PASSWORD:}
+      # 连接超时时间（毫秒）
+      timeout: 50000
+      ### 连接池配置 ###
+      lettuce:
+        pool:
+          max-active: 8
+          max-wait: -1ms
+          max-idle: 8
+          min-idle: 0
+      sentinel:
+        master: ${REDIS_SENTINEL_MASTER:mymaster}
+        nodes: ${REDIS_SENTINEL_NODES:127.0.0.1:26379}
+        password: ${REDIS_SENTINEL_PASSWORD:}
+  cloud:
+    compatibility-verifier:
+      enabled: false
+
+# 开启 redis 监听
+redis:
+  listener:
+    enable: true
+---
+springdoc:
+  default-flat-param-object: true
+  swagger-ui:
+    # 是否开启 swagger-ui，【生产环境】建议关闭
+    enabled: ${OPENAPI_ENABLED:true}
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  api-docs:
+    # 是否开启 api-docs，【生产环境】建议关闭
+    enabled: ${OPENAPI_ENABLED:true}
+    path: /v3/api-docs
+  group-configs:
+    - group: 'tcs'
+      paths-to-match: '/**'
+      packages-to-scan: com.hsmty.tcs
+
+---
+mybatis-flex:
+  configuration:
+    map-underscore-to-camel-case: true
+    jdbc-type-for-null: null
+    auto-mapping-behavior: full
+    auto-mapping-unknown-column-behavior: none
+    cache-enabled: false
+  global-config:
+    print-banner: false
+    deleted-value-of-logic-delete: "T"
+    normal-value-of-logic-delete: "F"
+
+page-helper:
+  autoDialect: true
+  reasonable: false
+  supportMethodsArguments: true
+  params: count=countSql
+
+hsmty:
+  id:
+    worker-id: ${HSMTY_WORKER_ID:1}
+    datacenter-id: ${HSMTY_DATACENTER_ID:1}
+  cors:
+    allowed-origins: ${HSMTY_CORS_ALLOWED_ORIGINS:*}
+  # UAP/SSO 登录态校验与登录跳转地址（Cookie 体系，不使用 JWT）
+  verify: ${HSMTY_UAP_VERIFY_URL:}
+  redirect: ${HSMTY_UAP_REDIRECT_URL:}
+  api-prefix:
+    modules:
+      tcs:
+        enabled: true
+        prefix: /tcs
+
+# 加密配置：主密码必须由环境变量注入，本地调试才允许回退到模板值
+---
+jasypt:
+  encryptor:
+    algorithm: PBEWithMD5AndDES
+    password: ${JASYPT_ENCRYPTOR_PASSWORD:datasource}
+
+# 接口白名单
+router:
+  whitelist:
+    - "/v3/api-docs/**"
+    - "/swagger-ui/**"
+    - "/swagger-ui.html"
+    - "/tcs/health"
+    - "/actuator/health"
+
+# 本服务对外地址（其它服务通过 client 中的 Feign 契约调用，必须包含 context-path）
+tcs:
+  service:
+    url: ${TCS_SERVICE_URL:http://127.0.0.1:8080/hs-api}
+  operator:
+    # 算法算子独立部署，平台通过 HTTP 契约接入，不内嵌 Python 运行时
+    base-url: ${TCS_OPERATOR_BASE_URL:http://127.0.0.1:6301}
+
+# 对象存储：hsmty-module-oss-client 的 Feign 契约读取该配置项
+oss:
+  service:
+    url: ${OSS_SERVICE_URL:http://127.0.0.1:9000/hs-api}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+logging:
+  level:
+    com.hsmty.tcs: info

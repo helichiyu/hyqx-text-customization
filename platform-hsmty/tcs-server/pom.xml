@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <artifactId>hsmty-module-starter</artifactId>
+        <groupId>com.hsmty</groupId>
+        <version>2.0.1</version>
+        <relativePath/>
+    </parent>
+
+    <artifactId>hsmty-module-tcs-server</artifactId>
+    <version>${revision}</version>
+    <packaging>pom</packaging>
+    <name>hsmty-module-tcs-server</name>
+    <description>文本定制化生产平台服务端（HSMTY 2.0.1 基线）</description>
+
+    <properties>
+        <revision>2.0.1</revision>
+    </properties>
+
+    <modules>
+        <module>hsmty-module-tcs-core</module>
+        <module>hsmty-module-tcs-client</module>
+        <module>hsmty-module-tcs-start</module>
+    </modules>
+</project>

@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tcs-server-config
+data:
+  SERVER_PORT: "8080"
+  LIQUIBASE_ENABLED: "true"
+  OPENAPI_ENABLED: "false"
+  TCS_DB_URL: "jdbc:mysql://<mysql-host>:3306/sd_data_engineering?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true"
+  REDIS_SENTINEL_MASTER: "mymaster"
+  REDIS_SENTINEL_NODES: "<redis-sentinel-host>:26379"
+  TCS_SERVICE_URL: "http://tcs-server:8080/hs-api"
+  TCS_OPERATOR_BASE_URL: "http://<operator-host>:6301"
+  OSS_SERVICE_URL: "http://<oss-host>:<port>/hs-api"
+  HSMTY_UAP_VERIFY_URL: "https://<uap-host>/hs-api/permissions/verify"
+  HSMTY_UAP_REDIRECT_URL: "https://<uap-host>/sdom-main-web/home"
+---
+# 真实密码、Jasypt 主密码、Cookie/Token 只能由 Secret 或密钥系统注入，禁止写入本文件
+apiVersion: v1
+kind: Secret
+metadata:
+  name: tcs-server-secret
+type: Opaque
+stringData:
+  TCS_DB_USERNAME: "<db-user>"
+  TCS_DB_PASSWORD: "<db-password>"
+  REDIS_PASSWORD: "<redis-password>"
+  REDIS_SENTINEL_PASSWORD: "<redis-sentinel-password>"
+  JASYPT_ENCRYPTOR_PASSWORD: "<jasypt-password>"

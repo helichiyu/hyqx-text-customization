@@ -1,0 +1,29 @@
+:root {
+  /* 颜色令牌 */
+  --tcs-color-primary: #4169f6;
+  --tcs-color-primary-soft: #eef4ff;
+  --tcs-color-success: #12b76a;
+  --tcs-color-danger: #f04438;
+  --tcs-color-title: #1f2937;
+  --tcs-color-text: #475467;
+  --tcs-color-text-secondary: #667085;
+  --tcs-color-text-weak: #98a2b3;
+  --tcs-color-border: #e4edf8;
+  --tcs-color-table-head: #f4f6fb;
+  --tcs-color-surface: #ffffff;
+
+  /* 字号令牌 */
+  --tcs-font-size-banner: 18px;
+  --tcs-font-size-card-title: 15px;
+  --tcs-font-size-body: 13px;
+  --tcs-font-size-helper: 12px;
+  --tcs-font-size-stat: 26px;
+
+  /* 尺寸令牌 */
+  --tcs-control-height: 32px;
+  --tcs-button-height: 34px;
+  --tcs-radius-control: 4px;
+  --tcs-radius-card: 8px;
+  --tcs-radius-pill: 999px;
+  --tcs-table-row-height: 44px;
+}

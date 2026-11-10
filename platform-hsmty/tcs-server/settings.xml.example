@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  HSMTY 内网 Maven 配置模板。
+
+  实际 Nexus 地址：http://192.168.1.110:13001/repository/maven-public/
+  - 只读下载 `com.hsmty:*` 与 Maven Central 代理，无需账号；
+  - 只有 `mvn deploy` 到 maven-releases / maven-snapshots 才需要凭据。
+
+  用法：复制到本仓库之外（例如 C:\Users\<你>\.m2\hsmty-settings.xml）后执行
+      mvn -s C:\Users\<你>\.m2\hsmty-settings.xml clean package
+
+  禁止把带真实凭据的 settings.xml 提交到 Git。
+-->
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
+
+    <servers>
+        <server>
+            <id>maven-releases</id>
+            <username>&lt;nexus-user&gt;</username>
+            <password>&lt;nexus-password&gt;</password>
+        </server>
+        <server>
+            <id>maven-snapshots</id>
+            <username>&lt;nexus-user&gt;</username>
+            <password>&lt;nexus-password&gt;</password>
+        </server>
+    </servers>
+
+    <mirrors>
+        <mirror>
+            <id>hsmty-nexus</id>
+            <mirrorOf>*</mirrorOf>
+            <name>HSMTY Nexus Maven Public</name>
+            <url>http://192.168.1.110:13001/repository/maven-public/</url>
+        </mirror>
+    </mirrors>
+</settings>

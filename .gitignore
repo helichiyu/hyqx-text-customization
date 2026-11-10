@@ -36,6 +36,11 @@ platform/scripts/e2e_out/
 # ===== 打包产物 =====
 *.zip
 
+# ===== Maven =====
+# 私服凭据只提交 settings.xml.example
+settings.xml
+**/.flattened-pom.xml
+
 # ===== IDE / 系统 =====
 .idea/
 *.iml

@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tcs-web
+  labels:
+    app: tcs-web
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: tcs-web
+  template:
+    metadata:
+      labels:
+        app: tcs-web
+    spec:
+      containers:
+        - name: tcs-web
+          image: <registry>/hsmty-tcs-web:<tag>
+          ports:
+            - containerPort: 80
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tcs-web
+spec:
+  selector:
+    app: tcs-web
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80

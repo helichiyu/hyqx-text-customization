@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tcs-server
+  labels:
+    app: tcs-server
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: tcs-server
+  template:
+    metadata:
+      labels:
+        app: tcs-server
+    spec:
+      containers:
+        - name: tcs-server
+          image: <registry>/hsmty-tcs-server:<tag>
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: tcs-server-config
+            - secretRef:
+                name: tcs-server-secret
+          readinessProbe:
+            httpGet:
+              path: /hs-api/actuator/health
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /hs-api/actuator/health
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              cpu: "2"
+              memory: 2Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tcs-server
+spec:
+  selector:
+    app: tcs-server
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080

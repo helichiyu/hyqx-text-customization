@@ -1,0 +1,22 @@
+# 文本定制化生产平台后端镜像
+# 构建上下文：platform-hsmty
+# 需通过 BuildKit secret 注入内网 Maven settings.xml，避免私服凭据进入镜像层：
+#   docker build -f deploy/Dockerfile.server --secret id=maven_settings,src=settings.xml .
+FROM maven:3.9-eclipse-temurin-21 AS build
+
+WORKDIR /workspace
+COPY tcs-server ./tcs-server
+
+# 子模块 parent 的 relativePath 为空，父工程只能从本地仓库解析，
+# 因此必须先把根工程（packaging=pom）非递归 install 一次，再打各子模块。
+RUN --mount=type=secret,id=maven_settings,target=/root/.m2/settings.xml \
+    mvn -s /root/.m2/settings.xml -f tcs-server/pom.xml -N -DskipTests clean install \
+ && mvn -s /root/.m2/settings.xml -f tcs-server/pom.xml -DskipTests package
+
+FROM eclipse-temurin:21-jre
+
+WORKDIR /app
+COPY --from=build /workspace/tcs-server/hsmty-module-tcs-start/target/hsmty-module-tcs-start.jar app.jar
+
+EXPOSE 8080
+ENTRYPOINT ["java", "-XX:MaxRAMPercentage=75", "-jar", "/app/app.jar"]

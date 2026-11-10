@@ -1,0 +1,11 @@
+# PostgreSQL 兼容 profile：构建时使用 -Ppostgresql，启动时 --spring.profiles.active=postgresql
+spring:
+  datasource:
+    url: ${TCS_DB_URL:jdbc:postgresql://127.0.0.1:5432/sd_data_engineering}
+    username: ${TCS_DB_USERNAME:postgres}
+    password: ${TCS_DB_PASSWORD:}
+    driver-class-name: org.postgresql.Driver
+
+# page-helper 使用 autoDialect 自动识别方言，无需显式指定 helper-dialect
+page-helper:
+  autoDialect: true

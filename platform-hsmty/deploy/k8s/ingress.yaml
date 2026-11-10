@@ -1,0 +1,35 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: tcs
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "2g"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: <tcs-host>
+      http:
+        paths:
+          # 业务 API 统一走 /hs-api，由后端承接
+          - path: /hs-api
+            pathType: Prefix
+            backend:
+              service:
+                name: tcs-server
+                port:
+                  number: 8080
+          # Web 静态资源部署在 /sdom-hsmty/
+          - path: /sdom-hsmty
+            pathType: Prefix
+            backend:
+              service:
+                name: tcs-web
+                port:
+                  number: 80
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: tcs-web
+                port:
+                  number: 80
