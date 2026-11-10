@@ -6,7 +6,7 @@ data:
   SERVER_PORT: "8080"
   LIQUIBASE_ENABLED: "true"
   OPENAPI_ENABLED: "false"
-  TCS_DB_URL: "jdbc:mysql://<mysql-host>:3306/sd_data_engineering?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true"
+  TCS_DB_URL: "jdbc:mysql://<mysql-host>:3306/<db-name>?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false&allowMultiQueries=true&allowPublicKeyRetrieval=true"
   REDIS_SENTINEL_MASTER: "mymaster"
   REDIS_SENTINEL_NODES: "<redis-sentinel-host>:26379"
   TCS_SERVICE_URL: "http://tcs-server:8080/hs-api"

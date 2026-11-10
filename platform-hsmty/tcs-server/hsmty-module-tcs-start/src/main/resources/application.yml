@@ -17,7 +17,9 @@ spring:
       max-request-size: 2GB
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: ${TCS_DB_URL:jdbc:mysql://127.0.0.1:3306/sd_data_engineering?autoReconnect=true&useUnicode=true&characterEncoding=UTF-8&useSSL=false&allowMultiQueries=true&allowPublicKeyRetrieval=true}
+    # 本地开发库：tcs_db（《数据库开发通用规范》要求库名以 db 结尾）；
+    # 生产库上线前由运维在服务器创建，名称确定后只改 TCS_DB_URL。
+    url: ${TCS_DB_URL:jdbc:mysql://127.0.0.1:3306/tcs_db?autoReconnect=true&useUnicode=true&characterEncoding=UTF-8&useSSL=false&allowMultiQueries=true&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai}
     username: ${TCS_DB_USERNAME:ai}
     password: ${TCS_DB_PASSWORD:}
     hikari:
@@ -47,7 +49,8 @@ spring:
   # redis
   data:
     redis:
-      database: ${REDIS_DATABASE:3}
+      # 现有系统占用 db3，新项目必须使用运维分配的独立 db 号；本地默认 0
+      database: ${REDIS_DATABASE:0}
       password: ${REDIS_PASSWORD:}
       # 连接超时时间（毫秒）
       timeout: 50000
@@ -143,8 +146,21 @@ tcs:
   service:
     url: ${TCS_SERVICE_URL:http://127.0.0.1:8080/hs-api}
   operator:
-    # 算法算子独立部署，平台通过 HTTP 契约接入，不内嵌 Python 运行时
-    base-url: ${TCS_OPERATOR_BASE_URL:http://127.0.0.1:6301}
+    # 算子独立部署：一台宿主机 + 每个算子一个端口，不内嵌 Python 运行时。
+    # 算子名与 operators/ 目录一致，端口与 operators/docker-compose.yml 保持一致。
+    base-url: ${TCS_OPERATOR_BASE_URL:http://127.0.0.1}
+    ports:
+      meta_clean_slice: 6301
+      meta_genre_judge: 6302
+      meta_fact_extract: 6303
+      meta_field_fill: 6304
+      lay_page_render: 6305
+      lay_page_detect: 6306
+      fml_formula_locate: 6307
+      fml_formula_recognize: 6308
+      img_region_locate: 6309
+      img_type_classify: 6310
+      img_struct_describe: 6311
 
 # 对象存储：hsmty-module-oss-client 的 Feign 契约读取该配置项
 oss:

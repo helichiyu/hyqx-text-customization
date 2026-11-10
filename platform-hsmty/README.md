@@ -134,6 +134,9 @@ kubectl apply -f deploy/k8s/ingress.yaml
 - `com.hsmty.RunApplication`（排除服务发现/配置刷新，`AppVersionUtils` 输出版本横幅）、`Knife4jConfiguration`（因 Cookie SSO 不声明 Bearer 方案）。
 - `application.yml`：8080、`/hs-api`、虚拟线程、MySQL/PostgreSQL profile、Liquibase、Redis Sentinel、springdoc、Actuator、模块前缀、白名单、Feign 地址（`tcs.service.url`、`oss.service.url`）、算子地址；环境变量可覆盖，敏感值不入库。
 - Liquibase 主入口与模块汇聚入口；`001_tcs_init.xml` 已建立并挂载（无 changeSet，见 §5）。
+- 算子接入配置 `TcsOperatorProperties`：`tcs.operator.base-url` + 11 个算子端口（`meta_*` 6301-6304、`lay_*` 6305-6306、`fml_*` 6307-6308、`img_*` 6309-6311），未登记算子返回空地址。
+- Long 序列化沿用 `hsmty-common-core` 的 Jackson 配置（超出 JS 安全整数输出字符串），并以 `JacksonContractTest` 锁定。
+- start 模块显式开启测试（父工程默认 `skipTests=true`）。
 - 健康检查接口 `/hs-api/tcs/health`（白名单开放）。
 - 前端 `src/core`、`src/modules/custom-text`、`src/editions`、qiankun 生命周期、`createModuleHttp`、Pinia、Router 自动注册。
 - Docker / Nginx / K8s 部署模板。
@@ -144,7 +147,7 @@ kubectl apply -f deploy/k8s/ingress.yaml
 - 业务 Controller / Service / Mapper / PO / DTO / VO。
 - 素材、任务编排、复核、数据集、参数配置等页面。
 - UAP/SSO 实际接入、OSS 实际读写、算子 HTTP/文件契约适配。
-- 旧库 `wbdz_platform` → `sd_data_engineering` 的数据迁移。
+- 旧库 `wbdz_platform` → 新库（本地 `tcs_db`，生产库名待运维分配）的数据迁移。
 
 ---
 
@@ -152,11 +155,12 @@ kubectl apply -f deploy/k8s/ingress.yaml
 
 | 项 | 处理 | 依据 |
 | --- | --- | --- |
-| 数据库名 | 采用 `sd_data_engineering`，与 HSMTY 模板一致 | `CLAUDE.md` §12.4、模板 `README.md`“统一使用一个数据库”；旧库 `wbdz_platform` 迁移时再评估是否独立库 |
+| 数据库名 | 本地开发用本地库 `tcs_db`；生产库上线前由运维创建，名称待定 | 2026-11-10 决策：新库在生产服务器建立，开发期用本地库；命名沿用《数据库开发通用规范》“库名以 `db` 结尾” |
 | 模块前缀注册 | 已按内网模板实现 `ApiPrefixRegister` + `ApiPrefixProperties`，启动日志为 `Register API prefix module=tcs, prefix=/tcs` | 内网模板 `XxxApiPrefixConfiguration` / `ApiPrefixConfiguration` 实际代码 |
 | 文档安全方案 | `Knife4jConfiguration` 不声明 Bearer/JWT；登录态由 UAP/SSO Cookie 承载 | 本文档 §5“不使用 JWT/BCrypt”；模板默认的 Bearer 方案不适用 |
 | `001_tcs_init.xml` | 已建文件并在模块 changelog 中 `include`，但**没有 changeSet** | 业务模型尚未迁移，凭空建表会把猜测固化成“已确认模型”；迁移首个实体时按 `CLAUDE.md` §9.2 补全 |
-| 算子调用 | 保持独立部署，平台按 HTTP 契约接入，不使用 Feign 内嵌算子 | 本文档 §7“算子独立部署、不内嵌 Python 运行时” |
+| 算子调用 | 保持独立部署，平台按 HTTP 契约接入，不使用 Feign 内嵌算子；地址配置为“基地址 + 端口表” | 本文档 §7“算子独立部署、不内嵌 Python 运行时”；`operators/前后端对接说明.md` |
+| Jackson 配置 | 不再自建 `JacksonConfiguration`，Long 精度处理交给 `hsmty-common-core` | 自建同名 Bean 会与框架冲突（`ConflictingBeanDefinitionException`）；框架策略为超安全整数转字符串 |
 | 鉴权 | 前端不保存 Token、不解析 Cookie；登录态由主应用经 qiankun props 下发，后端以 `@PreAuthorize` 为最终边界 | 本文档 §3/§5/§6“UAP/SSO Cookie + Method Security” |
 | 旧工程 | `platform/wbdz-server`、`platform/wbdz-web` 未改动 | 用户要求“升级代码放新文件夹，不覆盖原有代码” |
 
@@ -173,6 +177,7 @@ kubectl apply -f deploy/k8s/ingress.yaml
 | 前端 `pnpm build` | 通过（Element Plus 全量引入有 >500 kB chunk 警告，非错误） |
 | 后端 `mvn -N install` | 通过（JDK 21.0.13 / Maven 3.9.11 / 内网 Nexus） |
 | 后端 `mvn clean package` | 通过（client / core / start 全部 SUCCESS） |
+| 后端单元测试 | 通过（2/2：启动类注解、Long 序列化契约） |
 | 后端启动 | 通过（`--redis.listener.enable=false`，本机无 Redis Sentinel） |
 | 健康检查 | `GET /hs-api/tcs/health` → `200`，`{"code":"0000",...}` |
 | OpenAPI 分组 | `GET /hs-api/v3/api-docs` → `200`，包含 `/tcs/health` |
@@ -186,7 +191,7 @@ kubectl apply -f deploy/k8s/ingress.yaml
 1. UAP/SSO 接入信息：校验地址、跳转地址、Cookie 名称、local profile 放行规则。
 2. OSS/S3：endpoint、bucket、AK/SK、上传/下载约定。
 3. Redis Sentinel：master 名称、节点列表、密码（模板默认 `mymaster` / `192.168.1.102:26391-26393`）。
-4. MySQL 8 / PostgreSQL 实例：地址、库名（默认 `sd_data_engineering`）、最小权限账号。
+4. MySQL 8 / PostgreSQL 实例：生产地址、库名（本地开发暂用 `tcs_db`，生产库名待运维分配）、最小权限账号。
 5. 菜单与权限码号段、字典来源号段。
 6. 旧库 `wbdz_platform` 数据迁移范围与窗口。
 7. qiankun 主应用注册信息：子应用名 `custom-text`、entry、挂载容器与用户/权限下发字段。
