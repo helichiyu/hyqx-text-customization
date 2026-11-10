@@ -40,18 +40,12 @@
         <el-table-column label="有效/原始条数" width="120" align="center">
           <template #default="{ row }">{{ row.fileCount }} / {{ row.totalCount }}</template>
         </el-table-column>
-        <el-table-column label="剔除情况" min-width="200">
-          <template #default="{ row }">
-            <span v-if="!row.rejectSummary?.length" class="muted">—</span>
-            <span v-else>{{ rejectText(row) }}</span>
-          </template>
-        </el-table-column>
         <el-table-column prop="createBy" label="上传人" width="100" />
         <el-table-column prop="createTime" label="上传时间" width="170" :formatter="timeFmt" />
         <el-table-column label="操作" width="300" fixed="right">
           <template #default="{ row }">
-            <el-button v-if="row.status === 'uncheked'" link type="primary" size="small" @click="doCheck(row)">准入校验</el-button>
-            <el-button v-if="row.status === 'checked'" link type="primary" size="small" @click="doRelease(row)">移交</el-button>
+            <el-button v-if="row.status === 'uncheked'" link type="primary" size="small" @click="openCheck(row)">准入校验</el-button>
+            <el-button v-if="row.status === 'checked'" link type="primary" size="small" @click="openRelease(row)">移交</el-button>
             <el-button link type="primary" size="small" @click="openDetail(row)">详情</el-button>
             <el-button v-if="row.status !== 'upload_failed'" link type="primary" size="small" @click="openEdit(row)">编辑</el-button>
             <el-button v-if="!row.linked && row.status !== 'released'" link type="danger" size="small" @click="doDelete(row)">删除</el-button>
@@ -61,6 +55,47 @@
       <el-pagination class="pager" layout="total, prev, pager, next" :total="total"
         v-model:current-page="query.pageNum" :page-size="query.pageSize" @current-change="load()" />
     </el-card>
+
+    <!-- 准入校验确认 -->
+    <el-dialog v-model="checkVisible" class="check-dialog" width="980px" :title="`准入校验 · ${checkBatch?.name || ''}`" @closed="resetCheck">
+      <div class="check-intro">
+        <div>
+          <b>{{ checkBatch?.bizNo }}</b>
+          <span class="muted"> · {{ checkBatch?.lineName }} · {{ checkDetail?.fileCount ?? checkBatch?.fileCount ?? 0 }} 条有效素材</span>
+        </div>
+        <el-tag type="warning" effect="light">确认前不会改变批次状态</el-tag>
+      </div>
+      <el-table :data="checkRows" size="small" border class="check-table" v-loading="checkLoading" :empty-text="checkLoading ? '正在读取校验结果…' : '暂无检查项'">
+        <el-table-column prop="item" label="检查项" width="150" />
+        <el-table-column prop="level" label="级别" width="190" />
+        <el-table-column prop="requirement" label="要求" min-width="190" />
+        <el-table-column prop="actual" label="实际" min-width="190" />
+        <el-table-column label="结果" width="80" align="center">
+          <template #default="{ row }"><el-tag :type="row.ok ? 'success' : 'danger'" size="small">{{ row.ok ? '通过' : '不通过' }}</el-tag></template>
+        </el-table-column>
+      </el-table>
+      <div class="check-note" :class="checkPassed ? 'check-note--pass' : 'check-note--fail'">
+        <template v-if="checkLoading">正在加载批次文件级校验信息。</template>
+        <template v-else-if="checkPassed">必查项全部通过，可确认并标记为「已校验」。</template>
+        <template v-else>存在必查项未通过，请先处理失败文件后再执行准入校验。</template>
+      </div>
+      <template #footer>
+        <el-button @click="checkVisible = false">关闭</el-button>
+        <el-button type="primary" :disabled="!checkPassed || checkLoading" :loading="checking" @click="confirmCheck">通过并标记已校验</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 移交确认 -->
+    <el-dialog v-model="releaseVisible" width="560px" :title="`移交素材批次 · ${releaseBatch?.name || ''}`">
+      <div class="release-batch-line"><b>批次编号：</b><BizIdText v-if="releaseBatch" :value="releaseBatch.bizNo" /></div>
+      <div class="release-note">
+        移交后该批次进入「已移交」，可被本产线任务引用；移交后不可编辑、不可删除，也不能再修改准入校验结论。
+      </div>
+      <template #footer>
+        <el-button @click="releaseVisible = false">取消</el-button>
+        <el-button type="primary" :loading="releasing" @click="confirmRelease">确认移交</el-button>
+      </template>
+    </el-dialog>
 
     <!-- 上传弹窗 -->
     <el-dialog v-model="uploadVisible" title="上传素材批次" class="wbdz-dialog">
@@ -117,7 +152,8 @@
           <el-descriptions-item label="有效条数">{{ detail.fileCount }}</el-descriptions-item>
           <el-descriptions-item label="原始条数">{{ detail.totalCount }}</el-descriptions-item>
           <el-descriptions-item label="关联任务" :span="2">
-            {{ detail.linkedTaskIds?.length ? `已关联（${detail.linkedTaskIds.length} 个任务）` : '未关联' }}
+            <span>{{ detail.linkedTaskIds?.length ? `已关联（${detail.linkedTaskIds.length} 个任务）` : '未关联' }}</span>
+            <el-button v-if="detail.linkedTaskIds?.length" link type="primary" size="small" style="margin-left: 10px" @click="openLinkedTasks">查看关联任务</el-button>
           </el-descriptions-item>
         </el-descriptions>
 
@@ -153,20 +189,38 @@
         </el-timeline>
       </template>
     </el-drawer>
+
+    <!-- 关联任务 -->
+    <el-dialog v-model="linkedTasksVisible" title="关联任务" width="760px">
+      <el-table :data="linkedTasks" v-loading="linkedTasksLoading" size="small">
+        <el-table-column label="任务编号" width="210"><template #default="{ row }"><BizIdText :value="row.bizNo" /></template></el-table-column>
+        <el-table-column prop="name" label="任务名称" min-width="220" show-overflow-tooltip />
+        <el-table-column label="状态" width="100">
+          <template #default="{ row }"><el-tag :type="TASK_STATUS[row.status]?.tag" size="small">{{ row.statusName }}</el-tag></template>
+        </el-table-column>
+        <el-table-column prop="paramVersion" label="参数版本" width="90" />
+        <el-table-column label="操作" width="80" fixed="right">
+          <template #default="{ row }"><el-button link type="primary" size="small" @click="openLinkedTask(row)">查看</el-button></template>
+        </el-table-column>
+      </el-table>
+      <template #footer><el-button @click="linkedTasksVisible = false">关闭</el-button></template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
 import PageHeader from '@/components/PageHeader.vue'
 import BizIdText from '@/components/BizIdText.vue'
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
-  LINE_NAMES, LINE_WHITELIST_TEXT, MAT_STATUS,
-  materialPage, materialDetail, materialUpload, materialCheck, materialRelease,
+  LINE_NAMES, LINE_WHITELIST_TEXT, MAT_STATUS, TASK_STATUS,
+  materialPage, materialDetail, materialUpload, materialCheck, materialRelease, taskPage,
   materialEdit, materialDelete, type MatBatchView,
 } from '@/api'
 
+const router = useRouter()
 const query = reactive({ line: '', name: '', status: '', pageNum: 1, pageSize: 10 })
 const rows = ref<MatBatchView[]>([])
 const total = ref(0)
@@ -184,6 +238,28 @@ const editForm = reactive({ name: '', line: '' })
 const detailVisible = ref(false)
 const detail = ref<any>(null)
 
+const linkedTasksVisible = ref(false)
+const linkedTasksLoading = ref(false)
+const linkedTasks = ref<any[]>([])
+
+const checkVisible = ref(false)
+const checking = ref(false)
+const checkLoading = ref(false)
+const checkBatch = ref<MatBatchView | null>(null)
+const checkDetail = ref<any>(null)
+
+const releaseVisible = ref(false)
+const releasing = ref(false)
+const releaseBatch = ref<MatBatchView | null>(null)
+
+interface CheckRow {
+  item: string
+  level: string
+  requirement: string
+  actual: string
+  ok: boolean
+}
+
 function resetQuery() {
   query.line = ''
   query.name = ''
@@ -193,10 +269,6 @@ function resetQuery() {
 function statusOf(row: MatBatchView) {
   if (row.linked) return { name: '已关联', tag: 'success' }
   return MAT_STATUS[row.status] || { name: row.status, tag: 'info' }
-}
-
-function rejectText(row: MatBatchView) {
-  return row.rejectSummary.map((r) => `${r.reason}×${r.count}`).join('；')
 }
 
 function acceptOf(line: string) {
@@ -239,16 +311,146 @@ async function doUpload() {
   }
 }
 
-async function doCheck(row: MatBatchView) {
-  await materialCheck(row.bizNo)
-  ElMessage.success('准入校验完成')
-  load()
+function rejectCount(reason: string) {
+  const item = (checkDetail.value?.rejectSummary || checkBatch.value?.rejectSummary || [])
+    .find((entry: any) => String(entry.reason || '').includes(reason))
+  return Number(item?.count || 0)
 }
 
-async function doRelease(row: MatBatchView) {
-  await materialRelease(row.bizNo)
-  ElMessage.success('已移交')
-  load()
+function hasRejectReason(reason: string) {
+  return (checkDetail.value?.files || []).some((file: any) =>
+    file.status !== 'passed' && String(file.rejectReason || '').includes(reason))
+}
+
+const checkRows = computed<CheckRow[]>(() => {
+  const batch = checkBatch.value
+  if (!batch) return []
+  const files = checkDetail.value?.files || []
+  const validFiles = files.filter((file: any) => file.status === 'passed')
+  const allowed = (LINE_WHITELIST_TEXT[batch.line] || '').split('/').map((item) => item.trim().toUpperCase()).filter(Boolean)
+  const formats = [...new Set(validFiles.map((file: any) => String(file.ext || '').toUpperCase()).filter(Boolean))].join(' / ') || '—'
+  const oversized = files.filter((file: any) => Number(file.sizeBytes || 0) > 50 * 1024 * 1024)
+  const duplicateCount = rejectCount('重复文件')
+  const rows: CheckRow[] = [
+    {
+      item: '格式',
+      level: '必查（自动剔除，不阻断）',
+      requirement: allowed.join(' / ') || '—',
+      actual: formats,
+      ok: validFiles.length > 0,
+    },
+    {
+      item: '批次名称唯一',
+      level: '必查',
+      requirement: '不重名',
+      actual: '不重名',
+      ok: true,
+    },
+    {
+      item: '重复文件',
+      level: '必查（自动剔除，不阻断）',
+      requirement: '哈希一致即剔除',
+      actual: `已剔除 ${duplicateCount} 条`,
+      ok: validFiles.length > 0,
+    },
+    {
+      item: '单文件大小',
+      level: '必查（自动剔除，不阻断）',
+      requirement: '≤ 50 MB',
+      actual: oversized.length ? `${oversized.length} 个文件超限` : '上传时已校验',
+      ok: oversized.length === 0 && validFiles.length > 0,
+    },
+  ]
+
+  if (batch.line === 'formula' || batch.line === 'layout') {
+    const pdfFiles = files.filter((file: any) => String(file.ext || '').toLowerCase() === 'pdf')
+    const validPages = pdfFiles.filter((file: any) => file.status === 'passed' && Number(file.pageCount || 0) > 0)
+    const brokenPdf = pdfFiles.filter((file: any) => file.status !== 'passed')
+    rows.push({
+      item: 'PDF 加密 / 损坏',
+      level: '必查（自动剔除，不阻断）',
+      requirement: '无加密、可解析',
+      actual: brokenPdf.length ? `存在 ${brokenPdf.length} 个无法解析文件` : '无加密、可解析',
+      ok: pdfFiles.length > 0 && brokenPdf.length === 0,
+    })
+    rows.push({
+      item: '页数',
+      level: '必查',
+      requirement: '> 0',
+      actual: validPages.length ? `${validPages.map((file: any) => file.pageCount).join(' / ')} 页` : '无法读取页数',
+      ok: validPages.length > 0,
+    })
+  } else if (batch.line === 'graphic') {
+    const resolutionFailed = hasRejectReason('分辨率')
+    rows.push({
+      item: '图片分辨率',
+      level: '必查（自动剔除，不阻断）',
+      requirement: '≥ 600 × 600',
+      actual: resolutionFailed ? '存在低于最小分辨率的图片' : '上传时已校验',
+      ok: validFiles.length > 0 && !resolutionFailed,
+    })
+  } else {
+    const contentFailed = hasRejectReason('编码') || hasRejectReason('可读字符')
+    rows.push({
+      item: 'HTML 可读内容',
+      level: '必查（自动剔除，不阻断）',
+      requirement: '去标签后可读字符 ≥ 20',
+      actual: contentFailed ? '存在编码或正文不足文件' : '上传时已校验',
+      ok: validFiles.length > 0 && !contentFailed,
+    })
+  }
+  return rows
+})
+
+const checkPassed = computed(() => checkRows.value.length > 0 && checkRows.value.every((row) => row.ok))
+
+async function openCheck(row: MatBatchView) {
+  checkBatch.value = row
+  checkDetail.value = null
+  checkVisible.value = true
+  checkLoading.value = true
+  try {
+    checkDetail.value = await materialDetail(row.bizNo)
+  } finally {
+    checkLoading.value = false
+  }
+}
+
+function resetCheck() {
+  checkBatch.value = null
+  checkDetail.value = null
+}
+
+async function confirmCheck() {
+  if (!checkBatch.value || !checkPassed.value) return
+  checking.value = true
+  try {
+    const result = await materialCheck(checkBatch.value.bizNo)
+    if (result?.status === 'upload_failed') ElMessage.warning('准入校验完成，但没有有效素材，批次已标记为上传失败')
+    else ElMessage.success('准入校验通过，批次已标记为已校验')
+    checkVisible.value = false
+    load()
+  } finally {
+    checking.value = false
+  }
+}
+
+function openRelease(row: MatBatchView) {
+  releaseBatch.value = row
+  releaseVisible.value = true
+}
+
+async function confirmRelease() {
+  if (!releaseBatch.value) return
+  releasing.value = true
+  try {
+    await materialRelease(releaseBatch.value.bizNo)
+    ElMessage.success('素材批次已移交，可被本产线任务引用')
+    releaseVisible.value = false
+    load()
+  } finally {
+    releasing.value = false
+  }
 }
 
 function openEdit(row: MatBatchView) {
@@ -278,6 +480,23 @@ async function openDetail(row: MatBatchView) {
   detailVisible.value = true
 }
 
+async function openLinkedTasks() {
+  if (!detail.value) return
+  linkedTasksVisible.value = true
+  linkedTasksLoading.value = true
+  try {
+    const ids = new Set((detail.value.linkedTaskIds || []).map(String))
+    const res = await taskPage({ line: detail.value.line, pageNum: 1, pageSize: 500 })
+    linkedTasks.value = res.records.filter((task: any) => ids.has(String(task.id)))
+  } finally {
+    linkedTasksLoading.value = false
+  }
+}
+
+function openLinkedTask(row: any) {
+  router.push({ path: `/task/${row.bizNo}`, query: { fromWb: `/wb/${row.line}` } })
+}
+
 function timeFmt(_r: any, _c: any, v: string) {
   if (!v || v === 'null') return '—'
   return v.replace('T', ' ').slice(0, 19)
@@ -291,6 +510,14 @@ onMounted(() => load())
 .pager { margin-top: 14px; justify-content: flex-end; }
 .hint { font-size: var(--wbdz-font-caption); color: var(--wbdz-secondary); line-height: 1.6; }
 .muted { color: var(--wbdz-weaker); }
-.reject-tag { margin: 0 8px 6px 0; }
+.reject-tag { margin: 0 8px 6px 0; }.check-dialog :deep(.el-dialog__body) { padding-top: 12px; }
+.check-intro { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; color: var(--wbdz-text); }
+.check-table { border-radius: var(--wbdz-radius-control); overflow: hidden; }
+.check-note { margin-top: 12px; padding: 10px 12px; border: 1px solid var(--wbdz-border); border-radius: 4px; font-size: var(--wbdz-font-caption); line-height: 1.6; }
+.check-note--pass { border-color: #b7ebc6; background: #f0fdf4; color: #128a57; }
+.check-note--fail { border-color: #fecaca; background: #fef2f2; color: #b42318; }
+.release-batch-line { margin-bottom: 10px; color: var(--wbdz-text); }
+.release-note { padding: 12px 14px; border: 1px solid var(--wbdz-border); border-radius: 4px; background: var(--wbdz-bg-page); color: var(--wbdz-text); line-height: 1.7; }
+
 h4 { margin: 18px 0 8px; color: var(--wbdz-title); }
 </style>

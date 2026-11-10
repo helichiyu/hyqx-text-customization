@@ -176,7 +176,8 @@ public class ReviewServiceImpl implements ReviewService {
                 .where(REVIEW_ITEM.ORDER_ID.eq(order.getId()))
                 .and(REVIEW_ITEM.ITEM_KEY.eq(item.getItemKey())));
         if (exists != null && exists > 0) {
-            throw new BizException("该条目已在复核单中");
+            // 重复加入按幂等处理：直接返回当前复核单，前端可安全重试。
+            return new ReviewAddResultVO(order.getId(), order.getBizNo());
         }
 
         ReviewItem ri = new ReviewItem();

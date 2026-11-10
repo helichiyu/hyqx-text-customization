@@ -57,7 +57,7 @@
             <el-button v-if="row.status === 'draft'" link type="primary" size="small" @click="openEdit(row)">继续编辑</el-button>
             <el-button v-else-if="row.status === 'pending'" link type="primary" size="small" @click="doStart(row)">启动</el-button>
             <el-button v-else-if="row.status === 'waitreview'" link type="primary" size="small" @click="goReview">去复核</el-button>
-            <el-button v-else-if="row.status === 'quality'" link type="primary" size="small" @click="goDataset">去归集</el-button>
+            <el-button v-else-if="row.status === 'quality'" link type="primary" size="small" @click="goDataset(row)">去归集</el-button>
             <span v-else-if="row.status === 'collected'" class="muted">已归集</span>
             <el-button v-else link type="primary" size="small" @click="goDetail(row)">继续处理</el-button>
             <span class="sep">·</span>
@@ -125,12 +125,12 @@
 <script setup lang="ts">
 import PageHeader from '@/components/PageHeader.vue'
 import BizIdText from '@/components/BizIdText.vue'
-import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { computed, onActivated, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   LINE_NAMES, IMAGE_CLASSES, PRIORITIES, TASK_STATUS,
-  taskPage, taskCreate, taskUpdate, taskSubmit, taskStart, taskDelete,
+  taskPage, taskCreate, taskUpdate, taskSubmit, taskStart, taskDelete, taskCollect,
   materialPage, paramLineConfig, type TaskView, type MatBatchView,
 } from '@/api'
 
@@ -151,6 +151,7 @@ const query = reactive({ status: '', name: '', priority: '', pageNum: 1, pageSiz
 const rows = ref<TaskView[]>([])
 const total = ref(0)
 const loading = ref(false)
+const loadedOnce = ref(false)
 
 const stats = ref([
   { key: 'waitreview', label: '待复核', value: 0, cls: '' },
@@ -188,6 +189,7 @@ async function load(page?: number) {
     stats.value[0].value = all.records.filter((r) => r.status === 'waitreview').length
     stats.value[1].value = all.records.filter((r) => r.status === 'quality').length
     stats.value[2].value = all.records.filter((r) => r.status === 'pending' || r.status === 'reject').length
+    loadedOnce.value = true
   } finally {
     loading.value = false
   }
@@ -276,7 +278,12 @@ function goReview() {
   router.push('/review')
 }
 
-function goDataset() {
+async function goDataset(row: TaskView) {
+  if (row.status === 'quality') {
+    await taskCollect(row.bizNo)
+    ElMessage.success('任务已归集，已打开数据集管理')
+    await load()
+  }
   router.push('/dataset')
 }
 function goDetail(row: TaskView) {
@@ -290,6 +297,9 @@ function timeFmt(_r: any, _c: any, v: string) {
 
 watch(line, () => load(1))
 onMounted(() => load())
+onActivated(() => {
+  if (loadedOnce.value) load()
+})
 
 defineExpose({ lineName: LINE_NAMES[line.value] })
 </script>

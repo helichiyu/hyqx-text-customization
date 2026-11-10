@@ -81,7 +81,12 @@
             <p v-if="payload.lowConfidenceReasons" class="hint">低置信原因：{{ payload.lowConfidenceReasons }}</p>
           </template>
 
-          <el-descriptions v-if="line !== 'graphic'" :column="3" border size="small" style="margin-top: 12px">
+          <el-descriptions v-if="line === 'metadata'" :column="3" border size="small" style="margin-top: 12px">
+            <el-descriptions-item label="事实抽取置信度">{{ payload.extractConfidence ?? '—' }}</el-descriptions-item>
+            <el-descriptions-item label="元信息补全置信度">{{ payload.fillConfidence ?? '—' }}</el-descriptions-item>
+            <el-descriptions-item label="复核状态">{{ item.reviewStatus || '—' }}</el-descriptions-item>
+          </el-descriptions>
+          <el-descriptions v-else-if="line !== 'graphic'" :column="3" border size="small" style="margin-top: 12px">
             <el-descriptions-item label="条目置信度">{{ item.confidence ?? '—' }}</el-descriptions-item>
             <el-descriptions-item label="复核状态">{{ item.reviewStatus || '—' }}</el-descriptions-item>
             <el-descriptions-item label="修正状态">{{ item.revisionStatus || '—' }}</el-descriptions-item>
@@ -148,16 +153,20 @@ function confTag(v: number) {
   return 'danger'
 }
 
-const GROUP_NAMES: Record<string, string> = { structured: '结构化', basic: '基础', related: '相关' }
+const GROUP_NAMES: Record<string, string> = {
+  basic: '基础信息',
+  related: '关联信息',
+  structured: '结构化信息',
+}
 
 const metadataGroups = computed(() => {
-  const fields = payload.value.fields || {}
+  const groups = payload.value.fields || payload.value || {}
   return Object.keys(GROUP_NAMES)
-    .filter((k) => fields[k])
-    .map((k) => ({
-      key: k,
-      name: GROUP_NAMES[k],
-      rows: Object.entries(fields[k]).map(([field, raw]: [string, any]) => ({
+    .filter((key) => groups[key] && typeof groups[key] === 'object')
+    .map((key) => ({
+      key,
+      name: GROUP_NAMES[key],
+      rows: Object.entries(groups[key]).map(([field, raw]: [string, any]) => ({
         field,
         value: raw && typeof raw === 'object' && 'value' in raw ? raw.value : raw,
         confidence: raw && typeof raw === 'object' ? raw.confidence : undefined,

@@ -167,16 +167,18 @@ public class TaskOrchestrator {
         }
 
         String prevOutput = carryInput;
+        List<Map<String, Object>> observedReviewRows = new ArrayList<>();
         for (int i = 0; i < nodes.size(); i++) {
             LineRegistry.Node node = nodes.get(i);
             boolean last = node.tag().equals(LineRegistry.lastTag(task.getLine()));
             Map<String, Object> body = buildBody(task, node, i == 0 && prevOutput == null, prevOutput, last);
             Map<String, Object> data = predictWithRetry(task, node, body);
             prevOutput = String.valueOf(data.get("outputFile"));
+            observedReviewRows.addAll(readReviewRows(prevOutput));
             updateProgress(task, node, data);
         }
 
-        consumeStageOutput(task, prevOutput);
+        consumeStageOutput(task, prevOutput, observedReviewRows);
         cleanup(task, all.get(0).tag(), uniqueId);
     }
 
@@ -323,19 +325,15 @@ public class TaskOrchestrator {
      * 末位 stage zip：records.jsonl → 数据集（candidate）+ 明细行；review → 复核单；
      * 空成果（全失败/全跳过）不建数据集，任务回 pending。
      */
-    private void consumeStageOutput(TaskMain task, String stageOutputFile) {
+    private void consumeStageOutput(TaskMain task, String stageOutputFile,
+                                    List<Map<String, Object>> observedReviewRows) {
         Path zipPath = operatorClient.toHostPath(stageOutputFile);
         Map<String, List<Map<String, Object>>> parsed = readStageZip(zipPath);
         List<Map<String, Object>> records = parsed.getOrDefault("records", List.of());
-        List<Map<String, Object>> reviewRows = parsed.getOrDefault("review", List.of());
+        List<Map<String, Object>> reviewRows = new ArrayList<>(observedReviewRows);
+        reviewRows.addAll(parsed.getOrDefault("review", List.of()));
 
-        if (records.isEmpty()) {
-            log.warn("阶段产物无 records 行（全失败/全跳过）: taskId={} zip={}", task.getId(), zipPath);
-            safeStatus(task.getId(), "pending");
-            return;
-        }
-
-        // review 集合 = 末位 review.jsonl ∪ 行内标记待复核（中段环节透传下来的）
+        // review 集合 = 各环节 review.jsonl ∪ 行内标记待复核（中段环节透传下来的）
         Map<String, Map<String, Object>> reviewByKey = new LinkedHashMap<String, Map<String, Object>>();
         for (Map<String, Object> row : reviewRows) {
             reviewByKey.put(itemKey(row), row);
@@ -344,6 +342,18 @@ public class TaskOrchestrator {
             if ("待复核".equals(row.get("reviewStatus"))) {
                 reviewByKey.putIfAbsent(itemKey(row), row);
             }
+        }
+
+        if (records.isEmpty()) {
+            if (!reviewByKey.isEmpty()) {
+                createReviewOrder(task, reviewByKey);
+                safeStatus(task.getId(), "waitreview");
+                log.info("阶段产物只有复核行，已生成复核单: task={} review={}", task.getId(), reviewByKey.size());
+            } else {
+                log.warn("阶段产物无 records/review 行（全失败/全跳过）: taskId={} zip={}", task.getId(), zipPath);
+                safeStatus(task.getId(), "pending");
+            }
+            return;
         }
 
         Dataset ds = newDataset(task, records.size(), !reviewByKey.isEmpty());
@@ -431,6 +441,27 @@ public class TaskOrchestrator {
             reviewItemMapper.insert(item);
         }
         log.info("生成复核单: task={} order={} items={}", task.getId(), order.getBizNo(), rowsByKey.size());
+    }
+
+    /** 从每个环节输出收集 review.jsonl；目录与最终阶段 zip 都兼容。 */
+    private List<Map<String, Object>> readReviewRows(String outputFile) {
+        Path output = operatorClient.toHostPath(outputFile);
+        if (!Files.exists(output)) return List.of();
+        if (Files.isRegularFile(output)) {
+            return readStageZip(output).getOrDefault("review", List.of());
+        }
+        Path review = output.resolve("review.jsonl");
+        if (!Files.isRegularFile(review)) return List.of();
+        try {
+            List<Map<String, Object>> rows = new ArrayList<>();
+            for (String line : Files.readAllLines(review, StandardCharsets.UTF_8)) {
+                if (!line.isBlank()) rows.add(JsonUtil.readMap(line));
+            }
+            return rows;
+        } catch (Exception e) {
+            log.warn("读取环节 review.jsonl 失败: path={} err={}", review, e.getMessage());
+            return List.of();
+        }
     }
 
     /** 解包阶段 zip：records.jsonl / review.jsonl（取最短匹配的条目，兼容目录包裹）。 */

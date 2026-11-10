@@ -55,125 +55,123 @@
     </el-card>
 
     <!-- 复核工作台 -->
-    <el-drawer v-model="orderVisible" class="wbdz-drawer wbdz-drawer--wide" @closed="onDrawerClosed">
+    <el-drawer v-model="orderVisible" class="wbdz-drawer wbdz-drawer--wide review-workbench-drawer" @closed="onDrawerClosed">
       <template #header>
-        <span>条件复核 <template v-if="order"> · <BizIdText :value="order.bizNo" /></template></span>
+        <div class="workbench-head">
+          <div>
+            <div class="workbench-title">条件复核<template v-if="order"> · <BizIdText :value="order.bizNo" /></template></div>
+            <div class="workbench-subtitle">左侧查看原始素材，右侧核对系统结果；A 确认无误，B 直接修正，C 跳过。</div>
+          </div>
+        </div>
       </template>
       <template v-if="order">
-        <el-descriptions :column="3" border size="small">
-          <el-descriptions-item label="复核单号"><BizIdText :value="order.bizNo" /></el-descriptions-item>
-          <el-descriptions-item label="来源任务"><BizIdText :value="order.taskBizNo" /></el-descriptions-item>
-          <el-descriptions-item label="产线">{{ order.lineName }}</el-descriptions-item>
-          <el-descriptions-item label="触发环节">{{ order.stageName }}</el-descriptions-item>
-          <el-descriptions-item label="状态">
-            <el-tag :type="REVIEW_STATUS[order.status]?.tag">{{ order.statusName }}</el-tag>
-          </el-descriptions-item>
-          <el-descriptions-item label="触发条件" :span="2">
-            <span class="mono small">{{ order.triggerCode }}</span> · {{ order.triggerDesc }}
-          </el-descriptions-item>
-          <el-descriptions-item label="进度">{{ concludedCount }} / {{ order.items?.length || 0 }}</el-descriptions-item>
-        </el-descriptions>
+        <section class="review-context-card">
+          <div class="review-context-main">
+            <div class="context-line">
+              <span><b>来源任务：</b><BizIdText :value="order.taskBizNo || order.taskId || '—'" /></span>
+              <span><b>产线：</b>{{ order.lineName }}</span>
+              <span><b>触发环节：</b>{{ order.stageName }}</span>
+              <span><b>状态：</b><el-tag :type="REVIEW_STATUS[order.status]?.tag" size="small">{{ order.statusName }}</el-tag></span>
+            </div>
+            <div class="context-reason"><b>触发原因：</b><span class="mono small">{{ order.triggerCode }}</span> · {{ order.triggerDesc }}</div>
+          </div>
+          <el-button v-if="!locked" type="warning" plain @click="rerunSourceTask">重跑来源任务</el-button>
+        </section>
 
-        <div class="order-bar">
-          <span class="hint">逐条出结论：A 确认 · B 修正（记录改前/改后） · C 剔除；结论保存后不立即闭环。</span>
-          <div style="flex: 1" />
-          <el-tag size="small" type="info">待处理 {{ metrics.pending }}</el-tag>
-          <el-tag size="small" type="success">已确认A {{ metrics.A }}</el-tag>
-          <el-tag size="small" type="warning">已修正B {{ metrics.B }}</el-tag>
-          <el-tag size="small" type="danger">已剔除C {{ metrics.C }}</el-tag>
-          <el-button v-if="order.status !== 'done' && order.status !== 'void'" type="warning" plain @click="rerunSourceTask">重跑来源任务</el-button>
-          <el-button type="success" :disabled="!allConcluded || order.status === 'done' || order.status === 'void'" @click="doClose">
-            整单闭环
-          </el-button>
+        <div class="review-metrics">
+          <div class="review-metric"><label>待复核总条数</label><b>{{ order.items?.length || 0 }}</b></div>
+          <div class="review-metric pending"><label>待处理</label><b>{{ metrics.pending }}</b></div>
+          <div class="review-metric confirmed"><label>已确认(A)</label><b>{{ metrics.A }}</b></div>
+          <div class="review-metric revised"><label>已修正(B)</label><b>{{ metrics.B }}</b></div>
+          <div class="review-metric refused"><label>已跳过(C)</label><b>{{ metrics.C }}</b></div>
         </div>
 
-        <el-table :data="order.items || []" size="small" border>
-          <el-table-column type="expand">
-            <template #default="{ row }">
-              <div class="review-grid">
-                <div class="review-col">
-                  <div class="payload-title">复核条目</div>
-                  <el-descriptions :column="1" border size="small">
-                    <el-descriptions-item label="行标识">{{ row.itemKey || '—' }}</el-descriptions-item>
-                    <el-descriptions-item label="触发码">{{ row.code || '—' }}</el-descriptions-item>
-                    <el-descriptions-item label="触发原因">{{ row.reason || '—' }}</el-descriptions-item>
-                    <el-descriptions-item label="当前结论">{{ row.conclusion ? conclusionName(row.conclusion) : '待复核' }}</el-descriptions-item>
-                    <el-descriptions-item label="复核人">{{ row.operator || '—' }}</el-descriptions-item>
-                  </el-descriptions>
-                  <el-collapse class="raw-collapse">
-                    <el-collapse-item title="原始 JSON" name="raw">
-                      <pre class="json">{{ pretty(row.payload) }}</pre>
-                    </el-collapse-item>
-                  </el-collapse>
-                </div>
-
-                <div class="review-col">
-                  <SourcePreview :item="row" :line="order.line" :run-id="order.runId" :image-run-id="order.imageRunId" />
-                </div>
-
-                <div class="review-col">
-                  <div class="payload-title">字段与置信度</div>
-                  <el-table :data="fieldRows(row.payload)" size="small" border max-height="320">
-                    <el-table-column prop="field" label="字段" min-width="150" show-overflow-tooltip />
-                    <el-table-column label="值" min-width="180">
-                      <template #default="{ row: field }">
-                        <span class="mono small">{{ fieldText(field.value) }}</span>
-                      </template>
-                    </el-table-column>
-                    <el-table-column label="置信度" width="80" align="center">
-                      <template #default="{ row: field }">
-                        <el-tag v-if="field.confidence != null" size="small" :type="confTag(field.confidence)">
-                          {{ field.confidence }}
-                        </el-tag>
-                        <span v-else class="muted">—</span>
-                      </template>
-                    </el-table-column>
-                  </el-table>
-                  <template v-if="row.conclusion === 'B'">
-                    <div class="payload-title diff-title">修正差异（改前 → 改后）</div>
-                    <el-table :data="diffRows(row)" size="small" border>
-                      <el-table-column prop="key" label="字段" width="120" />
-                      <el-table-column prop="before" label="改前" min-width="120" />
-                      <el-table-column prop="after" label="改后" min-width="120" />
-                    </el-table>
-                  </template>
-                </div>
+        <div class="review-workspace">
+          <aside class="sample-nav">
+            <div class="sample-nav-head">待核条目 <span>{{ order.items?.length || 0 }}</span></div>
+            <div class="sample-nav-tip">逐条核对，已出结论条目仍可回看</div>
+            <div
+              v-for="(item, index) in order.items || []"
+              :key="item.id"
+              class="sample-nav-item"
+              :class="{ active: activeReviewIndex === index }"
+              @click="activeReviewIndex = index"
+            >
+              <span class="sample-dot" :class="item.conclusion ? 'pass' : ''" />
+              <div class="sample-nav-text">
+                <div class="item-id">{{ item.itemKey || `待核条目 ${String(index + 1).padStart(2, '0')}` }}</div>
+                <small>{{ item.conclusion ? conclusionName(item.conclusion) : '待处理' }}</small>
               </div>
-            </template>
-          </el-table-column>
-          <el-table-column prop="itemKey" label="行标识" width="140" show-overflow-tooltip />
-          <el-table-column label="触发原因" min-width="220">
-            <template #default="{ row }">
-              <span class="mono small">{{ row.code }}</span>
-              <div class="muted small">{{ row.reason }}</div>
-            </template>
-          </el-table-column>
-          <el-table-column label="关键字段" min-width="260">
-            <template #default="{ row }">
-              <span class="mono small">{{ keyFields(row.payload) }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column label="结论" width="90" align="center">
-            <template #default="{ row }">
-              <el-tag v-if="row.conclusion" :type="conclusionTag(row.conclusion)" size="small">
-                {{ conclusionName(row.conclusion) }}
+            </div>
+            <div class="sample-nav-pager">共 {{ order.items?.length || 0 }} 条 · 第 {{ activeReviewIndex + 1 }} / {{ order.items?.length || 0 }}</div>
+          </aside>
+
+          <section v-if="activeReviewItem" class="inspection-card">
+            <div class="inspection-head">
+              <div>
+                <div class="inspection-title">待核条目 {{ String(activeReviewIndex + 1).padStart(2, '0') }} · {{ activeReviewItem.itemKey }}</div>
+                <div class="inspection-meta">{{ activeReviewItem.code }} · {{ activeReviewItem.reason }}</div>
+              </div>
+              <el-tag :type="activeReviewItem.conclusion ? conclusionTag(activeReviewItem.conclusion) : 'warning'" effect="light">
+                {{ activeReviewItem.conclusion ? conclusionName(activeReviewItem.conclusion) : '待复核' }}
               </el-tag>
-              <span v-else class="muted">待复核</span>
-            </template>
-          </el-table-column>
-          <el-table-column prop="operator" label="复核人" width="90" />
-          <el-table-column label="操作" width="220" fixed="right">
-            <template #default="{ row }">
-              <template v-if="!locked">
-                <el-button size="small" :type="row.conclusion === 'A' ? 'primary' : 'default'" @click="conclude(row, 'A')">确认</el-button>
-                <el-button size="small" :type="row.conclusion === 'B' ? 'warning' : 'default'" @click="openFix(row)">修正</el-button>
-                <el-button size="small" :type="row.conclusion === 'C' ? 'danger' : 'default'" @click="conclude(row, 'C')">剔除</el-button>
-                <el-button v-if="row.conclusion" link size="small" @click="unconclude(row)">撤销</el-button>
-              </template>
-              <span v-else class="muted">已闭环</span>
-            </template>
-          </el-table-column>
-        </el-table>
+            </div>
+
+            <div class="focus-banner"><b>本条目争议焦点：</b>{{ itemFocus(activeReviewItem) }}</div>
+
+            <div class="review-compare">
+              <div class="compare-pane source-pane">
+                <div class="pane-title">原始素材 / 来源内容</div>
+                <SourcePreview :item="activeReviewItem" :line="order.line" :run-id="order.runId" :image-run-id="order.imageRunId" />
+              </div>
+              <div class="compare-pane result-pane">
+                <div class="pane-title">系统识别 / 结构化结果</div>
+                <el-table :data="reviewFieldRows(activeReviewItem)" size="small" border class="result-table">
+                  <el-table-column prop="field" label="字段" width="150" />
+                  <el-table-column label="值" min-width="220">
+                    <template #default="{ row: field }"><span class="mono small result-value">{{ fieldText(field.value) }}</span></template>
+                  </el-table-column>
+                  <el-table-column label="置信度" width="86" align="center">
+                    <template #default="{ row: field }">
+                      <el-tag v-if="field.confidence != null" size="small" :type="confTag(field.confidence)">{{ Number(field.confidence).toFixed(2) }}</el-tag>
+                      <span v-else class="muted">—</span>
+                    </template>
+                  </el-table-column>
+                </el-table>
+                <template v-if="activeReviewItem.conclusion === 'B'">
+                  <div class="pane-title diff-title">修正差异（改前 → 改后）</div>
+                  <el-table :data="diffRows(activeReviewItem)" size="small" border>
+                    <el-table-column prop="key" label="字段" width="120" />
+                    <el-table-column prop="before" label="改前" min-width="120" />
+                    <el-table-column prop="after" label="改后" min-width="120" />
+                  </el-table>
+                </template>
+              </div>
+            </div>
+
+            <div class="inspection-decision">
+              <div class="decision-hint">单条错误点「直接修正」即时生效并留痕；整单完成后提交闭环。</div>
+              <div class="decision-actions">
+                <el-button v-if="!locked" type="success" @click="conclude(activeReviewItem, 'A')">确认无误 A</el-button>
+                <el-button v-if="!locked" type="warning" @click="openFix(activeReviewItem)">直接修正 B</el-button>
+                <el-button v-if="!locked" type="danger" @click="conclude(activeReviewItem, 'C')">跳过 C</el-button>
+                <el-button v-if="!locked && activeReviewItem.conclusion" link @click="unconclude(activeReviewItem)">撤销当前结论</el-button>
+                <span v-if="locked" class="muted">该复核单已闭环，只读查看</span>
+              </div>
+            </div>
+          </section>
+          <div v-else class="empty-review-panel">当前复核单没有可展示条目</div>
+        </div>
+
+        <div class="workbench-footer">
+          <span class="workbench-note">已处理 {{ concludedCount }} / {{ order.items?.length || 0 }} 条</span>
+          <div class="workbench-nav">
+            <el-button :disabled="activeReviewIndex <= 0" @click="activeReviewIndex--">上一条</el-button>
+            <el-button :disabled="activeReviewIndex >= (order.items?.length || 1) - 1" @click="activeReviewIndex++">下一条</el-button>
+            <el-button @click="orderVisible = false">暂存并关闭</el-button>
+            <el-button type="success" :disabled="!allConcluded || locked" @click="doClose">提交复核结论</el-button>
+          </div>
+        </div>
       </template>
     </el-drawer>
 
@@ -219,6 +217,7 @@ const loading = ref(false)
 
 const orderVisible = ref(false)
 const order = ref<any>(null)
+const activeReviewIndex = ref(0)
 
 const fixVisible = ref(false)
 const fixItem = ref<any>(null)
@@ -239,6 +238,7 @@ const allConcluded = computed(() => {
   const items = order.value?.items || []
   return items.length > 0 && items.every((i: any) => !!i.conclusion)
 })
+const activeReviewItem = computed(() => order.value?.items?.[activeReviewIndex.value] || null)
 
 function resetQuery() {
   query.line = ''
@@ -280,6 +280,24 @@ function fieldRows(payload: any) {
     add(key, value)
   }
   return rows.slice(0, 40)
+}
+
+function itemFocus(item: any) {
+  return item?.reason || item?.payload?.reviewReason || item?.payload?.lowConfidenceReasons || '请对照左侧原始素材核对右侧系统结果。'
+}
+
+function reviewFieldRows(item: any) {
+  const payload = item?.payload || {}
+  if (order.value?.line === 'formula') {
+    return [
+      { field: 'LaTeX', value: payload.latex, confidence: payload.recognitionConfidence },
+      { field: '符号·含义·单位', value: payload.symbols, confidence: payload.semanticConfidence },
+      { field: '章节/编号/上下文', value: payload.context, confidence: payload.semanticConfidence },
+      { field: '识别置信度', value: payload.recognitionConfidence },
+      { field: '语义标注置信度', value: payload.semanticConfidence },
+    ].filter((row) => row.value != null && row.value !== '')
+  }
+  return fieldRows(payload)
 }
 
 function fieldText(value: any) {
@@ -354,17 +372,26 @@ async function rerunSourceTask() {
 }
 async function openOrder(id: string) {
   order.value = await reviewDetail(id)
+  const pending = (order.value?.items || []).findIndex((item: any) => !item.conclusion)
+  activeReviewIndex.value = pending >= 0 ? pending : 0
   orderVisible.value = true
 }
 
 async function refreshOrder() {
-  if (order.value) order.value = await reviewDetail(order.value.bizNo)
+  if (!order.value) return
+  const current = activeReviewIndex.value
+  order.value = await reviewDetail(order.value.bizNo)
+  activeReviewIndex.value = Math.min(current, Math.max(0, (order.value?.items || []).length - 1))
 }
 
 async function conclude(row: any, conclusion: 'A' | 'C') {
+  const current = activeReviewIndex.value
   await reviewConclude(row.id, conclusion)
   ElMessage.success(conclusion === 'A' ? '已确认' : '已剔除')
   await refreshOrder()
+  const items = order.value?.items || []
+  const next = items.findIndex((item: any, index: number) => index > current && !item.conclusion)
+  if (next >= 0) activeReviewIndex.value = next
 }
 
 async function unconclude(row: any) {
@@ -405,10 +432,14 @@ async function submitFix() {
     if (JSON.stringify(v) !== JSON.stringify(f.original)) revised[f.key] = v
   }
   if (!Object.keys(revised).length) return ElMessage.warning('未检测到改动')
+  const current = activeReviewIndex.value
   await reviewConclude(fixItem.value.id, 'B', revised)
   ElMessage.success('已保存修正（改前/改后已留痕）')
   fixVisible.value = false
   await refreshOrder()
+  const items = order.value?.items || []
+  const next = items.findIndex((item: any, index: number) => index > current && !item.conclusion)
+  if (next >= 0) activeReviewIndex.value = next
 }
 
 async function doClose() {
@@ -434,18 +465,67 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-
 .pager { margin-top: 14px; justify-content: flex-end; }
 .mono { font-family: var(--wbdz-font-mono); }
 .small { font-size: var(--wbdz-font-caption); }
 .muted { color: var(--wbdz-secondary); }
 .hint { font-size: var(--wbdz-font-caption); color: var(--wbdz-secondary); }
-.order-bar { display: flex; align-items: center; gap: 10px; margin: 12px 0; }
-.review-grid { display: grid; grid-template-columns: minmax(200px, 0.72fr) minmax(300px, 1.2fr) minmax(300px, 1fr); gap: 16px; padding: 12px 16px; }
-.review-col { min-width: 0; }
-.payload-title { font-weight: 600; margin-bottom: 8px; color: var(--wbdz-title); font-size: var(--wbdz-font-body); }
+
+.review-workbench-drawer :deep(.el-drawer__header) { margin-bottom: 0; padding: 0; border-bottom: 1px solid var(--wbdz-border); }
+.review-workbench-drawer :deep(.el-drawer__body) { padding: 0; background: #f4f6fb; }
+.workbench-head { width: 100%; padding: 18px 22px 15px; background: #fff; }
+.workbench-title { color: var(--wbdz-title); font-size: 18px; font-weight: 650; }
+.workbench-subtitle { margin-top: 3px; color: var(--wbdz-secondary); font-size: var(--wbdz-font-caption); }
+.review-context-card { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 13px 16px; margin: 16px 20px 0; border: 1px solid var(--wbdz-border); border-radius: 5px; background: #fff; }
+.review-context-main { min-width: 0; }
+.context-line { display: flex; flex-wrap: wrap; gap: 8px 22px; color: var(--wbdz-text); font-size: 13px; }
+.context-line b { color: var(--wbdz-title); font-weight: 600; }
+.context-reason { margin-top: 5px; color: var(--wbdz-secondary); font-size: var(--wbdz-font-caption); }
+.review-metrics { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin: 14px 20px 0; }
+.review-metric { padding: 11px 13px; border: 1px solid var(--wbdz-border); border-radius: 5px; background: #fff; }
+.review-metric label { display: block; color: var(--wbdz-secondary); font-size: var(--wbdz-font-caption); }
+.review-metric b { display: block; margin-top: 2px; color: var(--wbdz-title); font-size: 20px; font-weight: 650; }
+.review-metric.pending b { color: #d92d20; }
+.review-metric.confirmed b { color: #128a57; }
+.review-metric.revised b { color: #b54708; }
+.review-metric.refused b { color: #b42318; }
+.review-workspace { display: grid; grid-template-columns: 205px minmax(0, 1fr); gap: 14px; align-items: start; padding: 14px 20px 18px; }
+.sample-nav, .inspection-card { border: 1px solid var(--wbdz-border); border-radius: 5px; background: #fff; }
+.sample-nav { overflow: hidden; }
+.sample-nav-head { display: flex; justify-content: space-between; padding: 12px 13px; border-bottom: 1px solid var(--wbdz-border); color: var(--wbdz-title); font-size: 13px; font-weight: 650; }
+.sample-nav-head span { color: var(--wbdz-secondary); font-weight: 500; }
+.sample-nav-tip { padding: 8px 13px; border-bottom: 1px solid var(--wbdz-row-line); color: var(--wbdz-secondary); font-size: 11px; }
+.sample-nav-item { display: flex; align-items: flex-start; gap: 8px; padding: 10px 13px; border-bottom: 1px solid var(--wbdz-row-line); cursor: pointer; }
+.sample-nav-item:hover { background: var(--wbdz-primary-light); }
+.sample-nav-item.active { padding-left: 10px; border-left: 3px solid var(--wbdz-primary); background: var(--wbdz-primary-light); }
+.sample-nav-text { min-width: 0; }
+.sample-nav-text .item-id { overflow: hidden; color: #4e6680; font-family: var(--wbdz-font-mono); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.sample-nav-text small { display: block; margin-top: 2px; color: var(--wbdz-secondary); font-size: 11px; }
+.sample-dot { flex: none; width: 8px; height: 8px; margin-top: 5px; border-radius: 50%; background: #c9cdd4; }
+.sample-dot.pass { background: var(--wbdz-success); }
+.sample-nav-pager { padding: 11px 13px; color: var(--wbdz-secondary); font-size: 11px; }
+.inspection-card { min-width: 0; padding: 17px; }
+.inspection-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--wbdz-border); }
+.inspection-title { color: var(--wbdz-title); font-size: 16px; font-weight: 650; }
+.inspection-meta { margin-top: 3px; color: var(--wbdz-secondary); font-size: var(--wbdz-font-caption); }
+.focus-banner { margin-top: 12px; padding: 10px 12px; border: 1px solid #f7d394; border-radius: 4px; background: #fff8e8; color: #8b5b0b; font-size: 13px; line-height: 1.55; }
+.review-compare { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; margin-top: 14px; align-items: start; }
+.compare-pane { min-width: 0; }
+.pane-title { margin-bottom: 8px; color: var(--wbdz-title); font-size: 13px; font-weight: 650; }
+.result-table { margin-top: 2px; }
+.result-value { display: block; max-height: 180px; overflow: auto; white-space: pre-wrap; word-break: break-word; line-height: 1.6; }
 .diff-title { margin-top: 14px; }
-.raw-collapse { margin-top: 10px; }
-.json { background: var(--wbdz-bg-page); padding: 10px; max-height: 260px; overflow: auto; font-size: var(--wbdz-font-caption); margin: 0; white-space: pre-wrap; word-break: break-all; }
-@media (max-width: 1200px) { .review-grid { grid-template-columns: 1fr; } }
+.inspection-decision { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--wbdz-border); }
+.decision-hint { color: var(--wbdz-secondary); font-size: var(--wbdz-font-caption); line-height: 1.55; }
+.decision-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.empty-review-panel { padding: 36px 12px; border: 1px dashed var(--wbdz-border-strong); background: #fff; color: var(--wbdz-secondary); text-align: center; }
+.workbench-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 20px; border-top: 1px solid var(--wbdz-border); background: #fff; }
+.workbench-note { color: var(--wbdz-secondary); font-size: var(--wbdz-font-caption); }
+.workbench-nav { display: flex; gap: 8px; align-items: center; }
+@media (max-width: 1200px) {
+  .review-workspace { grid-template-columns: 170px minmax(0, 1fr); }
+  .review-compare { grid-template-columns: 1fr; }
+  .inspection-decision, .workbench-footer { align-items: flex-start; flex-direction: column; }
+  .workbench-nav { width: 100%; justify-content: flex-end; }
+}
 </style>
