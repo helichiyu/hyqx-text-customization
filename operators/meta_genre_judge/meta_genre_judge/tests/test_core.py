@@ -96,3 +96,14 @@ def test_parse_failure_goes_review(tmp_path, monkeypatch):
 def test_missing_input_file(tmp_path):
     with pytest.raises(ValueError, match="records.jsonl"):
         run(tmp_path, tmp_path / "out", validate_params({}), _noop_log)
+
+def test_model_call_failure_uses_model_call_failed_code(tmp_path, monkeypatch):
+    def _raise(*args, **kwargs):
+        raise op.LlmError("HTTP 402（不可重试）：账户余额不足")
+
+    monkeypatch.setattr(op.llm_client, "chat", _raise)
+    records = [_record("balance", "普通标题", "一段没有任何触发词的正文内容。" * 10)]
+    result = run(_write_input(tmp_path, records), tmp_path / "out", validate_params({}), _noop_log)
+    assert result["summary"]["review"] == 1
+    assert result["review"][0]["code"] == "model_call_failed"
+    assert "模型调用失败" in result["review"][0]["reviewReason"]

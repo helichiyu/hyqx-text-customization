@@ -59,15 +59,21 @@ def _judge_one(rec: dict[str, Any], threshold: float) -> dict[str, Any]:
         {"role": "user", "content": user},
     ]
     last_err: str | None = None
+    failure_code = "model_output_invalid"
     for _ in range(2):  # JSON 解析失败重试 1 次（传输重试由 llm_client 承担）
         try:
             obj = llm_client.extract_json(llm_client.chat(messages))
             break
-        except (JsonParseError, LlmError) as e:
+        except JsonParseError as e:
             last_err = str(e)
+            failure_code = "model_output_invalid"
+        except LlmError as e:
+            last_err = str(e)
+            failure_code = "model_call_failed"
     else:
-        return {"review": {**rec, "genre": None, "code": "model_output_invalid",
-                           "reviewReason": f"模型输出解析失败：{last_err}"}}
+        reason_prefix = "模型输出解析失败" if failure_code == "model_output_invalid" else "模型调用失败"
+        return {"review": {**rec, "genre": None, "code": failure_code,
+                           "reviewReason": f"{reason_prefix}：{last_err}"}}
 
     confidence = llm_client.clamp_confidence(obj.get("confidence"))
     genre = {

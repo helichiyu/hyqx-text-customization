@@ -195,14 +195,23 @@ public class DatasetServiceImpl implements DatasetService {
     public DatasetVO publish(Long id) {
         Dataset ds = load(id);
         require("candidate".equals(ds.getStatus()), "仅候选数据集可发布");
+        TaskMain task = ds.getTaskId() == null ? null : taskMapper.selectOneById(ds.getTaskId());
+        require(task != null, "来源任务不存在，不能发布数据集");
         Long open = reviewOrderMapper.selectCountByQuery(QueryWrapper.create()
                 .where(REVIEW_ORDER.TASK_ID.eq(ds.getTaskId()))
                 .and(REVIEW_ORDER.STATUS.in("pending", "doing")));
         require(open == 0, "来源任务还有未闭环复核单，不能发布");
+        require("quality".equals(task.getStatus()) || "collected".equals(task.getStatus()),
+                "来源任务尚未进入待归集，不能发布数据集");
         ds.setStatus("published");
         ds.setPublishBy(AuthContext.username());
         ds.setPublishTime(LocalDateTime.now());
         datasetMapper.update(ds);
+        // 数据集发布即代表来源任务已经完成归集，保持工作台状态同步。
+        if ("quality".equals(task.getStatus())) {
+            task.setStatus("collected");
+            taskMapper.update(task);
+        }
         return toVO(ds);
     }
 
@@ -263,8 +272,10 @@ public class DatasetServiceImpl implements DatasetService {
         String lineName = LineRegistry.LINE_NAMES.getOrDefault(ds.getLine(), ds.getLine());
         String taskText = task == null ? "-" : task.getBizNo() + " " + task.getName();
         String publishTime = ds.getPublishTime() == null ? "-"
-                : ds.getPublishTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-        String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+                : ds.getPublishTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+        LocalDateTime generatedAt = LocalDateTime.now();
+        String now = generatedAt.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+        String qualityVersion = qualityVersionText(ds.getSemVer(), closed, confirmed, revised, excluded);
 
         String text = """
                 数据集质量报告
@@ -273,15 +284,17 @@ public class DatasetServiceImpl implements DatasetService {
                 质量版本号：%s
                 所属产线：%s
                 来源任务：%s
-                内容条数：%d 条（已剔除条件复核 C 跳过 %d 条）
+                内容条数：%s 条（已剔除条件复核 C 跳过 %d 条）
                 发布状态：已发布（%s）
                 条件复核：未闭环 %d 个，已闭环 %d 个
                 复核处置：A确认 %d 条 / B修正 %d 条 / C剔除 %d 条
                 说明：条件复核覆盖系统分流的争议条目，不表示全部数据经人工逐条检查。
                 数据范围：本报告仅含处理信息与质量结论，不含原始数据（本系统数据不出域）。
-                """.formatted(now, ds.getBizNo(), ds.getSemVer(), lineName, taskText,
-                contentCount, cCount, publishTime, open, closed, confirmed, revised, excluded);
-        String filename = "质量报告_" + ds.getBizNo() + "_" + ds.getSemVer() + ".txt";
+                """.formatted(now, ds.getBizNo(), qualityVersion, lineName, taskText,
+                String.format("%,d", contentCount), cCount, publishTime, open, closed,
+                confirmed, revised, excluded);
+        String stamp = generatedAt.format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+        String filename = ds.getBizNo() + "_质量报告_" + stamp + ".txt";
         DeliveryLog logRow = new DeliveryLog();
         String prefix = LineRegistry.LINE_PREFIX.get(ds.getLine());
         logRow.setBizNo(BizId.nextUnique(prefix, candidate -> deliveryLogMapper.selectCountByQuery(
@@ -294,6 +307,20 @@ public class DatasetServiceImpl implements DatasetService {
         log.info("质量报告下载: dataset={} content={} A/B/C={}/{}/{} by={}", ds.getBizNo(),
                 contentCount, confirmed, revised, excluded, AuthContext.username());
         return new DatasetService.ReportFile(filename, text.getBytes(StandardCharsets.UTF_8));
+    }
+
+    /** 质量版本说明：V1 直出、V2 复核闭环、V3 起重跑。 */
+    private String qualityVersionText(String semVer, long closed,
+                                      long confirmed, long revised, long excluded) {
+        int major = 1;
+        if (semVer != null && semVer.matches("V\\d+\\.0")) {
+            major = Integer.parseInt(semVer.substring(1, semVer.indexOf('.')));
+        }
+        List<String> factors = new ArrayList<>();
+        if (major >= 3) factors.add("成片错误重跑（第" + (major - 2) + "次）产出");
+        if (closed > 0) factors.add("经条件复核闭环：确认" + confirmed + " / 修正" + revised + " / 跳过" + excluded);
+        if (factors.isEmpty()) factors.add("产线直出");
+        return semVer + "（" + String.join("；", factors) + "）";
     }
 
     /** 交付记录分页。 */

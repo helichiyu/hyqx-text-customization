@@ -1,66 +1,202 @@
 <template>
   <div class="page-stack" v-loading="loading">
-    <PageHeader v-if="task" :title="task.name" eyebrow="任务详情">
-      <template #description>
-        <span class="sub">
-          <BizIdText :value="task.bizNo" />
-          <el-tag :type="TASK_STATUS[task.status]?.tag" effect="light">{{ task.statusName }}</el-tag>
-          <el-tag :type="PRIORITIES[task.priority]?.tag" size="small">{{ PRIORITIES[task.priority]?.name }}</el-tag>
-          <el-tag v-if="task.imageClass" size="small" type="info">{{ task.imageClass }}</el-tag>
-          <span class="muted">{{ task.lineName }} · 第 {{ task.currentStage }}/3 环节</span>
-          <el-tag v-if="task.running" type="warning" size="small" effect="dark">执行中</el-tag>
-        </span>
-      </template>
+    <PageHeader
+      v-if="task"
+      title="任务详情"
+      description="查看生产结果、归集版本、条件复核和交付状态。"
+    >
       <template #actions>
+        <el-button @click="goBack">返回任务列表</el-button>
         <el-button v-if="task.status === 'draft'" type="primary" @click="act('submit')">提交</el-button>
         <el-button v-if="task.status === 'pending'" type="primary" @click="act('start')">启动执行</el-button>
-        <el-button v-if="task.status === 'quality'" type="success" @click="act('collect')">归集</el-button>
-        <el-button v-if="task.status === 'waitreview' || task.status === 'quality'" type="warning" @click="openReject">驳回重跑</el-button>
+        <el-button v-if="task.status === 'quality'" type="success" @click="act('collect')">去归集</el-button>
+        <el-button v-if="task.status === 'waitreview' || task.status === 'quality'" type="warning" plain @click="openReject()">重跑任务</el-button>
         <el-button v-if="task.status === 'draft'" type="danger" plain @click="act('delete')">删除</el-button>
         <el-button @click="load">刷新</el-button>
       </template>
     </PageHeader>
 
-    <el-card shadow="never" v-if="task">
-      <el-descriptions :column="3" border size="small" class="desc">
-        <el-descriptions-item label="素材批次">
-          <template v-if="task.batch"><BizIdText :value="task.batch.bizNo" /> · {{ task.batch.name }}</template><template v-else>—</template>
-          <span class="muted">（有效 {{ task.batch?.fileCount ?? 0 }} 条）</span>
-        </el-descriptions-item>
-        <el-descriptions-item label="参数版本">{{ task.paramVersion || '—' }}</el-descriptions-item>
-        <el-descriptions-item label="置信度阈值">
-          <span class="mono">{{ task.threshold }}</span>
-          <el-button link type="primary" size="small" @click="openThreshold">调整</el-button>
-        </el-descriptions-item>
-        <el-descriptions-item label="创建人">{{ task.createBy || '—' }}</el-descriptions-item>
-        <el-descriptions-item label="创建时间" :span="2">{{ fmt(task.createTime) }}</el-descriptions-item>
-      </el-descriptions>
-    </el-card>
-
-    <!-- 环节执行 -->
-    <el-card shadow="never" class="block">
-      <template #header><b>环节执行</b></template>
-      <div class="stages">
-        <div v-for="(name, i) in task?.stageNames || []" :key="i" class="stage"
-             :class="{ done: task.currentStage > i + 1 || task.status === 'collected', current: task.currentStage === i + 1 && task.status !== 'collected' }">
-          <div class="stage-no">{{ i + 1 }}</div>
-          <div class="stage-name">{{ name }}</div>
-          <div class="stage-sub">{{ runsOf(i + 1).length ? `执行 ${runsOf(i + 1).length} 次` : '未执行' }}</div>
+    <section v-if="task" class="detail-card progress-card">
+      <div class="card-title-row">
+        <div class="detail-card-title">任务进度</div>
+        <span class="progress-value">{{ overallProgress }}% · {{ progressLabel }}</span>
+      </div>
+      <div class="progress-line"><i :style="{ width: `${overallProgress}%` }" /></div>
+      <div class="stage-chips">
+        <div
+          v-for="(name, i) in task.stageNames || []"
+          :key="i"
+          class="stage-chip"
+          :class="stageState(i + 1)"
+        >
+          <span class="stage-chip-no">{{ i + 1 }}</span>
+          <span>{{ name }}</span>
+          <span class="stage-chip-status">{{ stageStateText(i + 1) }}</span>
         </div>
       </div>
+      <div v-if="latestError" class="error-callout">
+        <div>
+          <b>第 {{ latestError.stageNo }} 环节“{{ latestError.stageName }}”运行失败：</b>
+          <span class="error-message">{{ runError(latestError) }}</span>
+        </div>
+        <el-button v-if="task.status === 'pending'" size="small" type="danger" @click="act('start')">重新启动任务</el-button>
+        <el-button v-else-if="task.status === 'waitreview' || task.status === 'quality'" size="small" type="danger" @click="openReject(latestError.stageNo)">从本环节重跑</el-button>
+      </div>
+    </section>
 
-      <el-table :data="task?.stageRuns || []" size="small" style="margin-top: 12px">
-        <el-table-column label="环节" width="90">
-          <template #default="{ row }">{{ row.stageNo }}. {{ row.stageName }}</template>
+    <section v-if="task" class="detail-card overview-card">
+      <div class="detail-card-title">任务概览</div>
+      <div class="overview-grid">
+        <div class="overview-item">
+          <label>任务ID</label>
+          <span><BizIdText :value="task.bizNo" /></span>
+        </div>
+        <div class="overview-item overview-item-wide">
+          <label>任务名称</label>
+          <span>{{ task.name }}</span>
+        </div>
+        <div class="overview-item">
+          <label>所属产线</label>
+          <span>{{ task.lineName }}</span>
+        </div>
+        <div v-if="task.line === 'graphic'" class="overview-item">
+          <label>图片大类</label>
+          <span>{{ task.imageClass || '未指定' }}</span>
+        </div>
+        <div class="overview-item overview-item-wide">
+          <label>关联素材批次</label>
+          <span v-if="task.batch">
+            <BizIdText :value="task.batch.bizNo" />
+            <span class="overview-muted"> · {{ task.batch.name }}（有效 {{ task.batch.fileCount ?? 0 }} 条）</span>
+          </span>
+          <span v-else class="muted">未关联</span>
+        </div>
+        <div class="overview-item">
+          <label>参数版本</label>
+          <span>
+            {{ task.paramVersion || '—' }}
+            <el-button link type="primary" size="small" @click="openParamSnapshot">查看快照</el-button>
+          </span>
+        </div>
+        <div class="overview-item">
+          <label>置信度阈值</label>
+          <span>
+            <span class="mono">{{ task.threshold ?? '—' }}</span>
+            <el-button link type="primary" size="small" @click="openThreshold">调整</el-button>
+          </span>
+        </div>
+        <div class="overview-item">
+          <label>优先级</label>
+          <span><el-tag :type="PRIORITIES[task.priority]?.tag" size="small">{{ PRIORITIES[task.priority]?.name || '—' }}</el-tag></span>
+        </div>
+        <div class="overview-item">
+          <label>任务状态</label>
+          <span><el-tag :type="TASK_STATUS[task.status]?.tag" size="small">{{ task.statusName }}</el-tag></span>
+        </div>
+        <div class="overview-item">
+          <label>创建人</label>
+          <span>{{ task.createBy || '—' }}</span>
+        </div>
+        <div class="overview-item">
+          <label>创建时间</label>
+          <span>{{ fmt(task.createTime) }}</span>
+        </div>
+        <div class="overview-item">
+          <label>当前环节</label>
+          <span>第 {{ task.currentStage || 0 }}/{{ task.stageNames?.length || 3 }} 环节</span>
+        </div>
+      </div>
+    </section>
+
+    <section v-if="task" class="detail-card dataset-detail-card">
+      <div class="card-title-row">
+        <div>
+          <div class="detail-card-title">数据集明细</div>
+          <div class="detail-card-subtitle">
+            <template v-if="task.datasets?.length">
+              {{ task.datasets[0].bizNo }} · {{ task.datasets[0].semVer }} · 共 {{ taskDatasetTotal }} 条 · 第 {{ taskDatasetPage }} / {{ taskDatasetPageCount }} 页
+            </template>
+            <template v-else>任务执行完成后生成可复核的数据集条目</template>
+          </div>
+        </div>
+        <el-button v-if="task.datasets?.length" link type="primary" size="small" @click="openDataset(task.datasets[0].bizNo)">完整明细</el-button>
+      </div>
+
+      <template v-if="task.datasets?.length">
+        <div class="dataset-toolbar">
+          <div class="dataset-filter">
+            <label>复核范围</label>
+            <el-select v-model="taskDatasetFilter" placeholder="全部" clearable style="width: 150px" @change="loadTaskDataset(1)">
+              <el-option label="全部" value="" />
+              <el-option label="待复核" value="待复核" />
+              <el-option label="已确认(A)" value="已确认" />
+              <el-option label="已修正(B)" value="已修正" />
+              <el-option label="已剔除(C)" value="已剔除" />
+            </el-select>
+          </div>
+          <div class="dataset-filter">
+            <label>低置信阈值</label>
+            <el-input-number v-model="taskDatasetThreshold" :min="0" :max="1" :step="0.01" :precision="2" controls-position="right" style="width: 125px" />
+          </div>
+          <div class="dataset-toolbar-spacer" />
+          <el-button v-if="activeTaskReviewOrder" type="primary" @click="openReview(activeTaskReviewOrder.bizNo)">条件复核</el-button>
+          <el-button v-else type="primary" :disabled="!taskDatasetItems.some(canAddToReview)" @click="addTaskDatasetToReview">条件复核</el-button>
+        </div>
+
+        <el-table :data="taskDatasetItems" size="small" class="dataset-table" v-loading="taskDatasetLoading">
+          <el-table-column prop="itemKey" label="条目编号" min-width="210" show-overflow-tooltip />
+          <el-table-column :label="recognitionConfidenceLabel" width="105" align="center">
+            <template #default="{ row }">
+              <span :class="confidenceClass(itemRecognitionConfidence(row))">{{ formatConfidence(itemRecognitionConfidence(row)) }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column :label="semanticConfidenceLabel" width="125" align="center">
+            <template #default="{ row }">
+              <span :class="confidenceClass(itemSemanticConfidence(row))">{{ formatConfidence(itemSemanticConfidence(row)) }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="低置信项" width="90" align="center">
+            <template #default="{ row }"><span :class="{ 'danger-text': itemLowConfidenceCount(row) > 0 }">{{ itemLowConfidenceCount(row) }}</span></template>
+          </el-table-column>
+          <el-table-column label="低置信原因" min-width="230" show-overflow-tooltip>
+            <template #default="{ row }"><span class="small muted">{{ itemLowConfidenceReason(row) }}</span></template>
+          </el-table-column>
+          <el-table-column label="复核状态" width="100" align="center">
+            <template #default="{ row }"><el-tag size="small" :type="reviewTag(row.reviewStatus)">{{ row.reviewStatus || '—' }}</el-tag></template>
+          </el-table-column>
+          <el-table-column label="修正状态" width="100" align="center">
+            <template #default="{ row }"><span class="small">{{ row.revisionStatus || '—' }}</span></template>
+          </el-table-column>
+          <el-table-column label="操作" width="72" fixed="right">
+            <template #default="{ row }"><el-button link type="primary" size="small" @click="openTaskDatasetItem(row)">查看</el-button></template>
+          </el-table-column>
+        </el-table>
+        <el-pagination class="pager" layout="total, prev, pager, next" :total="taskDatasetTotal"
+          v-model:current-page="taskDatasetPage" :page-size="taskDatasetPageSize" @current-change="loadTaskDataset()" />
+      </template>
+      <div v-else class="empty-block">任务尚未归集，完成质量治理后生成候选数据集版本。</div>
+    </section>
+
+    <section v-if="task" class="detail-card execution-card">
+      <div class="card-title-row">
+        <div>
+          <div class="detail-card-title">环节执行</div>
+          <div class="detail-card-subtitle">记录算子尝试、样本进度、跳过与失败信息</div>
+        </div>
+        <el-switch v-model="showAllRuns" size="small" active-text="全部尝试" />
+      </div>
+      <el-table :data="displayedRuns" size="small" class="run-table">
+        <el-table-column label="环节" width="110">
+          <template #default="{ row }"><b>{{ row.stageNo }}. {{ row.stageName }}</b></template>
         </el-table-column>
-        <el-table-column prop="operatorTag" label="算子" width="160" />
-        <el-table-column label="状态" width="90">
+        <el-table-column prop="operatorTag" label="算子" width="160" show-overflow-tooltip />
+        <el-table-column label="状态" width="76">
           <template #default="{ row }">
             <el-tag :type="runTag(row.status)" size="small">{{ runName(row.status) }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="attempt" label="尝试" width="60" align="center" />
-        <el-table-column label="样本进度" min-width="220">
+        <el-table-column prop="attempt" label="尝试" width="52" align="center" />
+        <el-table-column label="样本进度" min-width="190">
           <template #default="{ row }">
             <div v-if="row.progress" class="progress-cell">
               <el-progress :percentage="progressPercent(row.progress)" :stroke-width="6" :status="progressStatus(row.progress)" />
@@ -69,89 +205,43 @@
             <span v-else class="muted">—</span>
           </template>
         </el-table-column>
-        <el-table-column label="摘要" min-width="220">
+        <el-table-column label="摘要" min-width="210">
           <template #default="{ row }">
             <span v-if="row.summary" class="mono small">{{ summaryText(row.summary) }}</span>
             <span v-else class="muted">—</span>
           </template>
         </el-table-column>
-        <el-table-column label="跳过/失败" width="130">
+        <el-table-column label="跳过/失败" width="105">
           <template #default="{ row }">
             <el-tag v-if="row.skipped?.length" type="info" size="small">跳过 {{ row.skipped.length }}</el-tag>
-            <el-tag v-if="row.failed?.length" type="danger" size="small" style="margin-left: 4px">失败 {{ row.failed.length }}</el-tag>
+            <el-tooltip v-if="row.failed?.length" :content="runError(row)" placement="top">
+              <el-tag type="danger" size="small" style="margin-left: 4px">失败 {{ row.failed.length }}</el-tag>
+            </el-tooltip>
             <span v-if="!row.skipped?.length && !row.failed?.length" class="muted">—</span>
           </template>
         </el-table-column>
-        <el-table-column label="时间" width="230">
+        <el-table-column label="时间" width="170">
           <template #default="{ row }">
             <span class="small">{{ fmt(row.startTime) }}<br />{{ fmt(row.endTime) }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="产物" width="80" fixed="right">
+        <el-table-column label="产物" width="64" fixed="right">
           <template #default="{ row }">
             <el-button size="small" link type="primary" :disabled="row.status === 'running'" @click="openFiles(row)">文件</el-button>
           </template>
         </el-table-column>
       </el-table>
-    </el-card>
+    </section>
 
-    <div class="two-col">
-      <!-- 数据集 -->
-      <el-card shadow="never" class="block">
-        <template #header><b>数据集（{{ task?.datasets?.length || 0 }}）</b></template>
-        <el-table :data="task?.datasets || []" size="small">
-          <el-table-column label="编号" min-width="190"><template #default="{ row }"><BizIdText :value="row.bizNo" /></template></el-table-column>
-          <el-table-column prop="semVer" label="版本" width="80" />
-          <el-table-column label="状态" width="90">
-            <template #default="{ row }">
-              <el-tag :type="DS_STATUS[row.status]?.tag" size="small">{{ DS_STATUS[row.status]?.name }}</el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column label="有效/跳过" width="100" align="center">
-            <template #default="{ row }">{{ row.itemCount }} / {{ row.skipCount }}</template>
-          </el-table-column>
-          <el-table-column label="操作" width="80">
-            <template #default="{ row }">
-              <el-button link type="primary" size="small" @click="openDataset(row.bizNo)">明细</el-button>
-            </template>
-          </el-table-column>
-        </el-table>
-      </el-card>
-
-      <!-- 复核单 -->
-      <el-card shadow="never" class="block">
-        <template #header><b>条件复核单（{{ task?.reviewOrders?.length || 0 }}）</b></template>
-        <el-table :data="task?.reviewOrders || []" size="small">
-          <el-table-column label="编号" min-width="190"><template #default="{ row }"><BizIdText :value="row.bizNo" /></template></el-table-column>
-          <el-table-column prop="stageName" label="环节" width="120" />
-          <el-table-column label="状态" width="90">
-            <template #default="{ row }">
-              <el-tag :type="REVIEW_STATUS[row.status]?.tag" size="small">{{ REVIEW_STATUS[row.status]?.name }}</el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column prop="itemCount" label="条目" width="60" align="center" />
-          <el-table-column label="操作" width="80">
-            <template #default="{ row }">
-              <el-button link type="primary" size="small" @click="openReview(row.bizNo)">去复核</el-button>
-            </template>
-          </el-table-column>
-        </el-table>
-      </el-card>
-    </div>
-
-    <!-- 参数快照 -->
-    <el-card shadow="never" class="block">
-      <template #header><b>参数快照（创建时锁定）</b></template>
+    <el-dialog v-model="paramSnapshotVisible" class="wbdz-dialog" title="参数快照（创建时锁定）" width="640px">
       <el-table :data="task?.paramSnapshot || []" size="small">
-        <el-table-column prop="name" label="参数名" width="240" />
+        <el-table-column prop="name" label="参数名" width="180" />
         <el-table-column label="取值" min-width="200">
-          <template #default="{ row }">
-            <span class="mono">{{ typeof row.value === 'object' ? JSON.stringify(row.value) : row.value }}</span>
-          </template>
+          <template #default="{ row }"><span class="mono">{{ typeof row.value === 'object' ? JSON.stringify(row.value) : row.value }}</span></template>
         </el-table-column>
         <el-table-column prop="desc" label="说明" min-width="220" />
       </el-table>
-    </el-card>
+    </el-dialog>
 
     <!-- 驳回重跑 -->
     <el-dialog v-model="rejectVisible" title="驳回重跑" width="440px">
@@ -260,7 +350,7 @@ import { useRoute, useRouter } from 'vue-router'
 import DatasetItemViewer from '@/components/DatasetItemViewer.vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
-  TASK_STATUS, PRIORITIES, DS_STATUS, REVIEW_STATUS,
+  TASK_STATUS, PRIORITIES,
   taskDetail, taskSubmit, taskStart, taskReject, taskCollect, taskThreshold, taskDelete,
   artifactList, artifactBlob, datasetDetail, reviewAddFromDataset,
 } from '@/api'
@@ -278,6 +368,8 @@ const rejectVisible = ref(false)
 const rejectStage = ref(1)
 const thresholdVisible = ref(false)
 const thresholdValue = ref(0.8)
+const paramSnapshotVisible = ref(false)
+const showAllRuns = ref(false)
 
 const filesVisible = ref(false)
 const filesLoading = ref(false)
@@ -298,6 +390,110 @@ const dsPage = ref(1)
 const dsFilter = ref('')
 const dsItemVisible = ref(false)
 const dsItemIndex = ref(0)
+
+const taskDatasetItems = ref<any[]>([])
+const taskDatasetTotal = ref(0)
+const taskDatasetPage = ref(1)
+const taskDatasetPageSize = 10
+const taskDatasetFilter = ref('')
+const taskDatasetThreshold = ref(0.8)
+const taskDatasetLoading = ref(false)
+
+const taskDatasetPageCount = computed(() => Math.max(1, Math.ceil(taskDatasetTotal.value / taskDatasetPageSize)))
+const activeTaskReviewOrder = computed(() => {
+  const orders = task.value?.reviewOrders || []
+  return orders.find((order: any) => order.status === 'pending' || order.status === 'doing') || null
+})
+const recognitionConfidenceLabel = computed(() => {
+  if (task.value?.line === 'layout') return '框选置信度'
+  if (task.value?.line === 'graphic') return 'OCR 置信度'
+  if (task.value?.line === 'metadata') return '事实抽取置信度'
+  return '识别置信度'
+})
+const semanticConfidenceLabel = computed(() => {
+  if (task.value?.line === 'layout') return '判定置信度'
+  if (task.value?.line === 'graphic') return '描述置信度'
+  if (task.value?.line === 'metadata') return '元信息补全置信度'
+  return '语义标注置信度'
+})
+
+const orderedRuns = computed(() => [...(task.value?.stageRuns || [])]
+  .sort((a: any, b: any) => Number(a.id) - Number(b.id)))
+
+const latestRuns = computed(() => {
+  const seen = new Set<string>()
+  const result: any[] = []
+  for (let i = orderedRuns.value.length - 1; i >= 0; i--) {
+    const run = orderedRuns.value[i]
+    const key = `${run.stageNo}|${run.operatorTag}`
+    if (!seen.has(key)) {
+      seen.add(key)
+      result.push(run)
+    }
+  }
+  return result.sort((a, b) => Number(a.stageNo) - Number(b.stageNo)
+    || String(a.operatorTag).localeCompare(String(b.operatorTag)))
+})
+
+const displayedRuns = computed(() => showAllRuns.value
+  ? [...orderedRuns.value].reverse()
+  : latestRuns.value)
+
+const latestError = computed(() => latestRuns.value.find((run) => run.status === 'error') || null)
+
+const overallProgress = computed(() => {
+  const names = task.value?.stageNames || []
+  if (!names.length) return 0
+  const done = names.filter((_: string, index: number) => stageState(index + 1) === 'done').length
+  return Math.round(done / names.length * 100)
+})
+
+const progressLabel = computed(() => {
+  const status = task.value?.status
+  if (status === 'processing') return '处理中'
+  if (status === 'pending') return '待启动'
+  if (status === 'draft') return '草稿'
+  if (status === 'waitreview') return '待复核'
+  if (status === 'quality') return '待归集'
+  if (status === 'collected') return '已归集'
+  return task.value?.statusName || '—'
+})
+
+function latestRunsForStage(stage: number) {
+  return latestRuns.value.filter((run) => Number(run.stageNo) === stage)
+}
+
+function stageState(stage: number) {
+  const status = task.value?.status
+  if (status === 'quality' || status === 'collected') return 'done'
+  const runs = latestRunsForStage(stage)
+  if (runs.some((run) => run.status === 'error')) return 'error'
+  if (runs.some((run) => run.status === 'running')) return 'running'
+  if (runs.length > 0 && runs.every((run) => run.status === 'done')) return 'done'
+  const current = Number(task.value?.currentStage || 0)
+  if (status === 'processing' && current >= stage) return 'running'
+  if (status === 'waitreview' && current >= stage) return 'done'
+  return 'waiting'
+}
+
+function stageStateText(stage: number) {
+  return ({ done: '完成', error: '失败', running: '执行中', waiting: '未执行' } as Record<string, string>)[stageState(stage)]
+}
+
+function runError(run: any) {
+  const failure = run?.failed?.[0]
+  const message = failure?.error || failure?.reason || '算子执行失败'
+  return String(message).slice(0, 500)
+}
+
+function goBack() {
+  router.push((route.query.fromWb as string) || `/wb/${task.value?.line || 'metadata'}`)
+}
+
+function openParamSnapshot() {
+  paramSnapshotVisible.value = true
+}
+
 function lastDoneRun(tag?: string) {
   const done = (task.value?.stageRuns || []).filter((r: any) =>
     r.status === 'done' && (!tag || r.operatorTag === tag))
@@ -327,10 +523,6 @@ function openDsItem(row: any) {
   const idx = dsItems.value.indexOf(row)
   dsItemIndex.value = idx < 0 ? 0 : idx
   dsItemVisible.value = true
-}
-
-function runsOf(stage: number) {
-  return (task.value?.stageRuns || []).filter((r: any) => r.stageNo === stage)
 }
 
 function runTag(s: string) {
@@ -388,10 +580,176 @@ function reviewTag(s?: string) {
   return s === '已确认' ? 'success' : s === '已修正' ? 'warning' : s === '已剔除' ? 'danger' : 'info'
 }
 
+function openReview(orderBizNo: string) {
+  router.push({ path: '/review', query: { orderBizNo } })
+}
+
+function asNumber(value: any) {
+  if (value == null || value === '') return null
+  const number = Number(value)
+  return Number.isNaN(number) ? null : number
+}
+
+function minValues(values: any[]) {
+  const numbers = values.map(asNumber).filter((value): value is number => value != null)
+  return numbers.length ? Math.min(...numbers) : null
+}
+
+function itemRecognitionConfidence(row: any) {
+  const payload = row?.payload || {}
+  if (task.value?.line === 'layout') {
+    return asNumber(payload.confidence?.bbox)
+      ?? minValues((payload.elements || []).map((element: any) => element.bboxConf))
+  }
+  if (task.value?.line === 'graphic') {
+    return asNumber(payload.confidence?.ocr) ?? asNumber(payload.confidence?.type)
+  }
+  if (task.value?.line === 'metadata') {
+    return asNumber(payload.extractConfidence) ?? asNumber(payload.facts?.extractConfidence)
+  }
+  return asNumber(payload.recognitionConfidence)
+    ?? asNumber(payload.confidence?.recognition)
+    ?? asNumber(payload.confidence)
+}
+
+function itemSemanticConfidence(row: any) {
+  const payload = row?.payload || {}
+  if (task.value?.line === 'layout') {
+    return asNumber(payload.confidence?.type)
+      ?? minValues((payload.elements || []).map((element: any) => element.typeConf))
+  }
+  if (task.value?.line === 'graphic') {
+    return asNumber(payload.confidence?.desc) ?? asNumber(payload.confidence?.ocr)
+  }
+  if (task.value?.line === 'metadata') {
+    return asNumber(payload.fillConfidence) ?? asNumber(payload.fields?.fillConfidence)
+  }
+  return asNumber(payload.semanticConfidence) ?? asNumber(payload.confidence?.semantic)
+}
+
+function formatConfidence(value: number | null) {
+  return value == null || Number.isNaN(value) ? '—' : value.toFixed(2)
+}
+
+function confidenceClass(value: number | null) {
+  if (value == null || Number.isNaN(value)) return 'muted'
+  if (value < taskDatasetThreshold.value) return 'confidence-low'
+  if (value < 0.8) return 'confidence-warning'
+  return 'confidence-ok'
+}
+
+function itemLowConfidenceCount(row: any) {
+  const threshold = Number(taskDatasetThreshold.value || 0.8)
+  if (task.value?.line === 'layout') {
+    const elements = row?.payload?.elements || []
+    if (elements.length) {
+      return elements.filter((element: any) =>
+        (asNumber(element.bboxConf) ?? 1) < threshold || (asNumber(element.typeConf) ?? 1) < threshold).length
+    }
+  }
+  const values = [itemRecognitionConfidence(row), itemSemanticConfidence(row)]
+    .filter((value): value is number => value != null && !Number.isNaN(value))
+  if (values.length) return values.filter((value) => value < threshold).length
+  return Number(row?.payload?.lowConfidenceCount || 0)
+}
+
+function itemLowConfidenceReason(row: any) {
+  const backendReason = row?.payload?.lowConfidenceReasons
+    || row?.payload?.reviewReason
+    || row?.payload?.reason
+  if (backendReason) return backendReason
+  const threshold = Number(taskDatasetThreshold.value || 0.8)
+  const reasons: string[] = []
+  if (task.value?.line === 'layout') {
+    const elements = row?.payload?.elements || []
+    const bboxLow = elements.some((element: any) => (asNumber(element.bboxConf) ?? 1) < threshold)
+    const typeLow = elements.some((element: any) => (asNumber(element.typeConf) ?? 1) < threshold)
+    if (bboxLow) reasons.push('框选置信度偏低')
+    if (typeLow) reasons.push('判定置信度偏低')
+  } else {
+    const recognition = itemRecognitionConfidence(row)
+    const semantic = itemSemanticConfidence(row)
+    const recognitionLabel = task.value?.line === 'metadata' ? '事实抽取置信度偏低' : '识别置信度偏低'
+    const semanticLabel = task.value?.line === 'metadata' ? '元信息补全置信度偏低' : '语义标注置信度偏低'
+    if (recognition != null && recognition < threshold) reasons.push(recognitionLabel)
+    if (semantic != null && semantic < threshold) reasons.push(semanticLabel)
+  }
+  return reasons.join('；') || (row?.reviewStatus === '待复核' ? '待复核' : '—')
+}
+
+function isLowConfidence(row: any) {
+  return itemLowConfidenceCount(row) > 0
+    || row?.reviewStatus === '待复核'
+    || row?.payload?.reviewStatus === '待复核'
+}
+
+function canAddToReview(row: any) {
+  const status = row?.reviewStatus
+  return isLowConfidence(row) && (!status || status === '未进入复核')
+}
+
+async function loadTaskDataset(page?: number) {
+  const dataset = task.value?.datasets?.[0]
+  if (!dataset?.bizNo) {
+    taskDatasetItems.value = []
+    taskDatasetTotal.value = 0
+    return
+  }
+  if (page) taskDatasetPage.value = page
+  taskDatasetLoading.value = true
+  try {
+    const d = await datasetDetail(dataset.bizNo, {
+      reviewStatus: taskDatasetFilter.value || undefined,
+      pageNum: taskDatasetPage.value,
+      pageSize: taskDatasetPageSize,
+    })
+    taskDatasetItems.value = d.items.records
+    taskDatasetTotal.value = Number(d.items.total)
+  } finally {
+    taskDatasetLoading.value = false
+  }
+}
+
+function openTaskDatasetItem(row: any) {
+  dsItems.value = taskDatasetItems.value
+  dsTotal.value = taskDatasetTotal.value
+  const index = taskDatasetItems.value.indexOf(row)
+  dsItemIndex.value = index < 0 ? 0 : index
+  dsItemVisible.value = true
+}
+
+async function addTaskDatasetToReview() {
+  const candidates = taskDatasetItems.value.filter(canAddToReview)
+  if (!candidates.length) {
+    ElMessage.info('当前页没有需要新加入复核的条目')
+    return
+  }
+  let added = 0
+  for (const item of candidates) {
+    try {
+      await reviewAddFromDataset(String(item.id))
+      added += 1
+    } catch {
+      // 已被加入复核或当前条目不可加入时继续处理其他条目
+    }
+  }
+  if (added) ElMessage.success(`已加入复核 ${added} 条低置信条目`)
+  else ElMessage.info('当前低置信条目已在复核任务中')
+  await load()
+  await loadTaskDataset()
+}
+
 async function load() {
   loading.value = true
   try {
     task.value = await taskDetail(taskBizNo)
+    if (task.value?.datasets?.length) {
+      if (!taskDatasetItems.value.length) taskDatasetThreshold.value = Number(task.value.threshold || 0.8)
+      await loadTaskDataset()
+    } else {
+      taskDatasetItems.value = []
+      taskDatasetTotal.value = 0
+    }
     schedulePoll()
   } finally {
     loading.value = false
@@ -423,8 +781,8 @@ async function act(kind: 'submit' | 'start' | 'collect' | 'delete') {
   load()
 }
 
-function openReject() {
-  rejectStage.value = 1
+function openReject(stageNo = 1) {
+  rejectStage.value = Math.min(Math.max(Number(stageNo) || 1, 1), task.value?.stageNames?.length || 3)
   rejectVisible.value = true
 }
 
@@ -501,10 +859,6 @@ async function loadDatasetItems(page?: number) {
   dsTotal.value = d.items.total
 }
 
-function openReview(orderBizNo: string) {
-  router.push({ path: '/review', query: { orderBizNo } })
-}
-
 load()
 onUnmounted(() => {
   window.clearTimeout(timer.value)
@@ -513,29 +867,99 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-
-
-.sub { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .mono { font-family: var(--wbdz-font-mono); }
 .small { font-size: var(--wbdz-font-caption); }
 .muted { color: var(--wbdz-secondary); }
 
-.desc { margin-top: 14px; }
-.block { margin-top: 14px; }
-.stages { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-.stage { border: 1px solid var(--wbdz-border); border-radius: 8px; padding: 12px 14px; position: relative; background: var(--wbdz-bg-page); }
-.stage.done { border-color: var(--wbdz-success); background: var(--wbdz-success-light); }
-.stage.current { border-color: var(--wbdz-primary); background: var(--wbdz-primary-light); }
-.stage-no { width: 24px; height: 24px; line-height: 24px; text-align: center; border-radius: 50%; background: var(--wbdz-primary); color: #fff; font-size: var(--wbdz-font-body); }
-.stage.done .stage-no { background: var(--wbdz-success); }
-.stage-name { margin-top: 8px; font-weight: 600; color: var(--wbdz-title); }
-.stage-sub { font-size: var(--wbdz-font-caption); color: var(--wbdz-secondary); margin-top: 2px; }
-.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-.toolbar { display: flex; gap: 10px; margin-bottom: 12px; }
-.pager { margin-top: 12px; justify-content: flex-end; }
+.detail-card {
+  padding: 16px;
+  border: 1px solid var(--wbdz-border);
+  border-radius: 8px;
+  background: var(--wbdz-bg-card);
+}
+.card-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+.detail-card-title { color: #263b55; font-size: 15px; font-weight: 650; line-height: 1.4; }
+.detail-card-subtitle { margin-top: 3px; color: var(--wbdz-secondary); font-size: var(--wbdz-font-caption); }
+.progress-value { color: var(--wbdz-primary); font-size: 13px; white-space: nowrap; }
+.progress-line { height: 6px; overflow: hidden; border-radius: 99px; background: #eaf2fb; }
+.progress-line i { display: block; height: 100%; border-radius: 99px; background: var(--wbdz-primary); transition: width 240ms ease; }
+.stage-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.stage-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 27px;
+  padding: 3px 9px 3px 5px;
+  border: 1px solid #d8e9fc;
+  border-radius: 4px;
+  background: #f6fbff;
+  color: #4d79a6;
+  font-size: var(--wbdz-font-caption);
+}
+.stage-chip.done { border-color: #d9f7be; background: #e8f7ef; color: #128a57; }
+.stage-chip.error { border-color: #fecaca; background: #fee4e2; color: #b42318; }
+.stage-chip.running { border-color: #8fa3ff; background: #eef4ff; color: var(--wbdz-primary); }
+.stage-chip.waiting { color: #7c8ca1; }
+.stage-chip-no {
+  display: inline-grid;
+  place-items: center;
+  width: 19px;
+  height: 19px;
+  border-radius: 50%;
+  background: #dcecff;
+  color: #4474b8;
+  font-size: 11px;
+  font-weight: 700;
+}
+.stage-chip.done .stage-chip-no { background: #bcebd0; color: #128a57; }
+.stage-chip.error .stage-chip-no { background: #ffd1cf; color: #b42318; }
+.stage-chip.running .stage-chip-no { background: #dbe5ff; color: var(--wbdz-primary); }
+.stage-chip-status { opacity: .82; }
+.error-callout {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 14px;
+  padding: 11px 14px;
+  border: 1px solid #fecaca;
+  border-radius: 5px;
+  background: #fee4e2;
+  color: #a8071a;
+  font-size: 13px;
+}
+.error-callout .error-message { display: block; margin-top: 3px; line-height: 1.55; word-break: break-word; }
+.error-callout .el-button { flex: none; }
+.overview-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px 28px; }
+.overview-item { min-width: 0; }
+.overview-item label { display: block; margin-bottom: 4px; color: #8b98a9; font-size: var(--wbdz-font-caption); }
+.overview-item > span { display: block; color: #3d5b7d; line-height: 1.55; overflow-wrap: anywhere; }
+.overview-muted { color: var(--wbdz-secondary); font-size: var(--wbdz-font-caption); }
+.execution-card .run-table { margin-top: 4px; }
+.dataset-toolbar { display: flex; align-items: flex-end; gap: 18px; margin: 2px 0 14px; flex-wrap: wrap; }
+.dataset-filter { display: flex; flex-direction: column; gap: 5px; }
+.dataset-filter label { color: var(--wbdz-secondary); font-size: var(--wbdz-font-caption); }
+.dataset-toolbar-spacer { flex: 1; }
+.dataset-table { margin-top: 2px; }
+.confidence-low { color: #f04438; font-weight: 600; }
+.confidence-warning { color: #f79009; font-weight: 600; }
+.confidence-ok { color: #128a57; }
+
 .progress-cell { min-width: 180px; }
 .progress-meta { margin-top: 4px; color: var(--wbdz-secondary); font-size: var(--wbdz-font-caption); }
+.empty-block { padding: 18px 12px; border: 1px dashed var(--wbdz-border-strong); border-radius: 5px; color: var(--wbdz-secondary); font-size: var(--wbdz-font-caption); text-align: center; }
+.toolbar { display: flex; gap: 10px; margin-bottom: 12px; }
+.pager { margin-top: 12px; justify-content: flex-end; }
 .preview-text { max-height: 62vh; overflow: auto; background: var(--wbdz-bg-page); padding: 12px; font-size: var(--wbdz-font-caption); line-height: 1.6; white-space: pre-wrap; word-break: break-all; }
 .preview-frame { width: 100%; height: 70vh; border: 0; border-radius: var(--wbdz-radius-control); background: #fff; }
 .hint { font-size: var(--wbdz-font-caption); color: var(--wbdz-secondary); }
+@media (max-width: 1100px) {
+  .overview-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 </style>

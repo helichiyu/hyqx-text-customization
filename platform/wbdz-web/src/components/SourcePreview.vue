@@ -13,7 +13,7 @@
 
     <template v-if="line === 'metadata'">
       <pre v-if="sourceText" class="source-text">{{ sourceText }}</pre>
-      <el-empty v-else description="当前条目未携带可展示的正文片段" :image-size="56" />
+      <el-empty v-else description="数据集明细仅保留结构化元信息，未携带原始正文片段" :image-size="56" />
     </template>
 
     <template v-else-if="line === 'formula'">
