@@ -37,6 +37,7 @@ export function createModuleHttp(): AxiosInstance {
       return response
     },
     (error: unknown) => {
+      const status = axios.isAxiosError(error) ? error.response?.status : undefined
       const message =
         axios.isAxiosError(error)
           ? ((error.response?.data as Partial<ApiResult<unknown>> | undefined)?.message ||
@@ -45,7 +46,16 @@ export function createModuleHttp(): AxiosInstance {
           : error instanceof Error
             ? error.message
             : '网络请求失败'
-      ElMessage.error(message)
+
+      if (status === 401) {
+        // 登录态由主应用 UAP/SSO 维护：通知宿主重新认证，子应用不自行跳转。
+        window.dispatchEvent(new CustomEvent('hsmty:unauthorized'))
+        ElMessage.warning('登录状态已失效，请重新登录')
+      } else if (status === 403) {
+        ElMessage.error(message || '没有权限执行该操作')
+      } else {
+        ElMessage.error(message)
+      }
       return Promise.reject(error instanceof Error ? error : new Error(message))
     },
   )

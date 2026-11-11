@@ -3,7 +3,7 @@
 > 依据：`docs/前后端规范/新项目技术选型与环境复用框架_HSMTY对齐版.docx`（V2.0，2026-11-10）。
 > 业务短名：`tcs`；前端模块名：`custom-text`。
 >
-> **本目录已包含完整业务迁移代码（后端 13 张表 + 5 大业务域，前端 6 个页面）；原有 `platform/wbdz-server`、`platform/wbdz-web` 保持不动。**
+> **本目录已包含完整业务迁移代码（后端 13 张表 + 5 大业务域，前端 6 个页面）；已按旧版逐页、逐接口完成功能对齐，核对结果见 `docs/旧版功能对齐核对.md`。原有 `platform/wbdz-server`、`platform/wbdz-web` 保持不动。**
 
 ---
 
@@ -133,7 +133,8 @@ kubectl apply -f deploy/k8s/ingress.yaml
 ### 4.1 后端已完成
 
 - `client / core / start` 三模块，依赖方向 `start → core → client`；POM 与内网模板对齐。
-- 业务表 13 张（`db/changelog/tcs/001`～`013`）：任务、环节运行、素材批次/文件/变更、参数版本/草稿、复核单/条目、数据集/条目、交付记录、回滚记录；均带 `preConditions onFail="MARK_RAN"` 幂等保护。
+- 业务表 13 张（`db/changelog/tcs/001`～`013`）加初始参数版本（`014`）：任务、环节运行、素材批次/文件/变更、参数版本/草稿、复核单/条目、数据集/条目、交付记录、回滚记录；均带 `preConditions onFail="MARK_RAN"` 幂等保护。
+- 初始参数数据：四条产线 + 公共规则各一份 `v1.0`（`014_tcs_param_version_seed.xml`），对应旧版 `DataSeeder`，保证新库可直接创建任务。
 - 5 大业务域 Controller / Service / Mapper / PO / DTO / VO：
   - 素材：上传解包、准入校验（扩展名/大小/PDF 页数/HTML 可读性）、编辑、删除、校验、移交；
   - 任务：创建/编辑/提交/启动/驳回重跑/归集/阈值调整/删除、详情聚合（环节、产物、数据集、复核单）；
@@ -189,7 +190,7 @@ kubectl apply -f deploy/k8s/ingress.yaml
 | 后端 `mvn -N install` | 通过（JDK 21.0.13 / Maven 3.9.11，本地仓库镜像） |
 | 后端 `mvn clean package` | 通过（client / core / start 全部 SUCCESS，2026-11-11 复验） |
 | 后端单元测试 | 通过（2/2：启动类注解、Long 序列化契约） |
-| Liquibase | 本机 `tcs_db` 执行 13 个 changeSet，二次启动 `Run: 0`（幂等） |
+| Liquibase | 本机 `tcs_db` 执行 14 个 changeSet（13 张表 + 初始参数），二次启动 `Run: 0`（幂等） |
 | 后端启动 | 通过（`--redis.listener.enable=false`，本机无 Redis Sentinel） |
 | 健康检查 | `GET /hs-api/tcs/health` → `200`，`{"code":"0000",...}` |
 | 前端代理 | `GET http://localhost:9848/hs-api/tcs/health` → `200`（Vite → 8080） |

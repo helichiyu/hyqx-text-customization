@@ -136,6 +136,7 @@ export interface TaskView {
   batchBizNo?: string
   batchName?: string
   datasetCount?: number
+  createTime?: string
 }
 
 // ==================== 素材 ====================

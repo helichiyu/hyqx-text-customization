@@ -57,6 +57,10 @@ const customTextModule: BusinessModule = {
         },
       ],
     },
+    {
+      path: '/custom-text/:pathMatch(.*)*',
+      redirect: '/custom-text',
+    },
   ],
   menus: [
     { key: 'custom-text-wb-formula', title: '公式文本工作台', path: '/custom-text/wb/formula', component: 'custom-text/Workbench' },

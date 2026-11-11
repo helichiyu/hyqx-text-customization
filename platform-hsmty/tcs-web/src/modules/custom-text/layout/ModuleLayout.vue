@@ -8,6 +8,10 @@
       >
         文
       </button>
+      <div class="top-nav">
+        <span class="top-pill active">产品中心</span>
+        <span class="top-pill">领航者视图</span>
+      </div>
       <button
         class="module-name"
         type="button"
@@ -18,6 +22,7 @@
       <div class="crumb">
         {{ breadcrumbText }}
       </div>
+      <span class="settings">设置</span>
       <div class="user">
         {{ userName }}
         <span class="avatar">{{ avatarChar }}</span>
@@ -223,13 +228,28 @@ function closeTab(key: string) {
   font-weight: 600;
   cursor: pointer;
 }
+.top-nav { display: flex; gap: 8px; margin-left: 28px; }
+.top-pill {
+  padding: 4px 14px;
+  border-radius: 999px;
+  color: var(--tcs-color-text);
+  font-size: 13px;
+  cursor: pointer;
+}
+.top-pill.active { background: var(--tcs-color-title); color: #fff; }
 .crumb { margin-left: 28px; color: var(--tcs-color-text-secondary); font-size: 14px; }
+.settings {
+  margin-left: auto;
+  margin-right: 16px;
+  color: var(--tcs-color-text);
+  font-size: 14px;
+  cursor: pointer;
+}
 .user {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-right: 24px;
-  margin-left: auto;
   color: var(--tcs-color-text);
   font-size: 14px;
 }

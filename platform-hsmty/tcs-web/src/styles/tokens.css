@@ -23,13 +23,13 @@
   /* 字号令牌 */
   --tcs-font-size-banner: 18px;
   --tcs-font-size-card-title: 15px;
-  --tcs-font-size-body: 13px;
+  --tcs-font-size-body: 14px;
   --tcs-font-size-helper: 12px;
   --tcs-font-size-stat: 26px;
 
   /* 尺寸令牌 */
   --tcs-control-height: 32px;
-  --tcs-button-height: 34px;
+  --tcs-button-height: 32px;
   --tcs-radius-control: 4px;
   --tcs-radius-card: 8px;
   --tcs-radius-pill: 999px;
@@ -37,6 +37,7 @@
 
   /* 字体令牌 */
   --tcs-font-family:
-    'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif;
+    Inter, 'PingFang SC', 'Microsoft YaHei', system-ui, -apple-system, BlinkMacSystemFont,
+    'Segoe UI', sans-serif;
   --tcs-font-mono: 'JetBrains Mono', Consolas, 'Courier New', monospace;
 }
