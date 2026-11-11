@@ -126,6 +126,9 @@ public class TaskOrchestrator {
         if (!running.add(taskId)) {
             throw new BizException("任务正在执行中，请勿重复启动");
         }
+        // 同步落库为“加工中”：接口返回后前端立即刷新列表即可看到状态变化，
+        // 避免虚拟线程调度延迟造成“点了启动没反应”的观感。
+        safeStatus(taskId, "processing");
         Thread.ofVirtual().name("tcs-task-" + taskId).start(() -> {
             try {
                 run(taskId, fromStage);
@@ -156,7 +159,7 @@ public class TaskOrchestrator {
             log.error("任务不存在: {}", taskId);
             return;
         }
-        safeStatus(taskId, "processing");
+        // 状态已在 startAsync 中同步置为 processing。
         // 重跑：作废未闭环复核单（已闭环的保留）
         voidOpenOrders(taskId);
 
@@ -585,7 +588,9 @@ public class TaskOrchestrator {
             for (Map.Entry<?, ?> e : m.entrySet()) {
                 String key = String.valueOf(e.getKey()).toLowerCase();
                 // 只认置信度字段本身；lowConfidenceCount / lowConfidenceReasons 不是分数。
-                boolean confKey = (key.equals("confidence") || key.endsWith("_confidence")
+                // endsWith("confidence") 兼容 extractConfidence / fillConfidence 等驼峰字段；
+                // endsWith("conf") 兼容 bboxConf / typeConf。
+                boolean confKey = (key.equals("confidence") || key.endsWith("confidence")
                         || key.endsWith("conf"))
                         && !key.contains("count") && !key.contains("reason");
                 if (confKey) {

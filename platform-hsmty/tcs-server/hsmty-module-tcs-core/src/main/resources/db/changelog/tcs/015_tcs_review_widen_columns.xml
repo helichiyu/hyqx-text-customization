@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!--
+        复核相关列加宽。
+
+        008/009 建表时 trigger_code 为 VARCHAR(32)、review_item.code 为 VARCHAR(32)，
+        而复核单触发码是多个算子码逗号拼接（如 candidate_conflict,low_confidence 即 33 字符），
+        插入时会触发 “Data too long”，导致复核单创建失败、任务停在 processing 被回退为 pending，
+        数据集条目已是“待复核”却没有复核单可进。
+        旧库 wbdz_review_order.trigger_code 为 VARCHAR(128)，此处按旧库宽度对齐。
+    -->
+    <changeSet id="tcs-widen-review-columns-20261111" author="helichiyu" context="mysql,postgresql">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="tcs_review_order" columnName="trigger_code"/>
+        </preConditions>
+        <modifyDataType tableName="tcs_review_order" columnName="trigger_code" newDataType="VARCHAR(128)"/>
+        <modifyDataType tableName="tcs_review_order" columnName="trigger_desc" newDataType="VARCHAR(512)"/>
+        <modifyDataType tableName="tcs_review_item" columnName="code" newDataType="VARCHAR(64)"/>
+        <modifyDataType tableName="tcs_review_item" columnName="reason" newDataType="VARCHAR(512)"/>
+        <modifyDataType tableName="tcs_rollback_log" columnName="reason" newDataType="VARCHAR(512)"/>
+    </changeSet>
+</databaseChangeLog>
