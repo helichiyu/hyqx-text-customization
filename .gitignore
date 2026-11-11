@@ -30,11 +30,14 @@ logs/
 *.log
 platform/scripts/e2e_out/
 operators/op-runtime/
+# 后端本地素材存储（tcs.storage-dir，运行期上传的测试文件）
+platform-hsmty/tcs-server/data/
 
 # ===== .scratch：临时验证脚本与运行期产物，整体不入库 =====
 .scratch/
 
 # ===== 打包产物 =====
+release/
 *.zip
 
 # ===== 本地测试数据（四条产线上传用，二进制样本不入库） =====
