@@ -40,14 +40,21 @@
 - 复杂版面线末位算子同时承担环节③汇总（失败页清单、复核清单、一页一行数据集）；公式/图文两线末位算子同理。
 - 图文融合线的判型算子必须带任务参数 `category`（几何/统计/表格/示意）。
 
-## 三接口契约（所有算子包外壳一致）
+## 接口契约（所有算子包外壳一致）
 
 | 接口 | 说明 |
 | --- | --- |
 | `GET /healthz` | 就绪探针，返回算子名（读 map.json） |
 | `POST /uploadFile?uniqueId=<任务id_批次id>` | 阶段首上传 zip；流式落盘 ≤2GB；解压抹平层级；同一 uniqueId 重传先清空旧素材 |
 | `POST /removeFile?uniqueId=` | 幂等删除输入素材 |
-| `POST /predict` | 一次性调用；入参 `{uniqueId?, inputFile?, isLastOperator?, ...算子参数}`；成功回统一信封 `{"code":0,"msg":"success","data":{outputFile, lineageFile, summary, skipped, failed}}`；业务失败 `code=1` + 中文原因（HTTP 仍 200） |
+| `POST /predict` | 一次性调用；入参 `{uniqueId?, inputFile?, isLastOperator?, progressKey?, ...算子参数}`；成功回统一信封 `{"code":0,"msg":"success","data":{outputFile, lineageFile, summary, skipped, failed}}`；业务失败 `code=1` + 中文原因（HTTP 仍 200） |
+| `GET /listFiles?path=<outputFile>` | 产物列举：目录**递归**列出（相对路径，如 `pages/doc1/page_0001.png`），`outputFile` 为阶段 zip 时列 zip 条目；返回 `{code:0,data:[{name,size}]}`，不存在返回空数组，条目数超过 20000 返回 `code=1` |
+| `GET /downloadFile?path=&name=` | 按名取产物原始字节（目录内文件或 zip 条目，`name` 支持嵌套相对路径）；失败返回非 200，平台据此报错 |
+| `GET /progress?runId=<progressKey>` | 读 `/predict` 落盘的 `_progress/<key>.json`；不存在返回 `code=1`，平台降级忽略 |
+
+产物读取的三个接口供**平台与算子不在同一服务器**时使用（平台侧实现见 `platform-hsmty/docs/算子文件接口约定.md`）：
+`path` 即 `/predict` 返回的 `data.outputFile`，只放行 `OUTPUT_DIR` 之内的具体运行目录/文件（不放行共享根本身与 `INPUT_DIR`）。
+**所有接口均无鉴权**（含 `/uploadFile`、`/predict`），部署时必须保证算子端口仅内网/平台网段可达，不要直接暴露公网。
 
 - **路径闸门**：`inputFile` 只放行 `INPUT_DIR`/`OUTPUT_DIR` 之内（含阶段 zip），防任意路径读取。
 - **端口/目录**：容器内统一 `PORT=6288`；输入/输出根用 `INPUT_DIR`/`OUTPUT_DIR` 环境变量指定（默认包内 `runtime/`）。
