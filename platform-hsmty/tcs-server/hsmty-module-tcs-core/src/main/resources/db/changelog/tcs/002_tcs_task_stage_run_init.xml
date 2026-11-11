@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- 环节执行记录：每次算子调用（含重试）一行，保留产物路径与统计。 -->
+    <changeSet id="tcs-create-task-stage-run-20261111" author="helichiyu" context="mysql,postgresql">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="tcs_task_stage_run"/></not>
+        </preConditions>
+        <createTable tableName="tcs_task_stage_run" remarks="任务环节执行记录">
+            <column name="id" type="BIGINT" remarks="内部主键">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="task_id" type="BIGINT" remarks="任务内部主键">
+                <constraints nullable="false"/>
+            </column>
+            <column name="stage_no" type="INT" remarks="环节序号"/>
+            <column name="stage_name" type="VARCHAR(64)" remarks="环节名称"/>
+            <column name="operator_tag" type="VARCHAR(64)" remarks="算子标识"/>
+            <column name="status" type="VARCHAR(32)" remarks="执行状态：pending/running/done/failed"/>
+            <column name="summary" type="CLOB" remarks="统计摘要 JSON"/>
+            <column name="skipped" type="CLOB" remarks="跳过条目 JSON"/>
+            <column name="failed" type="CLOB" remarks="失败条目 JSON"/>
+            <column name="output_path" type="VARCHAR(1024)" remarks="算子侧输出路径"/>
+            <column name="attempt" type="INT" remarks="重试序号"/>
+            <column name="start_time" type="TIMESTAMP" remarks="开始时间"/>
+            <column name="end_time" type="TIMESTAMP" remarks="结束时间"/>
+            <column name="create_id" type="VARCHAR(64)" remarks="创建人 ID"/>
+            <column name="create_time" type="TIMESTAMP" remarks="创建时间"/>
+            <column name="update_id" type="VARCHAR(64)" remarks="更新人 ID"/>
+            <column name="update_time" type="TIMESTAMP" remarks="更新时间"/>
+            <column name="del_flag" type="CHAR(1)" defaultValue="F" remarks="逻辑删除标记">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex tableName="tcs_task_stage_run" indexName="idx_tcs_stage_run_task">
+            <column name="task_id"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

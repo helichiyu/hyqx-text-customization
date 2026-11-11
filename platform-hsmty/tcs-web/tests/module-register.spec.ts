@@ -9,6 +9,6 @@ describe('module registry', () => {
 
   it('collects module routes and menus', () => {
     expect(collectModuleRoutes().some((route) => route.path === '/custom-text')).toBe(true)
-    expect(collectModuleMenus().some((menu) => menu.component === 'custom-text/Home')).toBe(true)
+    expect(collectModuleMenus().some((menu) => menu.component === 'custom-text/Workbench')).toBe(true)
   })
 })

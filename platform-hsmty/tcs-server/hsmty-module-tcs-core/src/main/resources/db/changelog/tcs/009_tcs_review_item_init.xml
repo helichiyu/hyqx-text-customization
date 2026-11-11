@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- 复核条目：A 确认 / B 修正（保留改前改后值）/ C 剔除。 -->
+    <changeSet id="tcs-create-review-item-20261111" author="helichiyu" context="mysql,postgresql">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="tcs_review_item"/></not>
+        </preConditions>
+        <createTable tableName="tcs_review_item" remarks="条件复核条目">
+            <column name="id" type="BIGINT" remarks="内部主键">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="order_id" type="BIGINT" remarks="复核单内部主键">
+                <constraints nullable="false"/>
+            </column>
+            <column name="task_id" type="BIGINT" remarks="来源任务内部主键"/>
+            <column name="item_key" type="VARCHAR(128)" remarks="数据集行标识"/>
+            <column name="code" type="VARCHAR(32)" remarks="触发原因分类码"/>
+            <column name="reason" type="VARCHAR(500)" remarks="触发原因描述"/>
+            <column name="payload" type="CLOB" remarks="算子原始行 JSON"/>
+            <column name="conclusion" type="VARCHAR(8)" remarks="复核结论：A/B/C"/>
+            <column name="revised_payload" type="CLOB" remarks="修正后完整行 JSON"/>
+            <column name="before_value" type="CLOB" remarks="修正前字段值 JSON"/>
+            <column name="after_value" type="CLOB" remarks="修正后字段值 JSON"/>
+            <column name="operator" type="VARCHAR(64)" remarks="复核操作人"/>
+            <column name="conclude_time" type="TIMESTAMP" remarks="结论时间"/>
+            <column name="create_id" type="VARCHAR(64)" remarks="创建人 ID"/>
+            <column name="create_time" type="TIMESTAMP" remarks="创建时间"/>
+            <column name="update_id" type="VARCHAR(64)" remarks="更新人 ID"/>
+            <column name="update_time" type="TIMESTAMP" remarks="更新时间"/>
+            <column name="del_flag" type="CHAR(1)" defaultValue="F" remarks="逻辑删除标记">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex tableName="tcs_review_item" indexName="idx_tcs_review_item_order">
+            <column name="order_id"/>
+        </createIndex>
+        <createIndex tableName="tcs_review_item" indexName="idx_tcs_review_item_task">
+            <column name="task_id"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

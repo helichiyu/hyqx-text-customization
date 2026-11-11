@@ -32,6 +32,17 @@ public class TcsOperatorProperties {
     private Map<String, Integer> ports = new LinkedHashMap<>();
 
     /**
+     * 算子产物文件读取方式：{@code http}（默认，经算子文件接口读取）或 {@code local}（本地联调，
+     * 平台与算子共用挂载目录时直接读运行时目录）。
+     */
+    private String fileMode = "http";
+
+    /**
+     * 本地模式下的算子运行时根目录（仅 {@code fileMode=local} 生效）。
+     */
+    private String runtimeDir = "./op-runtime";
+
+    /**
      * <p>拼接指定算子的访问基地址。
      *
      * @param operator 算子名，如 {@code meta_clean_slice}

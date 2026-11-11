@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- 素材变更记录：批次编辑留痕。 -->
+    <changeSet id="tcs-create-mat-change-log-20261111" author="helichiyu" context="mysql,postgresql">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="tcs_mat_change_log"/></not>
+        </preConditions>
+        <createTable tableName="tcs_mat_change_log" remarks="素材变更记录">
+            <column name="id" type="BIGINT" remarks="内部主键">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="batch_id" type="BIGINT" remarks="素材批次内部主键">
+                <constraints nullable="false"/>
+            </column>
+            <column name="item" type="VARCHAR(64)" remarks="变更项"/>
+            <column name="old_value" type="VARCHAR(512)" remarks="变更前值"/>
+            <column name="new_value" type="VARCHAR(512)" remarks="变更后值"/>
+            <column name="operator" type="VARCHAR(64)" remarks="操作人"/>
+            <column name="create_id" type="VARCHAR(64)" remarks="创建人 ID"/>
+            <column name="create_time" type="TIMESTAMP" remarks="创建时间"/>
+            <column name="update_id" type="VARCHAR(64)" remarks="更新人 ID"/>
+            <column name="update_time" type="TIMESTAMP" remarks="更新时间"/>
+            <column name="del_flag" type="CHAR(1)" defaultValue="F" remarks="逻辑删除标记">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex tableName="tcs_mat_change_log" indexName="idx_tcs_mat_change_batch">
+            <column name="batch_id"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

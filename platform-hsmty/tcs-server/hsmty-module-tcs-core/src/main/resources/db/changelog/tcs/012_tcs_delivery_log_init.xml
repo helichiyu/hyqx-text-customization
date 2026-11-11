@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- 交付记录：质量报告下载等交付动作留痕。 -->
+    <changeSet id="tcs-create-delivery-log-20261111" author="helichiyu" context="mysql,postgresql">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="tcs_delivery_log"/></not>
+        </preConditions>
+        <createTable tableName="tcs_delivery_log" remarks="数据集交付记录">
+            <column name="id" type="BIGINT" remarks="内部主键">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="biz_no" type="VARCHAR(32)" remarks="交付记录业务编号">
+                <constraints nullable="false"/>
+            </column>
+            <column name="dataset_id" type="BIGINT" remarks="数据集内部主键"/>
+            <column name="type" type="VARCHAR(64)" remarks="交付类型"/>
+            <column name="filename" type="VARCHAR(255)" remarks="文件名"/>
+            <column name="operator" type="VARCHAR(64)" remarks="操作人"/>
+            <column name="create_id" type="VARCHAR(64)" remarks="创建人 ID"/>
+            <column name="create_time" type="TIMESTAMP" remarks="创建时间"/>
+            <column name="update_id" type="VARCHAR(64)" remarks="更新人 ID"/>
+            <column name="update_time" type="TIMESTAMP" remarks="更新时间"/>
+            <column name="del_flag" type="CHAR(1)" defaultValue="F" remarks="逻辑删除标记">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint tableName="tcs_delivery_log" columnNames="biz_no"
+                             constraintName="uk_tcs_delivery_log_biz_no"/>
+        <createIndex tableName="tcs_delivery_log" indexName="idx_tcs_delivery_log_dataset">
+            <column name="dataset_id"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

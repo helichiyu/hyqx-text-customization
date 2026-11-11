@@ -8,15 +8,27 @@
     <!--
         文本定制化生产模块变更汇聚入口。
 
-        业务迁移时按以下规则新增文件并在本文件 include：
-          001_tcs_{对象}_init.xml        建表
-          002_tcs_dict_init.xml          字典来源/类型/项
-          003_tcs_menu_init.xml          菜单与权限按钮
-          004_tcs_{对象}_add_column.xml  结构变更
+        新增变更时按以下规则命名文件并在本文件 include：
+          0NN_tcs_{对象}_init.xml         建表
+          0NN_tcs_dict_init.xml          字典来源/类型/项（待菜单/字典号段确认后补）
+          0NN_tcs_menu_init.xml          菜单与权限按钮（前端菜单体系确定后补）
+          0NN_tcs_{对象}_add_column.xml  结构变更
 
         changeSet id 统一为 {业务}-{动作}-{对象}-{yyyyMMdd}，已执行的 changeSet 禁止修改。
-        当前仅完成架构骨架，尚未迁移业务表，因此 001_tcs_init.xml 暂无 changeSet。
+        业务表结构见 001～013；字典与菜单初始化依赖平台号段分配，暂未纳入。
     -->
 
-    <include file="db/changelog/tcs/001_tcs_init.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/tcs/001_tcs_task_init.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/tcs/002_tcs_task_stage_run_init.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/tcs/003_tcs_mat_batch_init.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/tcs/004_tcs_mat_file_init.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/tcs/005_tcs_mat_change_log_init.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/tcs/006_tcs_param_version_init.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/tcs/007_tcs_param_draft_init.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/tcs/008_tcs_review_order_init.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/tcs/009_tcs_review_item_init.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/tcs/010_tcs_dataset_init.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/tcs/011_tcs_dataset_item_init.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/tcs/012_tcs_delivery_log_init.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/tcs/013_tcs_rollback_log_init.xml" relativeToChangelogFile="false"/>
 </databaseChangeLog>

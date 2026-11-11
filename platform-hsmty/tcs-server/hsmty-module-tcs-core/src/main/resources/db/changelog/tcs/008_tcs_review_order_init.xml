@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- 条件复核单：按触发原因分组，闭环后回写数据集。 -->
+    <changeSet id="tcs-create-review-order-20261111" author="helichiyu" context="mysql,postgresql">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="tcs_review_order"/></not>
+        </preConditions>
+        <createTable tableName="tcs_review_order" remarks="条件复核单">
+            <column name="id" type="BIGINT" remarks="内部主键">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="biz_no" type="VARCHAR(32)" remarks="复核单业务编号">
+                <constraints nullable="false"/>
+            </column>
+            <column name="task_id" type="BIGINT" remarks="来源任务内部主键">
+                <constraints nullable="false"/>
+            </column>
+            <column name="line" type="VARCHAR(32)" remarks="产线代码"/>
+            <column name="stage_name" type="VARCHAR(64)" remarks="来源环节名称"/>
+            <column name="trigger_code" type="VARCHAR(32)" remarks="触发原因分类码"/>
+            <column name="trigger_desc" type="VARCHAR(500)" remarks="触发原因描述"/>
+            <column name="item_count" type="INT" remarks="复核条目数"/>
+            <column name="status" type="VARCHAR(32)" remarks="状态：pending/doing/done/void">
+                <constraints nullable="false"/>
+            </column>
+            <column name="create_by" type="VARCHAR(64)" remarks="创建人展示名"/>
+            <column name="close_by" type="VARCHAR(64)" remarks="闭环操作人"/>
+            <column name="close_time" type="TIMESTAMP" remarks="闭环时间"/>
+            <column name="create_id" type="VARCHAR(64)" remarks="创建人 ID"/>
+            <column name="create_time" type="TIMESTAMP" remarks="创建时间"/>
+            <column name="update_id" type="VARCHAR(64)" remarks="更新人 ID"/>
+            <column name="update_time" type="TIMESTAMP" remarks="更新时间"/>
+            <column name="del_flag" type="CHAR(1)" defaultValue="F" remarks="逻辑删除标记">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint tableName="tcs_review_order" columnNames="biz_no"
+                             constraintName="uk_tcs_review_order_biz_no"/>
+        <createIndex tableName="tcs_review_order" indexName="idx_tcs_review_order_task">
+            <column name="task_id"/>
+            <column name="status"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

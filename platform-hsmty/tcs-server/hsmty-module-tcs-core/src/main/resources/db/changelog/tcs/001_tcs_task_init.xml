@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- 任务主表：四个产线的工作台任务，创建时锁定参数版本快照与阈值。 -->
+    <changeSet id="tcs-create-task-20261111" author="helichiyu" context="mysql,postgresql">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="tcs_task"/></not>
+        </preConditions>
+        <createTable tableName="tcs_task" remarks="文本定制化生产任务">
+            <column name="id" type="BIGINT" remarks="内部主键">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="biz_no" type="VARCHAR(32)" remarks="任务业务编号">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(128)" remarks="任务名称">
+                <constraints nullable="false"/>
+            </column>
+            <column name="line" type="VARCHAR(32)" remarks="产线代码：formula/layout/graphic/metadata">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(32)" remarks="状态：draft/pending/processing/waitreview/quality/collected/reject">
+                <constraints nullable="false"/>
+            </column>
+            <column name="priority" type="VARCHAR(16)" remarks="优先级：high/mid/low"/>
+            <column name="image_class" type="VARCHAR(32)" remarks="图文融合大类"/>
+            <column name="batch_id" type="BIGINT" remarks="素材批次内部主键"/>
+            <column name="param_version" type="VARCHAR(32)" remarks="锁定的参数版本号"/>
+            <column name="param_snapshot" type="CLOB" remarks="参数快照 JSON"/>
+            <column name="threshold" type="DECIMAL(5,4)" remarks="任务级置信度阈值"/>
+            <column name="current_stage" type="INT" remarks="当前环节序号"/>
+            <column name="create_by" type="VARCHAR(64)" remarks="创建人展示名"/>
+            <column name="create_id" type="VARCHAR(64)" remarks="创建人 ID"/>
+            <column name="create_time" type="TIMESTAMP" remarks="创建时间"/>
+            <column name="update_id" type="VARCHAR(64)" remarks="更新人 ID"/>
+            <column name="update_time" type="TIMESTAMP" remarks="更新时间"/>
+            <column name="del_flag" type="CHAR(1)" defaultValue="F" remarks="逻辑删除标记">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint tableName="tcs_task" columnNames="biz_no" constraintName="uk_tcs_task_biz_no"/>
+        <createIndex tableName="tcs_task" indexName="idx_tcs_task_line_status">
+            <column name="line"/>
+            <column name="status"/>
+        </createIndex>
+        <createIndex tableName="tcs_task" indexName="idx_tcs_task_batch">
+            <column name="batch_id"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

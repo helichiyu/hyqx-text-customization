@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- 参数配置版本：按产线发布，任务创建锁定快照。 -->
+    <changeSet id="tcs-create-param-version-20261111" author="helichiyu" context="mysql,postgresql">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="tcs_param_version"/></not>
+        </preConditions>
+        <createTable tableName="tcs_param_version" remarks="参数配置版本">
+            <column name="id" type="BIGINT" remarks="内部主键">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="line" type="VARCHAR(32)" remarks="产线代码或 common">
+                <constraints nullable="false"/>
+            </column>
+            <column name="version" type="VARCHAR(32)" remarks="版本号：v1.0 / v1.1 ...">
+                <constraints nullable="false"/>
+            </column>
+            <column name="content" type="CLOB" remarks="参数组 JSON：[{name,value,desc}]"/>
+            <column name="published_at" type="TIMESTAMP" remarks="发布时间"/>
+            <column name="published_by" type="VARCHAR(64)" remarks="发布人"/>
+            <column name="create_id" type="VARCHAR(64)" remarks="创建人 ID"/>
+            <column name="create_time" type="TIMESTAMP" remarks="创建时间"/>
+            <column name="update_id" type="VARCHAR(64)" remarks="更新人 ID"/>
+            <column name="update_time" type="TIMESTAMP" remarks="更新时间"/>
+            <column name="del_flag" type="CHAR(1)" defaultValue="F" remarks="逻辑删除标记">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint tableName="tcs_param_version" columnNames="line, version"
+                             constraintName="uk_tcs_param_version_line_version"/>
+        <createIndex tableName="tcs_param_version" indexName="idx_tcs_param_version_published">
+            <column name="line"/>
+            <column name="published_at"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

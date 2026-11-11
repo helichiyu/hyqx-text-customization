@@ -3,7 +3,7 @@
 > 依据：`docs/前后端规范/新项目技术选型与环境复用框架_HSMTY对齐版.docx`（V2.0，2026-11-10）。
 > 业务短名：`tcs`；前端模块名：`custom-text`。
 >
-> **本目录是架构升级骨架，不包含业务迁移代码；原有 `platform/wbdz-server`、`platform/wbdz-web` 保持不动。**
+> **本目录已包含完整业务迁移代码（后端 13 张表 + 5 大业务域，前端 6 个页面）；原有 `platform/wbdz-server`、`platform/wbdz-web` 保持不动。**
 
 ---
 
@@ -19,7 +19,10 @@ platform-hsmty/
 │  └─ hsmty-module-tcs-start/         # RunApplication、全局配置、application.yml、集成测试
 ├─ tcs-web/                           # 前端（Vue 3.5 / TS 5.9 / Vite 7 / Element Plus 2.14）
 │  ├─ src/core/                       # 模块注册、鉴权适配、qiankun 生命周期、HTTP 封装
-│  ├─ src/modules/custom-text/        # views / api / types / register.ts
+│  ├─ src/modules/custom-text/        # api / components / layout / stores / views / register.ts
+│  │  ├─ views/                       # Workbench / TaskDetail / Material / Review / Dataset / Params
+│  │  ├─ components/                  # BizIdText / PageHeader / SourcePreview / DatasetItemViewer
+│  │  └─ layout/ModuleLayout.vue      # 侧边栏 + 多页签 + keep-alive
 │  ├─ src/editions/obu.ts             # Cookie SSO 组合入口
 │  └─ tests/                          # 模块注册测试
 └─ deploy/                            # Docker、Nginx、K8s 清单
@@ -127,27 +130,35 @@ kubectl apply -f deploy/k8s/ingress.yaml
 
 ## 4. 已完成与未完成
 
-### 4.1 已完成
+### 4.1 后端已完成
 
-- 后端 `client / core / start` 三模块骨架，POM 依赖清单与内网模板逐项对齐（含 `hsmty-common-feign`、`com.hsmty.excel:hsmty-common-excel`、MyBatis-Flex core/annotation/spring、`hsmty-common-db-mysql`/`-postgresql` profile、`spring-boot-starter-liquibase`、jasypt、aspectjweaver、`hsmty-module-oss-client`）。
-- 模块前缀按模板真实机制实现：`core` 的 `TcsApiPrefixConfiguration` 注册 `ApiPrefixRegister`（`tcs` / `/tcs` / `com.hsmty.tcs.controller`），`start` 的 `ApiPrefixConfiguration` 用 `ApiPrefixProperties` + `WebMvcConfigurer` 生效。
-- `com.hsmty.RunApplication`（排除服务发现/配置刷新，`AppVersionUtils` 输出版本横幅）、`Knife4jConfiguration`（因 Cookie SSO 不声明 Bearer 方案）。
-- `application.yml`：8080、`/hs-api`、虚拟线程、MySQL/PostgreSQL profile、Liquibase、Redis Sentinel、springdoc、Actuator、模块前缀、白名单、Feign 地址（`tcs.service.url`、`oss.service.url`）、算子地址；环境变量可覆盖，敏感值不入库。
-- Liquibase 主入口与模块汇聚入口；`001_tcs_init.xml` 已建立并挂载（无 changeSet，见 §5）。
-- 算子接入配置 `TcsOperatorProperties`：`tcs.operator.base-url` + 11 个算子端口（`meta_*` 6301-6304、`lay_*` 6305-6306、`fml_*` 6307-6308、`img_*` 6309-6311），未登记算子返回空地址。
-- Long 序列化沿用 `hsmty-common-core` 的 Jackson 配置（超出 JS 安全整数输出字符串），并以 `JacksonContractTest` 锁定。
-- start 模块显式开启测试（父工程默认 `skipTests=true`）。
-- 健康检查接口 `/hs-api/tcs/health`（白名单开放）。
-- 前端 `src/core`、`src/modules/custom-text`、`src/editions`、qiankun 生命周期、`createModuleHttp`、Pinia、Router 自动注册。
-- Docker / Nginx / K8s 部署模板。
+- `client / core / start` 三模块，依赖方向 `start → core → client`；POM 与内网模板对齐。
+- 业务表 13 张（`db/changelog/tcs/001`～`013`）：任务、环节运行、素材批次/文件/变更、参数版本/草稿、复核单/条目、数据集/条目、交付记录、回滚记录；均带 `preConditions onFail="MARK_RAN"` 幂等保护。
+- 5 大业务域 Controller / Service / Mapper / PO / DTO / VO：
+  - 素材：上传解包、准入校验（扩展名/大小/PDF 页数/HTML 可读性）、编辑、删除、校验、移交；
+  - 任务：创建/编辑/提交/启动/驳回重跑/归集/阈值调整/删除、详情聚合（环节、产物、数据集、复核单）；
+  - 复核：分页、详情、A/B/C 结论、撤销、数据集条目加入复核、整单闭环；
+  - 数据集：分页、详情、发布、回滚、TXT 质量报告、交付记录；
+  - 参数：产线概览、配置详情、草稿保存、版本发布。
+- 任务编排：11 个算子按产线链式调用、3 次重试、阶段产物续链、进度回写、失败留痕。
+- 算子文件契约：`/listFiles`、`/downloadFile`、`/progress` HTTP 读取（`file-mode=http`），本地可用 `local` 读共享目录；契约见 `docs/算子文件接口约定.md`。
+- `@PreAuthorize` 权限码统一 `tcs:{resource}:{action}`；健康检查白名单开放。
+- Long 序列化沿用框架策略；start 模块测试默认执行。
 
-### 4.2 未完成（按迁移阶段推进）
+### 4.2 前端已完成
 
-- 业务表、字典、菜单、权限码、Liquibase changeSet。
-- 业务 Controller / Service / Mapper / PO / DTO / VO。
-- 素材、任务编排、复核、数据集、参数配置等页面。
-- UAP/SSO 实际接入、OSS 实际读写、算子 HTTP/文件契约适配。
-- 旧库 `wbdz_platform` → 新库（本地 `tcs_db`，生产库名待运维分配）的数据迁移。
+- qiankun 子应用骨架 + 模块自注册（`src/modules/custom-text/register.ts`）。
+- 设计系统：`--tcs-*` 令牌、Element Plus 主题覆盖、页面/搜索/表格/弹窗/抽屉样式。
+- 布局：顶栏 + 产线/公共管理侧边栏 + 多页签 + keep-alive。
+- 页面：四条产线工作台、任务详情、素材管理、条件复核工作台、数据集管理、参数配置。
+- API 层统一解包 `{code,message,data}`，分页参数 `page/limit` 转换，blob 预览/下载，错误统一提示。
+
+### 4.3 待外部输入
+
+- UAP/SSO 实际接入与本地放行规则（见 Q-005 / Q-007）。
+- OSS/S3、生产数据库、Redis 实例参数。
+- 菜单/字典号段与权限码清单落地。
+- 算子侧按 `docs/算子文件接口约定.md` 实现三个文件接口并联调。
 
 ---
 
@@ -158,7 +169,7 @@ kubectl apply -f deploy/k8s/ingress.yaml
 | 数据库名 | 本地开发用本地库 `tcs_db`；生产库上线前由运维创建，名称待定 | 2026-11-10 决策：新库在生产服务器建立，开发期用本地库；命名沿用《数据库开发通用规范》“库名以 `db` 结尾” |
 | 模块前缀注册 | 已按内网模板实现 `ApiPrefixRegister` + `ApiPrefixProperties`，启动日志为 `Register API prefix module=tcs, prefix=/tcs` | 内网模板 `XxxApiPrefixConfiguration` / `ApiPrefixConfiguration` 实际代码 |
 | 文档安全方案 | `Knife4jConfiguration` 不声明 Bearer/JWT；登录态由 UAP/SSO Cookie 承载 | 本文档 §5“不使用 JWT/BCrypt”；模板默认的 Bearer 方案不适用 |
-| `001_tcs_init.xml` | 已建文件并在模块 changelog 中 `include`，但**没有 changeSet** | 业务模型尚未迁移，凭空建表会把猜测固化成“已确认模型”；迁移首个实体时按 `CLAUDE.md` §9.2 补全 |
+| Liquibase 建表 | 拆为 `001`～`013` 共 13 个文件，逐表 `include`；模板遗留的空白 `001_tcs_init.xml` 已删除 | `CLAUDE.md` §9.2：每个表/每次结构变更单独文件，序号三位递增 |
 | 算子调用 | 保持独立部署，平台按 HTTP 契约接入，不使用 Feign 内嵌算子；地址配置为“基地址 + 端口表” | 本文档 §7“算子独立部署、不内嵌 Python 运行时”；`operators/前后端对接说明.md` |
 | Jackson 配置 | 不再自建 `JacksonConfiguration`，Long 精度处理交给 `hsmty-common-core` | 自建同名 Bean 会与框架冲突（`ConflictingBeanDefinitionException`）；框架策略为超安全整数转字符串 |
 | 鉴权 | 前端不保存 Token、不解析 Cookie；登录态由主应用经 qiankun props 下发，后端以 `@PreAuthorize` 为最终边界 | 本文档 §3/§5/§6“UAP/SSO Cookie + Method Security” |
@@ -175,12 +186,14 @@ kubectl apply -f deploy/k8s/ingress.yaml
 | 前端 `pnpm test` | 通过（2/2） |
 | 前端 `pnpm lint` | 通过（0 error / 0 warning） |
 | 前端 `pnpm build` | 通过（Element Plus 全量引入有 >500 kB chunk 警告，非错误） |
-| 后端 `mvn -N install` | 通过（JDK 21.0.13 / Maven 3.9.11 / 内网 Nexus） |
-| 后端 `mvn clean package` | 通过（client / core / start 全部 SUCCESS） |
+| 后端 `mvn -N install` | 通过（JDK 21.0.13 / Maven 3.9.11，本地仓库镜像） |
+| 后端 `mvn clean package` | 通过（client / core / start 全部 SUCCESS，2026-11-11 复验） |
 | 后端单元测试 | 通过（2/2：启动类注解、Long 序列化契约） |
+| Liquibase | 本机 `tcs_db` 执行 13 个 changeSet，二次启动 `Run: 0`（幂等） |
 | 后端启动 | 通过（`--redis.listener.enable=false`，本机无 Redis Sentinel） |
 | 健康检查 | `GET /hs-api/tcs/health` → `200`，`{"code":"0000",...}` |
-| OpenAPI 分组 | `GET /hs-api/v3/api-docs` → `200`，包含 `/tcs/health` |
+| 前端代理 | `GET http://localhost:9848/hs-api/tcs/health` → `200`（Vite → 8080） |
+| 未登录接口 | `GET /hs-api/tcs/task` → `302`（UAP/SSO 未接入，见 Q-007） |
 
 ---
 
@@ -188,19 +201,20 @@ kubectl apply -f deploy/k8s/ingress.yaml
 
 制品仓库已确认可用（§3.1），以下均为业务迁移前需要的信息：
 
-1. UAP/SSO 接入信息：校验地址、跳转地址、Cookie 名称、local profile 放行规则。
+1. UAP/SSO 接入信息：校验地址、跳转地址、Cookie 名称；本地是否需要放行（涉及关闭鉴权，需显式授权）。
 2. OSS/S3：endpoint、bucket、AK/SK、上传/下载约定。
 3. Redis Sentinel：master 名称、节点列表、密码（模板默认 `mymaster` / `192.168.1.102:26391-26393`）。
 4. MySQL 8 / PostgreSQL 实例：生产地址、库名（本地开发暂用 `tcs_db`，生产库名待运维分配）、最小权限账号。
 5. 菜单与权限码号段、字典来源号段。
-6. 旧库 `wbdz_platform` 数据迁移范围与窗口。
-7. qiankun 主应用注册信息：子应用名 `custom-text`、entry、挂载容器与用户/权限下发字段。
+6. qiankun 主应用注册信息：子应用名 `custom-text`、entry、挂载容器与用户/权限下发字段。
+7. 算子侧：各算子宿主机地址、端口，以及 `docs/算子文件接口约定.md` 三个接口的实现与联调时间。
 
 ---
 
-## 8. 迁移建议顺序
+## 8. 后续接入顺序
 
-1. 按业务域迁移 Liquibase 建表（补全 `001_tcs_init.xml`）→ PO/Mapper → Service/Controller → DTO/VO。
-2. 按 `src/modules/<domain>/register.ts` 迁移页面与 API，先打通 `custom-text` 模块。
-3. 接入 UAP/SSO、OSS 与算子契约，补齐权限码与菜单。
-4. 完成旧库数据迁移与新库双写/切换方案后，再下线 `platform/wbdz-*`。
+1. 接入 UAP/SSO（或明确本地放行方式），打通前端登录态与 `@PreAuthorize`。
+2. 生产库/Redis/OSS 参数到位后替换环境变量，执行 Liquibase 建表与字典/菜单初始化脚本。
+3. 算子侧实现 `/listFiles`、`/downloadFile`、`/progress`，配置 `tcs.operator.base-url` 与端口表后联调整链。
+4. 按主应用菜单体系调整 `register.ts` 的 `component` key，汇入总前端。
+5. 确认无需旧数据后，下线 `platform/wbdz-*`。

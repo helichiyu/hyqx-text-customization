@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- 素材文件：逐文件校验结果与存储路径。 -->
+    <changeSet id="tcs-create-mat-file-20261111" author="helichiyu" context="mysql,postgresql">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="tcs_mat_file"/></not>
+        </preConditions>
+        <createTable tableName="tcs_mat_file" remarks="素材文件">
+            <column name="id" type="BIGINT" remarks="内部主键">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="batch_id" type="BIGINT" remarks="素材批次内部主键">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)" remarks="文件名"/>
+            <column name="ext" type="VARCHAR(16)" remarks="扩展名"/>
+            <column name="size_bytes" type="BIGINT" remarks="文件大小（字节）"/>
+            <column name="sha256" type="VARCHAR(64)" remarks="内容哈希"/>
+            <column name="page_count" type="INT" remarks="PDF 页数"/>
+            <column name="status" type="VARCHAR(32)" remarks="文件状态：passed/rejected"/>
+            <column name="reject_reason" type="VARCHAR(500)" remarks="拒绝原因"/>
+            <column name="store_path" type="VARCHAR(1024)" remarks="存储路径"/>
+            <column name="create_id" type="VARCHAR(64)" remarks="创建人 ID"/>
+            <column name="create_time" type="TIMESTAMP" remarks="创建时间"/>
+            <column name="update_id" type="VARCHAR(64)" remarks="更新人 ID"/>
+            <column name="update_time" type="TIMESTAMP" remarks="更新时间"/>
+            <column name="del_flag" type="CHAR(1)" defaultValue="F" remarks="逻辑删除标记">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex tableName="tcs_mat_file" indexName="idx_tcs_mat_file_batch">
+            <column name="batch_id"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

@@ -3,14 +3,22 @@
   --tcs-color-primary: #4169f6;
   --tcs-color-primary-soft: #eef4ff;
   --tcs-color-success: #12b76a;
+  --tcs-color-success-soft: #ecfdf3;
   --tcs-color-danger: #f04438;
+  --tcs-color-danger-soft: #fef3f2;
+  --tcs-color-warning: #f79009;
+  --tcs-color-warning-soft: #fff7e8;
+  --tcs-color-info-soft: #eff4ff;
   --tcs-color-title: #1f2937;
   --tcs-color-text: #475467;
   --tcs-color-text-secondary: #667085;
   --tcs-color-text-weak: #98a2b3;
-  --tcs-color-border: #e4edf8;
-  --tcs-color-table-head: #f4f6fb;
+  --tcs-color-bg-page: #f6f9fe;
   --tcs-color-surface: #ffffff;
+  --tcs-color-border: #e4edf8;
+  --tcs-color-border-strong: #cfd8e8;
+  --tcs-color-row-line: #eef2f8;
+  --tcs-color-table-head: #f4f6fb;
 
   /* 字号令牌 */
   --tcs-font-size-banner: 18px;
@@ -26,4 +34,9 @@
   --tcs-radius-card: 8px;
   --tcs-radius-pill: 999px;
   --tcs-table-row-height: 44px;
+
+  /* 字体令牌 */
+  --tcs-font-family:
+    'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif;
+  --tcs-font-mono: 'JetBrains Mono', Consolas, 'Courier New', monospace;
 }

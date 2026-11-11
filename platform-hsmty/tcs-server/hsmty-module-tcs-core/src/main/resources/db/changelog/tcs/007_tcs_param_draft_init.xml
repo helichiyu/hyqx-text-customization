@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- 参数配置草稿：每产线一份，发布后清除。 -->
+    <changeSet id="tcs-create-param-draft-20261111" author="helichiyu" context="mysql,postgresql">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="tcs_param_draft"/></not>
+        </preConditions>
+        <createTable tableName="tcs_param_draft" remarks="参数配置草稿">
+            <column name="id" type="BIGINT" remarks="内部主键">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="line" type="VARCHAR(32)" remarks="产线代码或 common">
+                <constraints nullable="false"/>
+            </column>
+            <column name="content" type="CLOB" remarks="参数组 JSON：[{name,value,desc}]"/>
+            <column name="update_by" type="VARCHAR(64)" remarks="最近编辑人展示名"/>
+            <column name="create_id" type="VARCHAR(64)" remarks="创建人 ID"/>
+            <column name="create_time" type="TIMESTAMP" remarks="创建时间"/>
+            <column name="update_id" type="VARCHAR(64)" remarks="更新人 ID"/>
+            <column name="update_time" type="TIMESTAMP" remarks="更新时间"/>
+            <column name="del_flag" type="CHAR(1)" defaultValue="F" remarks="逻辑删除标记">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex tableName="tcs_param_draft" indexName="idx_tcs_param_draft_line">
+            <column name="line"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

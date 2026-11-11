@@ -145,10 +145,17 @@ router:
 tcs:
   service:
     url: ${TCS_SERVICE_URL:http://127.0.0.1:8080/hs-api}
+  # 平台侧素材存储目录（上传 zip 解包与批次素材归档）
+  storage-dir: ${TCS_STORAGE_DIR:./data}
   operator:
     # 算子独立部署：一台宿主机 + 每个算子一个端口，不内嵌 Python 运行时。
     # 算子名与 operators/ 目录一致，端口与 operators/docker-compose.yml 保持一致。
     base-url: ${TCS_OPERATOR_BASE_URL:http://127.0.0.1}
+    # 产物文件获取方式：http 走算子文件接口（生产，算子与前后端不在同一服务器）；
+    # local 直接读共享目录（仅本地联调）。
+    file-mode: ${TCS_OPERATOR_FILE_MODE:http}
+    # local 模式下算子输出根目录映射（/data/... → 本机目录）
+    runtime-dir: ${TCS_OPERATOR_RUNTIME_DIR:./op-runtime}
     ports:
       meta_clean_slice: 6301
       meta_genre_judge: 6302
