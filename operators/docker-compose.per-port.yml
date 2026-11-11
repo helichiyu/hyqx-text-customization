@@ -1,0 +1,94 @@
+# 文本定制化生产 · 11 个算子服务一键编排（每算子独立容器/端口）
+#
+# 单容器合并形态（服务名 op-custom-text、端口 17022）见 docker-compose.yml。
+#
+# 用法（在 release 目录，即本文件所在目录，先解压全部 <tag>.zip 到同名目录）：
+#   for f in *.zip; do unzip -q "$f" -d "${f%.zip}"; done
+#   docker compose up -d --build
+#
+# 共享数据卷：./op-runtime 挂载到所有容器的 /data（INPUT_DIR=/data/input、OUTPUT_DIR=/data/outputs）。
+# 链路传输要求下游能读到上游的 outputFile——所有容器共用同一挂载路径即可满足路径闸门校验。
+# 模型调用走硅基流动公网 API，宿主机需可出网；如走内网网关，改下面 SILICONFLOW_BASE_URL。
+
+x-op-common: &op-common
+  restart: unless-stopped
+  environment: &op-env
+    INPUT_DIR: /data/input
+    OUTPUT_DIR: /data/outputs
+    # SILICONFLOW_BASE_URL: http://your-gateway/v1   # 需要时覆盖（key 同理：SILICONFLOW_API_KEY）
+  volumes:
+    - ./op-runtime:/data
+  healthcheck:
+    test: ["CMD", "python", "-c", "import urllib.request as u,sys; sys.exit(0 if u.urlopen('http://127.0.0.1:6288/healthz', timeout=3).status==200 else 1)"]
+    interval: 30s
+    timeout: 5s
+    retries: 3
+    start_period: 15s
+
+services:
+
+  meta-clean-slice:
+    <<: *op-common
+    build: ./meta_clean_slice
+    container_name: op-meta-clean-slice
+    ports: ["6301:6288"]
+
+  meta-genre-judge:
+    <<: *op-common
+    build: ./meta_genre_judge
+    container_name: op-meta-genre-judge
+    ports: ["6302:6288"]
+
+  meta-fact-extract:
+    <<: *op-common
+    build: ./meta_fact_extract
+    container_name: op-meta-fact-extract
+    ports: ["6303:6288"]
+
+  meta-field-fill:
+    <<: *op-common
+    build: ./meta_field_fill
+    container_name: op-meta-field-fill
+    ports: ["6304:6288"]
+
+  lay-page-render:
+    <<: *op-common
+    build: ./lay_page_render
+    container_name: op-lay-page-render
+    ports: ["6305:6288"]
+
+  lay-page-detect:
+    <<: *op-common
+    build: ./lay_page_detect
+    container_name: op-lay-page-detect
+    ports: ["6306:6288"]
+
+  fml-formula-locate:
+    <<: *op-common
+    build: ./fml_formula_locate
+    container_name: op-fml-formula-locate
+    ports: ["6307:6288"]
+
+  fml-formula-recognize:
+    <<: *op-common
+    build: ./fml_formula_recognize
+    container_name: op-fml-formula-recognize
+    ports: ["6308:6288"]
+
+  img-region-locate:
+    <<: *op-common
+    build: ./img_region_locate
+    container_name: op-img-region-locate
+    ports: ["6309:6288"]
+
+  img-type-classify:
+    <<: *op-common
+    build: ./img_type_classify
+    container_name: op-img-type-classify
+    ports: ["6310:6288"]
+
+  img-struct-describe:
+    <<: *op-common
+    build: ./img_struct_describe
+    container_name: op-img-struct-describe
+    ports: ["6311:6288"]

@@ -4,6 +4,11 @@
 
 每个算子包 = 一个独立可部署服务（FastAPI + uvicorn，统一端口 6288），自带样本、单元测试、算子说明书与测试指令。
 
+## 部署形态
+
+- **单算子独立服务**：每个算子目录一个镜像，容器内 6288；`docker-compose.per-port.yml` 编排 11 个服务（宿主端口 6301–6311）。
+- **单容器合并部署（`op-custom-text`）**：11 个算子在同一容器内各自独立进程运行，对外仅暴露 `17022`，按 `/<算子名>/<接口>` 路由（如 `POST /meta_clean_slice/predict`）。运行 `python -I operators/_shared_tools/pack_docker_bundle.py` 生成 `release/op-custom-text-docker/`（含单服务 `docker-compose.yml` 与构建上下文），平台侧配置 `tcs.operator.deployment=shared-port`、`tcs.operator.shared-port=17022`。
+
 ## 算子清单
 
 | 目录 | 中文名 | 产线 · 环节 | 技术形态 | 调外部 API |
@@ -88,7 +93,7 @@ operators/<tag>/
 └── <tag>/                    # 算法实现（operator.py + configs + utils 副本 + dataset/sample + tests + README）
 ```
 
-`_shared_tools/` 为开发侧共享基建（外壳生成器、LLM client、样本生成、说明书生成器、全量冒烟），不随算子包部署；算子包内的 `utils/` 是公共能力的 vendored 副本，保证单包自包含。
+`_shared_tools/` 为开发侧共享基建（外壳生成器、LLM client、样本生成、说明书生成器、全量冒烟），不随算子包部署；算子包内的 `utils/` 是公共能力的 vendored 副本，保证单包自包含。`_deploy/op-custom-text/` 是单容器合并部署的构建模板（Dockerfile / nginx.conf / supervisor.py / requirements.txt），由 `pack_docker_bundle.py` 组装进交付包。
 
 ## 验收入口
 

@@ -1,92 +1,42 @@
-# 文本定制化生产 · 11 个算子服务一键编排
+# 文本定制化生产 · 11 个算子合并为单容器（服务名 op-custom-text，对外端口 17022）
 #
-# 用法（在 release 目录，即本文件所在目录，先解压全部 <tag>.zip 到同名目录）：
-#   for f in *.zip; do unzip -q "$f" -d "${f%.zip}"; done
+# 本文件是交付包 release/op-custom-text-docker/ 内的编排文件，由
+#   python -I operators/_shared_tools/pack_docker_bundle.py
+# 原样复制过去；仓库根直接 `docker compose up` 没有构建上下文，请先生成交付包。
+#
+# 用法（交付包目录）：
 #   docker compose up -d --build
+#   curl http://127.0.0.1:17022/healthz
+#   curl http://127.0.0.1:17022/meta_clean_slice/healthz
 #
-# 共享数据卷：./op-runtime 挂载到所有容器的 /data（INPUT_DIR=/data/input、OUTPUT_DIR=/data/outputs）。
-# 链路传输要求下游能读到上游的 outputFile——所有容器共用同一挂载路径即可满足路径闸门校验。
-# 模型调用走硅基流动公网 API，宿主机需可出网；如走内网网关，改下面 SILICONFLOW_BASE_URL。
+# 路由：/<算子名>/<接口>，例如
+#   POST /meta_clean_slice/predict
+#   POST /img_struct_describe/uploadFile?uniqueId=...
+# 11 个算子在容器内各自独立进程运行，nginx 按路径前缀分流。
+#
+# 共享数据卷：./op-runtime 挂载到容器 /data（INPUT_DIR=/data/input、OUTPUT_DIR=/data/outputs）。
+# 模型调用默认走硅基流动公网 API，宿主机需可出网；如需覆盖网关/密钥，取消下面注释。
+# 11 服务独立端口形态见 docker-compose.per-port.yml。
 
-x-op-common: &op-common
-  restart: unless-stopped
-  environment: &op-env
-    INPUT_DIR: /data/input
-    OUTPUT_DIR: /data/outputs
-    # SILICONFLOW_BASE_URL: http://your-gateway/v1   # 需要时覆盖（key 同理：SILICONFLOW_API_KEY）
-  volumes:
-    - ./op-runtime:/data
-  healthcheck:
-    test: ["CMD", "python", "-c", "import urllib.request as u,sys; sys.exit(0 if u.urlopen('http://127.0.0.1:6288/healthz', timeout=3).status==200 else 1)"]
-    interval: 30s
-    timeout: 5s
-    retries: 3
-    start_period: 15s
+name: op-custom-text
 
 services:
-
-  meta-clean-slice:
-    <<: *op-common
-    build: ./meta_clean_slice
-    container_name: op-meta-clean-slice
-    ports: ["6301:6288"]
-
-  meta-genre-judge:
-    <<: *op-common
-    build: ./meta_genre_judge
-    container_name: op-meta-genre-judge
-    ports: ["6302:6288"]
-
-  meta-fact-extract:
-    <<: *op-common
-    build: ./meta_fact_extract
-    container_name: op-meta-fact-extract
-    ports: ["6303:6288"]
-
-  meta-field-fill:
-    <<: *op-common
-    build: ./meta_field_fill
-    container_name: op-meta-field-fill
-    ports: ["6304:6288"]
-
-  lay-page-render:
-    <<: *op-common
-    build: ./lay_page_render
-    container_name: op-lay-page-render
-    ports: ["6305:6288"]
-
-  lay-page-detect:
-    <<: *op-common
-    build: ./lay_page_detect
-    container_name: op-lay-page-detect
-    ports: ["6306:6288"]
-
-  fml-formula-locate:
-    <<: *op-common
-    build: ./fml_formula_locate
-    container_name: op-fml-formula-locate
-    ports: ["6307:6288"]
-
-  fml-formula-recognize:
-    <<: *op-common
-    build: ./fml_formula_recognize
-    container_name: op-fml-formula-recognize
-    ports: ["6308:6288"]
-
-  img-region-locate:
-    <<: *op-common
-    build: ./img_region_locate
-    container_name: op-img-region-locate
-    ports: ["6309:6288"]
-
-  img-type-classify:
-    <<: *op-common
-    build: ./img_type_classify
-    container_name: op-img-type-classify
-    ports: ["6310:6288"]
-
-  img-struct-describe:
-    <<: *op-common
-    build: ./img_struct_describe
-    container_name: op-img-struct-describe
-    ports: ["6311:6288"]
+  op-custom-text:
+    build: ./op-custom-text
+    container_name: op-custom-text
+    restart: unless-stopped
+    ports:
+      - "17022:17022"
+    environment:
+      INPUT_DIR: /data/input
+      OUTPUT_DIR: /data/outputs
+      # SILICONFLOW_BASE_URL: http://your-gateway/v1
+      # SILICONFLOW_API_KEY: sk-...
+    volumes:
+      - ./op-runtime:/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request as u,sys; sys.exit(0 if u.urlopen('http://127.0.0.1:17022/healthz', timeout=3).status==200 else 1)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 120s

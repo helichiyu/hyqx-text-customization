@@ -55,7 +55,9 @@ def main() -> None:
             n = add_tree(zf, pkg / tag, tag)
         print(f"[zip] {out.name:32s} {out.stat().st_size / 1024:8.1f} KB（内层 {n} 个文件）")
 
-    for f in ["docker-compose.yml", "chain_example.py", "前后端对接说明.md"]:
+    # 11 服务独立端口形态；单容器合并形态见 pack_docker_bundle.py
+    shutil.copy2(OPERATORS / "docker-compose.per-port.yml", RELEASE / "docker-compose.yml")
+    for f in ["chain_example.py", "前后端对接说明.md"]:
         shutil.copy2(OPERATORS / f, RELEASE / f)
     for tag in TAGS:
         for f in (OPERATORS / tag).glob(f"{tag}-*.md"):

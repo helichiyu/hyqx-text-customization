@@ -148,9 +148,13 @@ tcs:
   # 平台侧素材存储目录（上传 zip 解包与批次素材归档）
   storage-dir: ${TCS_STORAGE_DIR:./data}
   operator:
-    # 算子独立部署：一台宿主机 + 每个算子一个端口，不内嵌 Python 运行时。
-    # 算子名与 operators/ 目录一致，端口与 operators/docker-compose.yml 保持一致。
+    # 算子独立部署，不内嵌 Python 运行时。部署形态二选一：
+    #   per-port（默认）：一台宿主机 + 每个算子一个端口，按下面 ports 拼接；
+    #   shared-port：11 个算子合并为单容器（operators/_deploy/docker-compose.yml），
+    #                共用一个端口，按 /<算子名> 路径区分，地址形如 http://host:17022/meta_clean_slice。
     base-url: ${TCS_OPERATOR_BASE_URL:http://127.0.0.1}
+    deployment: ${TCS_OPERATOR_DEPLOYMENT:per-port}
+    shared-port: ${TCS_OPERATOR_SHARED_PORT:17022}
     # 产物文件获取方式：http 走算子文件接口（生产，算子与前后端不在同一服务器）；
     # local 直接读共享目录（仅本地联调）。
     file-mode: ${TCS_OPERATOR_FILE_MODE:http}
