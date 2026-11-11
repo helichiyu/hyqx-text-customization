@@ -26,6 +26,9 @@ services:
     image: op-custom-text:latest
     build: ./op-custom-text
     container_name: op-custom-text
+    # 复用 docker0，不新建项目网络：部分服务器 Docker 默认地址池已耗尽
+    # （could not find an available, non-overlapping IPv4 address pool）
+    network_mode: bridge
     restart: unless-stopped
     ports:
       - "17022:17022"
