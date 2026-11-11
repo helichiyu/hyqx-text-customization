@@ -22,6 +22,8 @@ name: op-custom-text
 
 services:
   op-custom-text:
+    # 显式指定镜像名，否则 Compose 会按 {项目名}-{服务名} 自动命名成 op-custom-text-op-custom-text
+    image: op-custom-text:latest
     build: ./op-custom-text
     container_name: op-custom-text
     restart: unless-stopped
