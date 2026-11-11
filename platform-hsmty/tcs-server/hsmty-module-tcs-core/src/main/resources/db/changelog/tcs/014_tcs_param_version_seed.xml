@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!--
+        各产线初始参数版本 v1.0。
+
+        这些是平台运行所需的基础配置（素材准入规则、算子默认并发等），不是演示业务数据：
+        新库为空时若不预置，任务创建会因“该产线尚无已发布参数版本”而无法进行。
+        每个产线单独 changeSet，按 line 幂等，重复执行不会重复插入。
+    -->
+    <changeSet id="tcs-seed-param-version-formula-20261111" author="helichiyu" context="mysql,postgresql">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM tcs_param_version WHERE line = 'formula'</sqlCheck>
+        </preConditions>
+        <insert tableName="tcs_param_version">
+            <column name="id" value="900000000000000001"/>
+            <column name="line" value="formula"/>
+            <column name="version" value="v1.0"/>
+            <column name="content" value='[{"name":"并发数","value":"4-8","desc":"单任务并行处理的公式数；阈值在数据集明细按任务调整。"}]'/>
+            <column name="published_at" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="published_by" value="system"/>
+            <column name="create_id" value="system"/>
+            <column name="create_time" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="update_id" value="system"/>
+            <column name="update_time" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="del_flag" value="F"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="tcs-seed-param-version-layout-20261111" author="helichiyu" context="mysql,postgresql">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM tcs_param_version WHERE line = 'layout'</sqlCheck>
+        </preConditions>
+        <insert tableName="tcs_param_version">
+            <column name="id" value="900000000000000002"/>
+            <column name="line" value="layout"/>
+            <column name="version" value="v1.0"/>
+            <column name="content" value='[{"name":"渲染 DPI","value":"150","desc":"逐页渲染分辨率，范围 72-300。"},{"name":"并发数","value":"4-8","desc":"单任务逐页调用模型的并发数。"}]'/>
+            <column name="published_at" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="published_by" value="system"/>
+            <column name="create_id" value="system"/>
+            <column name="create_time" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="update_id" value="system"/>
+            <column name="update_time" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="del_flag" value="F"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="tcs-seed-param-version-graphic-20261111" author="helichiyu" context="mysql,postgresql">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM tcs_param_version WHERE line = 'graphic'</sqlCheck>
+        </preConditions>
+        <insert tableName="tcs_param_version">
+            <column name="id" value="900000000000000003"/>
+            <column name="line" value="graphic"/>
+            <column name="version" value="v1.0"/>
+            <column name="content" value='[{"name":"并发数","value":"4-8","desc":"单任务逐张调用模型的并发数。"}]'/>
+            <column name="published_at" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="published_by" value="system"/>
+            <column name="create_id" value="system"/>
+            <column name="create_time" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="update_id" value="system"/>
+            <column name="update_time" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="del_flag" value="F"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="tcs-seed-param-version-metadata-20261111" author="helichiyu" context="mysql,postgresql">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM tcs_param_version WHERE line = 'metadata'</sqlCheck>
+        </preConditions>
+        <insert tableName="tcs_param_version">
+            <column name="id" value="900000000000000004"/>
+            <column name="line" value="metadata"/>
+            <column name="version" value="v1.0"/>
+            <column name="content" value='[{"name":"并发数","value":"4-8","desc":"单任务文档处理并发数。"}]'/>
+            <column name="published_at" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="published_by" value="system"/>
+            <column name="create_id" value="system"/>
+            <column name="create_time" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="update_id" value="system"/>
+            <column name="update_time" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="del_flag" value="F"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="tcs-seed-param-version-common-20261111" author="helichiyu" context="mysql,postgresql">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM tcs_param_version WHERE line = 'common'</sqlCheck>
+        </preConditions>
+        <insert tableName="tcs_param_version">
+            <column name="id" value="900000000000000005"/>
+            <column name="line" value="common"/>
+            <column name="version" value="v1.0"/>
+            <column name="content" value='[{"name":"单文件大小上限(MB)","value":"50","desc":"素材准入校验用，全部产线。"},{"name":"图片最小分辨率","value":"600","desc":"图文融合素材准入校验用。"}]'/>
+            <column name="published_at" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="published_by" value="system"/>
+            <column name="create_id" value="system"/>
+            <column name="create_time" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="update_id" value="system"/>
+            <column name="update_time" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="del_flag" value="F"/>
+        </insert>
+    </changeSet>
+</databaseChangeLog>

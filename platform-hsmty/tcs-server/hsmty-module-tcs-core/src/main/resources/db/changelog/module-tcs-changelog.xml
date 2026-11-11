@@ -31,4 +31,5 @@
     <include file="db/changelog/tcs/011_tcs_dataset_item_init.xml" relativeToChangelogFile="false"/>
     <include file="db/changelog/tcs/012_tcs_delivery_log_init.xml" relativeToChangelogFile="false"/>
     <include file="db/changelog/tcs/013_tcs_rollback_log_init.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/tcs/014_tcs_param_version_seed.xml" relativeToChangelogFile="false"/>
 </databaseChangeLog>
