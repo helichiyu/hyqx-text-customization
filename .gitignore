@@ -48,6 +48,10 @@ release/
 settings.xml
 **/.flattened-pom.xml
 
+# ===== 嵌套独立仓库（各自独立 git 开发，不纳入外层仓库） =====
+/hsmty-module-tcs-server/
+/hsmty-web/
+
 # ===== IDE / 系统 =====
 .idea/
 *.iml
