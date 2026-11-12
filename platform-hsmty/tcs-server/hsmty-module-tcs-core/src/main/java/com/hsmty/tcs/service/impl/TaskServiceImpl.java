@@ -8,6 +8,7 @@ import com.hsmty.tcs.common.AuthContext;
 import com.hsmty.tcs.common.BizException;
 import com.hsmty.tcs.common.BizId;
 import com.hsmty.tcs.common.Times;
+import com.hsmty.tcs.mapper.DatasetItemMapper;
 import com.hsmty.tcs.mapper.DatasetMapper;
 import com.hsmty.tcs.mapper.MatBatchMapper;
 import com.hsmty.tcs.mapper.ParamVersionMapper;
@@ -77,6 +78,8 @@ public class TaskServiceImpl extends ServiceImpl<TaskMainMapper, TaskMainEntity>
     private final ParamVersionMapper paramVersionMapper;
 
     private final DatasetMapper datasetMapper;
+
+    private final DatasetItemMapper datasetItemMapper;
 
     private final ParamService paramService;
 
@@ -226,13 +229,30 @@ public class TaskServiceImpl extends ServiceImpl<TaskMainMapper, TaskMainEntity>
     }
 
     /**
-     * 删除（仅草稿，逻辑删除）。
+     * 删除任务（逻辑删除）。
+     * <p>运行中的任务不可删除；任务已生成已发布/已回滚数据集时不可删除，避免已交付数据悬空。
+     * <p>其余状态（草稿、待处理、待复核、待归集、已归集）随任务级联清理环节执行记录、
+     * 复核单与复核条目、候选数据集及其条目。
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void remove(Long id) {
         TaskMainEntity task = load(id);
-        require("draft".equals(task.getStatus()), "仅草稿任务可删除");
+        // 以编排器内存态判断是否真正在执行：后端重启后遗留的 processing 状态允许清理。
+        require(!orchestrator.isRunning(id), "任务正在执行，不能删除");
+        List<DatasetEntity> datasets = datasetMapper.selectListByQuery(
+                QueryWrapper.create().where("task_id = ?", id));
+        for (DatasetEntity dataset : datasets) {
+            require("candidate".equals(dataset.getStatus()),
+                    "任务已生成数据集 " + dataset.getBizNo() + "（已发布或已回滚），不能删除");
+        }
+        for (DatasetEntity dataset : datasets) {
+            datasetItemMapper.deleteByQuery(QueryWrapper.create().where("dataset_id = ?", dataset.getId()));
+            datasetMapper.deleteById(dataset.getId());
+        }
+        reviewItemMapper.deleteByQuery(QueryWrapper.create().where("task_id = ?", id));
+        reviewOrderMapper.deleteByQuery(QueryWrapper.create().where("task_id = ?", id));
+        stageRunMapper.deleteByQuery(QueryWrapper.create().where("task_id = ?", id));
         taskMapper.deleteById(id);
     }
 

@@ -69,6 +69,13 @@ public interface DatasetService extends IService<DatasetEntity> {
     DatasetVO rollback(Long id, String reason);
 
     /**
+     * <p>删除数据集（逻辑删除，级联删除条目）；已发布数据集须先回滚。
+     *
+     * @param id 数据集内部主键
+     */
+    void remove(Long id);
+
+    /**
      * <p>生成质量报告并记录交付。
      *
      * @param id 数据集内部主键

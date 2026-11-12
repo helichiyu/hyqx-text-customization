@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -96,6 +97,17 @@ public class ReviewController {
     @PostMapping("/{reference}/close")
     public ApiResult<Void> close(@PathVariable String reference) {
         reviewService.close(reviewService.resolveId(reference));
+        return ApiResult.success();
+    }
+
+    /**
+     * <p>删除复核单（逻辑删除，级联删除条目）。
+     */
+    @Operation(summary = "删除复核单")
+    @PreAuthorize("hasAnyAuthority('tcs:review:remove')")
+    @DeleteMapping("/{reference}")
+    public ApiResult<Void> delete(@PathVariable String reference) {
+        reviewService.remove(reviewService.resolveId(reference));
         return ApiResult.success();
     }
 }

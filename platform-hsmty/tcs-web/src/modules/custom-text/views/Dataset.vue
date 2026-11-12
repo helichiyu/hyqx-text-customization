@@ -134,7 +134,7 @@
             />
             <el-table-column
               label="操作"
-              width="360"
+              width="430"
             >
               <template #default="{ row }">
                 <el-button
@@ -180,6 +180,15 @@
                   @click="doRollback(row)"
                 >
                   回滚
+                </el-button>
+                <el-button
+                  v-if="row.status !== 'published'"
+                  link
+                  type="danger"
+                  size="small"
+                  @click="doDelete(row)"
+                >
+                  删除
                 </el-button>
               </template>
             </el-table-column>
@@ -526,7 +535,8 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import DatasetItemViewer from '../components/DatasetItemViewer.vue'
 import {
   LINE_NAMES, DS_STATUS, REVIEW_STATUS,
-  datasetPage, datasetDetail, datasetPublish, datasetRollback, datasetReport, deliveryPage,
+  datasetPage, datasetDetail, datasetPublish, datasetRollback, datasetDelete, datasetReport,
+  deliveryPage,
   taskDetail, reviewAddFromDataset, saveBlob,
 } from '../api'
 
@@ -725,6 +735,18 @@ async function doPublish(row: any) {
   await datasetPublish(row.bizNo)
   ElMessage.success('已发布，来源任务状态已同步为已归集')
   if (detail.value?.bizNo === row.bizNo) detail.value = await datasetDetail(row.bizNo)
+  load()
+}
+
+async function doDelete(row: any) {
+  await ElMessageBox.confirm(
+    `确认删除数据集「${row.bizNo}」？其条目会一并删除，且不可恢复；已发布的数据集请先回滚。`,
+    '删除确认',
+    { type: 'warning' },
+  )
+  await datasetDelete(row.bizNo)
+  ElMessage.success('已删除')
+  if (detail.value?.bizNo === row.bizNo) detail.value = null
   load()
 }
 

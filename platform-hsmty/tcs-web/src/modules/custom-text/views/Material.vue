@@ -164,7 +164,7 @@
               编辑
             </el-button>
             <el-button
-              v-if="!row.linked && row.status !== 'released'"
+              v-if="!row.linked"
               link
               type="danger"
               size="small"
@@ -290,7 +290,7 @@
         />
       </div>
       <div class="release-note">
-        移交后该批次进入「已移交」，可被本产线任务引用；移交后不可编辑、不可删除，也不能再修改准入校验结论。
+        移交后该批次进入「已移交」，可被本产线任务引用；移交后不可编辑，也不能再修改准入校验结论。批次被任务引用期间不可删除，任务删除后即可删除。
       </div>
       <template #footer>
         <el-button @click="releaseVisible = false">
@@ -893,7 +893,11 @@ async function doEdit() {
 }
 
 async function doDelete(row: MatBatchView) {
-  await ElMessageBox.confirm(`确认删除批次「${row.name}」？仅未移交且未被任务关联的批次可删除。`, '删除确认', { type: 'warning' })
+  await ElMessageBox.confirm(
+    `确认删除批次「${row.name}」？素材文件与校验记录会一并清理，且不可恢复；已被任务引用的批次不能删除。`,
+    '删除确认',
+    { type: 'warning' },
+  )
   await materialDelete(row.bizNo)
   ElMessage.success('已删除')
   load()

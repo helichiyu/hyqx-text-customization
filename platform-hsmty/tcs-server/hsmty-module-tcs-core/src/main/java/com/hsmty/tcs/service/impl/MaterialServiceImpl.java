@@ -429,19 +429,35 @@ public class MaterialServiceImpl extends ServiceImpl<MatBatchMapper, MatBatchEnt
     }
 
     /**
-     * 删除：仅未校验/已校验/上传失败可删；明细与变更记录一并逻辑删除。
+     * 删除：任一批次状态均可删，但必须未被任务引用（任务删除后即解除引用）；
+     * 明细、变更记录一并逻辑删除，并清理已落盘的素材文件。
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void remove(Long batchId) {
         MatBatchEntity batch = batchMapper.selectOneById(batchId);
         require(batch != null, "批次不存在");
-        if ("released".equals(batch.getStatus()) || !linkedTaskIds(batchId).isEmpty()) {
-            throw new BizException("已移交或已关联的批次不可删除");
-        }
+        require(linkedTaskIds(batchId).isEmpty(), "批次已被任务引用，不可删除");
+        List<MatFileEntity> files = fileMapper.selectListByQuery(
+                QueryWrapper.create().where("batch_id = ?", batchId));
         batchMapper.deleteById(batchId);
         fileMapper.deleteByQuery(QueryWrapper.create().where("batch_id = ?", batchId));
         changeLogMapper.deleteByQuery(QueryWrapper.create().where("batch_id = ?", batchId));
+        files.forEach(file -> deleteStoredFile(file.getStorePath()));
+    }
+
+    /**
+     * 尽力删除落盘文件；失败只记日志，不影响删除结果。
+     */
+    private void deleteStoredFile(String storePath) {
+        if (storePath == null || storePath.isBlank()) {
+            return;
+        }
+        try {
+            Files.deleteIfExists(Path.of(storageDir, storePath));
+        } catch (Exception e) {
+            log.warn("素材文件删除失败（忽略）: {} {}", storePath, e.getMessage());
+        }
     }
 
     @Override

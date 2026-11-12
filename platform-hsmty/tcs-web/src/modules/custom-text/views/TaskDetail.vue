@@ -42,7 +42,6 @@
           重跑任务
         </el-button>
         <el-button
-          v-if="task.status === 'draft'"
           type="danger"
           plain
           @click="act('delete')"
@@ -1271,7 +1270,11 @@ function schedulePoll() {
 
 async function act(kind: 'submit' | 'start' | 'collect' | 'delete') {
   if (kind === 'delete') {
-    await ElMessageBox.confirm(`确认删除任务「${task.value.name}」？`, '删除确认', { type: 'warning' })
+    await ElMessageBox.confirm(
+      `确认删除任务「${task.value.name}」？将同时清理该任务的环节记录、复核单与候选数据集，且不可恢复。`,
+      '删除确认',
+      { type: 'warning' },
+    )
     await taskDelete(taskBizNo)
     ElMessage.success('已删除')
     router.push((route.query.fromWb as string) || '/custom-text')

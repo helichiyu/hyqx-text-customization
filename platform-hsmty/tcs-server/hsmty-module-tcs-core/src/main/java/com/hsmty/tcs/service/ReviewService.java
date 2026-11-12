@@ -78,4 +78,11 @@ public interface ReviewService extends IService<ReviewOrderEntity> {
      * @param orderId 复核单内部主键
      */
     void close(Long orderId);
+
+    /**
+     * <p>删除复核单（逻辑删除，级联删除条目）。
+     *
+     * @param orderId 复核单内部主键
+     */
+    void remove(Long orderId);
 }

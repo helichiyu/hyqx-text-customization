@@ -20,6 +20,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -108,5 +109,16 @@ public class DatasetController {
     @GetMapping("/deliveries")
     public ApiResult<PageResult<DatasetDeliveryRowVO>> deliveries(DeliveryListDTO dto) {
         return ApiPageResult.success(datasetService.deliveries(dto));
+    }
+
+    /**
+     * <p>删除数据集（逻辑删除，级联删除条目）；已发布数据集须先回滚。
+     */
+    @Operation(summary = "删除数据集")
+    @PreAuthorize("hasAnyAuthority('tcs:dataset:remove')")
+    @DeleteMapping("/{reference}")
+    public ApiResult<Void> delete(@PathVariable String reference) {
+        datasetService.remove(datasetService.resolveId(reference));
+        return ApiResult.success();
     }
 }

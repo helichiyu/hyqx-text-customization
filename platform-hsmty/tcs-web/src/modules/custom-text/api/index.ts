@@ -243,6 +243,9 @@ export const reviewAddFromDataset = (datasetItemId: string | number) =>
 export const reviewClose = (reference: string) =>
   postData<void>(`/tcs/review/${encodeURIComponent(reference)}/close`)
 
+export const reviewDelete = (reference: string) =>
+  deleteData<void>(`/tcs/review/${encodeURIComponent(reference)}`)
+
 // ==================== 数据集 ====================
 
 export const datasetPage = (params: Record<string, unknown>) =>
@@ -256,6 +259,9 @@ export const datasetPublish = (reference: string) =>
 
 export const datasetRollback = (reference: string, reason: string) =>
   postData<any>(`/tcs/dataset/${encodeURIComponent(reference)}/rollback`, { reason })
+
+export const datasetDelete = (reference: string) =>
+  deleteData<void>(`/tcs/dataset/${encodeURIComponent(reference)}`)
 
 export const datasetReport = (reference: string) =>
   downloadBlob(`/tcs/dataset/${encodeURIComponent(reference)}/report`)

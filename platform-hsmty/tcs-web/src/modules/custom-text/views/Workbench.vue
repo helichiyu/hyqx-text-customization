@@ -208,17 +208,15 @@
             >
               详情
             </el-button>
-            <template v-if="row.status === 'draft'">
-              <span class="sep">·</span>
-              <el-button
-                link
-                type="danger"
-                size="small"
-                @click="doDelete(row)"
-              >
-                删除
-              </el-button>
-            </template>
+            <span class="sep">·</span>
+            <el-button
+              link
+              type="danger"
+              size="small"
+              @click="doDelete(row)"
+            >
+              删除
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -231,7 +229,7 @@
         @current-change="load()"
       />
       <div class="hint">
-        <b>任务流转：</b>待启动 → 加工中 → 待归集 / 待复核 → 已归集。四条产线不提供暂停、终止或撤销任务操作。
+        <b>任务流转：</b>待启动 → 加工中 → 待归集 / 待复核 → 已归集。四条产线不提供暂停、终止或撤销任务操作；任务可删除，但运行中的任务与已交付数据集对应的任务除外。
       </div>
     </el-card>
 
@@ -517,7 +515,11 @@ async function doStart(row: TaskView) {
 }
 
 async function doDelete(row: TaskView) {
-  await ElMessageBox.confirm(`确认删除草稿任务「${row.name}」？`, '删除确认', { type: 'warning' })
+  await ElMessageBox.confirm(
+    `确认删除任务「${row.name}」？将同时清理该任务的环节记录、复核单与候选数据集，且不可恢复。`,
+    '删除确认',
+    { type: 'warning' },
+  )
   await taskDelete(row.bizNo)
   ElMessage.success('已删除')
   load()

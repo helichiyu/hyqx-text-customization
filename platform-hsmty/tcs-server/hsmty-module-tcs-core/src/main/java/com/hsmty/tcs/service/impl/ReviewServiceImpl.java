@@ -332,6 +332,30 @@ public class ReviewServiceImpl extends ServiceImpl<ReviewOrderMapper, ReviewOrde
     }
 
     /**
+     * 删除复核单（逻辑删除，级联删除条目）；删除后任务下已无未闭环复核单时，
+     * 待复核任务转为待归集。
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void remove(Long orderId) {
+        ReviewOrderEntity order = load(orderId);
+        itemMapper.deleteByQuery(QueryWrapper.create().where("order_id = ?", orderId));
+        orderMapper.deleteById(orderId);
+
+        Long open = orderMapper.selectCountByQuery(QueryWrapper.create()
+                .where("task_id = ?", order.getTaskId())
+                .and("status in (?, ?)", "pending", "doing"));
+        if (open == 0) {
+            TaskMainEntity task = taskMapper.selectOneById(order.getTaskId());
+            if (task != null && "waitreview".equals(task.getStatus())) {
+                task.setStatus("quality");
+                taskMapper.update(task);
+            }
+        }
+        log.info("复核单删除: order={} by={}", order.getBizNo(), AuthContext.username());
+    }
+
+    /**
      * 闭环回写：A 已确认 / B 已修正（payload 换修正值）/ C 已剔除；重算数据集条数。
      */
     private void syncDatasetItems(ReviewOrderEntity order, List<ReviewItemEntity> items) {

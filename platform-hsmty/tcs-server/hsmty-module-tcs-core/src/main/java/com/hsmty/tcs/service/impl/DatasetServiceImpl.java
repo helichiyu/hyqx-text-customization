@@ -240,6 +240,18 @@ public class DatasetServiceImpl extends ServiceImpl<DatasetMapper, DatasetEntity
     }
 
     /**
+     * 删除数据集（逻辑删除，级联删除数据集条目）；已发布数据集须先回滚。
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void remove(Long id) {
+        DatasetEntity ds = load(id);
+        require(!"published".equals(ds.getStatus()), "已发布数据集不可删除，请先回滚");
+        itemMapper.deleteByQuery(QueryWrapper.create().where("dataset_id = ?", id));
+        datasetMapper.deleteById(id);
+    }
+
+    /**
      * 质量报告 TXT：仅已发布可下载；仅含处理信息与质量结论、不含原始数据；
      * 每次下载记录交付（业务编号用产线前缀）。
      */

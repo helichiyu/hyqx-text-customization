@@ -117,7 +117,7 @@
         />
         <el-table-column
           label="操作"
-          width="110"
+          width="150"
           fixed="right"
         >
           <template #default="{ row }">
@@ -128,6 +128,14 @@
               @click="openOrder(row.bizNo)"
             >
               {{ row.status === 'done' || row.status === 'void' ? '查看' : '复核' }}
+            </el-button>
+            <el-button
+              link
+              type="danger"
+              size="small"
+              @click="doDelete(row)"
+            >
+              删除
             </el-button>
           </template>
         </el-table-column>
@@ -488,7 +496,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   LINE_NAMES, REVIEW_STATUS,
-  reviewPage, reviewDetail, reviewConclude, reviewUnconclude, reviewClose, taskReject,
+  reviewPage, reviewDetail, reviewConclude, reviewUnconclude, reviewClose, reviewDelete, taskReject,
 } from '../api'
 
 const route = useRoute()
@@ -642,6 +650,17 @@ async function load(page?: number) {
   } finally {
     loading.value = false
   }
+}
+
+async function doDelete(row: any) {
+  await ElMessageBox.confirm(
+    `确认删除复核单「${row.bizNo}」？其条目会一并删除，且不可恢复。`,
+    '删除确认',
+    { type: 'warning' },
+  )
+  await reviewDelete(row.bizNo)
+  ElMessage.success('已删除')
+  await load()
 }
 
 async function rerunSourceTask() {
