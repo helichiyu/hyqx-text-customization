@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />            
+    <meta http-equiv="Cache-Control" content="no-transform" />
+    <meta http-equiv="Cache-Control" content="no-siteapp" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="referrer" content="origin-when-cross-origin" />
+    <title>P3826 [NOI2017] 蔬菜 题解 - zykaris - 博客园</title>
+    
+    <meta name="description" content="前置：堆、反悔贪心 题目链接：https://www.luogu.com.cn/problem/P3826 题意 有 n 种蔬菜，每天最多卖 m 个单位。 第 i 种蔬菜有四个参数： a_i：每卖出一个单位获得 a_i 收益； s_i：第一次卖这种蔬菜时，额外获得 s_i 收益； c_i：初始库存；" />    
+    <meta property="og:description" content="前置：堆、反悔贪心 题目链接：https://www.luogu.com.cn/problem/P3826 题意 有 n 种蔬菜，每天最多卖 m 个单位。 第 i 种蔬菜有四个参数： a_i：每卖出一个单位获得 a_i 收益； s_i：第一次卖这种蔬菜时，额外获得 s_i 收益； c_i：初始库存；" />
+    <meta property="og:image" content="https://assets.cnblogs.com/images/wechat-share.jpg" />
+    <meta property="bytedance:published_time" content="2026-10-11T09:32:42+08:00" />
+    
+    <link rel="stylesheet" href="/css/blog-common.min.css?v=6O_Ku8w_jYd3yw2BX9ElmxGv25AYbAQ-F6ZeOeZfxYc" />
+    <link id="MainCss" rel="stylesheet" href="/skins/simplememory/bundle-simplememory.min.css?v=X2uwYHAKzGGLEaiB5SRZOPRR3jYJaSqk7tr8ptQin1s" />
+    <link id="highlighter-theme-docco" type="text/css" rel="stylesheet" href="/css/hljs/docco.css?v=96AvS5-MYBJiKvD1E0JKQz8x73b_-MURZdItl-c5YcI" />
+    <link type="text/css" rel="stylesheet" href="https://www.cnblogs.com/zhaoyikuan/custom.css?v=haRPHTp2tk2jHnJKuIu4ZCeNqBQ=" />
+    
+    <link id="mobile-style" media="only screen and (max-width: 767px)" type="text/css" rel="stylesheet" href="/skins/SimpleMemory/bundle-simplememory-mobile.min.css?v=efOGRGI0dxQ__xm2NVyuTk32wtXIiSFGaudtlfkc2H8" />
+    
+    <link id="favicon" rel="icon" type="image/x-icon" sizes="32x32" href="https://assets.cnblogs.com/favicon_v3_3.ico" />
+    <link id="favicon_svg" rel="icon" type="image/svg+xml" href="https://assets.cnblogs.com/favicon_v3_3.svg" />
+    <link rel="apple-touch-icon" href="https://assets.cnblogs.com/apple-touch-icon.png?v=2" />
+    <link rel="canonical" href="https://www.cnblogs.com/zhaoyikuan/p/23259729" />
+    <link type="application/rss+xml" rel="alternate" href="https://www.cnblogs.com/zhaoyikuan/rss" />
+    <link type="application/rsd+xml" rel="EditURI" href="https://www.cnblogs.com/zhaoyikuan/rsd.xml" />
+    <link type="application/wlwmanifest+xml" rel="wlwmanifest" href="https://www.cnblogs.com/zhaoyikuan/wlwmanifest.xml" />
+    
+    <script type="application/ld&#x2B;json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "@id": "https://www.cnblogs.com/zhaoyikuan/p/23259729",
+      "headline": "P3826 [NOI2017] 蔬菜 题解",
+      "description": "前置：堆、反悔贪心 题目链接：https://www.luogu.com.cn/problem/P3826 题意 有 n 种蔬菜，每天最多卖 m 个单位。 第 i 种蔬菜有四个参数： a_i：每卖出一个单位获得 a_i 收益； s_i：第一次卖这种蔬菜时，额外获得 s_i 收益； c_i：初始库存；",
+      "image": [
+        
+      ],
+      "author": {
+        "@type": "Person",
+        "@id": "https://www.cnblogs.com/zhaoyikuan/",
+        "name": "zykaris",
+        "url": "https://www.cnblogs.com/zhaoyikuan/"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "@id": "https://www.cnblogs.com/",
+        "name": "博客园",
+        "url": "https://www.cnblogs.com/"
+      },
+      "datePublished": "2026-10-11T09:33:00.0000000&#x2B;08:00",
+      "dateModified": "2026-10-11T09:33:00.0000000&#x2B;08:00",
+      "wordCount": "4917",
+      "isPartOf": {
+        "@type": "Blog",
+        "@id": "https://www.cnblogs.com/zhaoyikuan/",
+        "name": "zykaris",
+        "publisher": {
+          "@type": "Organization",
+          "@id": "https://www.cnblogs.com/",
+          "name": "博客园"
+        }
+      }
+    }
+    </script>
+
+    <script>
+        var currentBlogId = 854871;
+        var currentBlogApp = 'zhaoyikuan';
+        var isLogined = false;
+        var isBlogOwner = false;
+        window.isCorp = false;
+        window.skinName = 'SimpleMemory';
+        var visitorUserId = '';
+        window.hasCustomScript = true;
+        window.cb_enable_mathjax = true;
+        window.mathEngine = 1;
+        window.codeHighlightEngine = 1;
+        window.enableCodeLineNumber = false;
+        window.codeHighlightTheme = 'docco';
+        window.darkModeCodeHighlightTheme = 'docco';
+        window.isDarkCodeHighlightTheme = false;
+        window.isDarkModeCodeHighlightThemeDark = false;
+        window.isDisableCodeHighlighter = false;
+        window.enableCodeThemeTypeFollowSystem = false;
+        window.enableMacStyleCodeBlock = true;        
+    </script>
+        <script>
+            window.currentPostId = 23259729;
+            window.currentPostDateAdded = '2026-10-11 09:33';
+        </script>
+    <script src="https://assets.cnblogs.com/scripts/jquery-3.3.1.min.js"></script>
+    <script src="https://cdn-www.cnblogs.com/js/blog-common.min.js?v=s4G89hcAIPG0l9Bje44CCNwM-djP_Bpp8JXJnkGs-4o"></script>
+        <script>updateCustomBlogReferrer();</script>
+    
+</head>
+<body class="skin-simplememory no-navbar mathjax3">
+    <a name="top"></a>
+    <div id="top_nav" class="navbar forpc navbar-custom">
+        <nav id="nav_main" class="navbar-main">
+            <ul id="nav_left" class="navbar-list navbar-left">
+                <li class="navbar-branding">
+                    <a href="https://www.cnblogs.com/" title="开发者的网上家园" role="banner">
+                        <img src="//assets.cnblogs.com/logo.svg" alt="博客园logo" />
+                    </a>
+                </li>
+                <li><a href="https://cnblogs.vip/">会员</a></li>
+                <li><a href="https://cnblogs.vip/store">周边</a></li>
+                <li><a href="https://news.cnblogs.com/" onclick="countClicks('nav', 'skin-navbar-news')">新闻</a></li>
+                <li><a href="https://q.cnblogs.com/" onclick="countClicks('nav', 'skin-navbar-q')">博问</a></li>
+                <li><a href="https://ing.cnblogs.com/" onclick="countClicks('nav', 'skin-navbar-ing')">闪存</a></li>                
+                <li><a href="https://www.cnblogs.com/cmt/p/19316348">赞助商</a></li>
+                <li><a href="https://chat2db-ai.com/" target="_blank">Chat2DB</a></li>
+            </ul>
+            <ul id="nav_right" class="navbar-list navbar-right">
+                <li>
+                    <form id="zzk_search" class="navbar-search dropdown" action="https://zzk.cnblogs.com/s" method="get" role="search">
+                        <input name="w" id="zzk_search_input" placeholder="代码改变世界" type="search" tabindex="3" autocomplete="off" />
+                        <button id="zzk_search_button" onclick="window.navbarSearchManager.triggerActiveOption()">
+                            <img id="search_icon" class="focus-hidden" src="//assets.cnblogs.com/icons/search.svg" alt="搜索" />
+                            <img class="hidden focus-visible" src="//assets.cnblogs.com/icons/enter.svg" alt="搜索" />
+                        </button>
+                        <ul id="navbar_search_options" class="dropdown-menu quick-search-menu">
+                            <li tabindex="0" class="active" onclick="zzkSearch(event, document.getElementById('zzk_search_input').value)">
+                                <div class="keyword-wrapper">
+                                    <img src="//assets.cnblogs.com/icons/search.svg" alt="搜索" />
+                                    <div class="keyword"></div>
+                                </div>
+                                <span class="search-area">所有博客</span>
+                            </li>
+                                    <li tabindex="1" onclick="zzkBlogSearch(event, 'zhaoyikuan', document.getElementById('zzk_search_input').value)">
+                                        <div class="keyword-wrapper">
+                                            <img src="//assets.cnblogs.com/icons/search.svg" alt="搜索" />
+                                            <div class="keyword"></div>
+                                        </div>
+                                        <span class="search-area">当前博客</span>
+                                    </li>
+                        </ul>
+                    </form>
+                </li>
+                <li id="navbar_login_status" class="navbar-list">
+                    <a class="navbar-user-info navbar-blog" href="https://i.cnblogs.com/EditPosts.aspx?opt=1" alt="写随笔" title="写随笔">
+                        <img id="new_post_icon" class="navbar-icon" src="//assets.cnblogs.com/icons/newpost.svg" alt="写随笔" />
+                    </a>
+                    <a id="navblog-myblog-icon" class="navbar-user-info navbar-blog" href="https://www.cnblogs.com/my" alt="我的博客" title="我的博客">
+                        <img id="myblog_icon" class="navbar-icon" src="//assets.cnblogs.com/icons/myblog.svg" alt="我的博客" />
+                    </a>
+                    <a class="navbar-user-info navbar-message navbar-icon-wrapper" href="https://msg.cnblogs.com/" alt="短消息" title="短消息">
+                        <img id="msg_icon" class="navbar-icon" src="//assets.cnblogs.com/icons/message.svg" alt="短消息" />
+                        <span id="msg_count" style="display: none"></span>
+                    </a>
+                    <a id="navbar_lite_mode_indicator" data-current-page="blog" style="display: none" href="javascript:void(0)" alt="简洁模式" title="简洁模式启用，您在访问他人博客时会使用简洁款皮肤展示">
+                        <img class="navbar-icon" src="//assets.cnblogs.com/icons/lite-mode-on.svg" alt="简洁模式" />
+                    </a>
+                    <div id="user_info" class="navbar-user-info dropdown">
+                        <a class="dropdown-button" href="https://home.cnblogs.com/">
+                            <img id="user_icon" class="navbar-avatar" src="//assets.cnblogs.com/icons/avatar-default.svg" alt="用户头像" />
+                        </a>
+                        <div class="dropdown-menu">
+                            <a id="navblog-myblog-text" href="https://www.cnblogs.com/my">我的博客</a>
+                            <a href="https://home.cnblogs.com/">我的园子</a>
+                            <a href="https://account.cnblogs.com/settings/account">账号设置</a>
+                            <a href="https://vip.cnblogs.com/my">会员中心</a>
+                            <a href="javascript:void(0)" id="navbar_lite_mode_toggle" title="简洁模式会使用简洁款皮肤显示所有博客">
+    简洁模式 <span id="navbar_lite_mode_spinner" class="hide">...</span>
+</a>
+
+                            <a href="javascript:void(0)" onclick="account.logout();">退出登录</a>
+                        </div>
+                    </div>
+                    <a class="navbar-anonymous" href="https://account.cnblogs.com/signup">注册</a>
+                    <a class="navbar-anonymous" href="javascript:void(0);" onclick="account.login()">登录</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <div id="page_begin_html">
+        <div id='loading'></div>
+
+    </div>
+
+    <div id="home">
+<div id="header">
+	<div id="blogTitle">
+        <a id="lnkBlogLogo" href="https://www.cnblogs.com/zhaoyikuan/"><img id="blogLogo" src="/skins/custom/images/logo.gif" alt="返回主页" /></a>		
+		
+
+<h1><a id="Header1_HeaderTitle" class="headermaintitle HeaderMainTitle" href="https://www.cnblogs.com/zhaoyikuan">zykaris</a>
+</h1>
+<h2></h2>
+
+
+
+
+		
+	</div>
+	<div id="navigator">
+		
+<ul id="navList">
+<li><a id="blog_nav_sitehome" class="menu" href="https://www.cnblogs.com/">
+博客园</a>
+</li>
+<li>
+<a id="blog_nav_myhome" class="menu" href="https://www.cnblogs.com/zhaoyikuan/">
+首页</a>
+</li>
+<li>
+
+<a id="blog_nav_newpost" class="menu" href="https://i.cnblogs.com/EditPosts.aspx?opt=1">
+新随笔</a>
+</li>
+<li>
+<a id="blog_nav_contact" class="menu" href="https://msg.cnblogs.com/send/zykaris">
+联系</a></li>
+<li>
+<a id="blog_nav_rss" class="menu" href="javascript:void(0)" data-rss="https://www.cnblogs.com/zhaoyikuan/rss/">
+订阅</a>
+<!--<partial name="./Shared/_XmlLink.cshtml" model="Model" /></li>--></li>
+<li>
+<a id="blog_nav_admin" class="menu" href="https://i.cnblogs.com/">
+管理</a>
+</li>
+</ul>
+
+
+		<div class="blogStats">
+			<div id="blog_stats_place_holder"><script>loadBlogStats();</script></div>
+		</div>
+	</div>
+</div>
+<div id="main">
+	<div id="mainContent">
+	<div class="forFlow">
+		<div id="post_detail">
+    
+    <div id="topics">
+        <div class="post">
+            <h1 class = "postTitle">
+                <a id="cb_post_title_url" class="postTitle2 vertical-middle" href="https://www.cnblogs.com/zhaoyikuan/p/23259729" title="发布于 2026-10-11 09:32">
+    
+
+    <span role="heading" aria-level="2">P3826 [NOI2017] 蔬菜 题解</span>
+    
+
+</a>
+
+            </h1>
+            <div class="clear"></div>
+            <div class="postBody">
+                <div id="cnblogs_post_body" class="blogpost-body cnblogs-markdown">
+<p>前置：堆、反悔贪心<br>
+题目链接：<a href="https://www.luogu.com.cn/problem/P3826" target="_blank" rel="noopener nofollow">https://www.luogu.com.cn/problem/P3826</a></p>
+<h1 id="题意">题意</h1>
+<p>有 <code>n</code> 种蔬菜，每天最多卖 <code>m</code> 个单位。<br>
+第 <code>i</code> 种蔬菜有四个参数：</p>
+<ul>
+<li><code>a_i</code>：每卖出一个单位获得 <code>a_i</code> 收益；</li>
+<li><code>s_i</code>：第一次卖这种蔬菜时，额外获得 <code>s_i</code> 收益；</li>
+<li><code>c_i</code>：初始库存；</li>
+<li><code>x_i</code>：每天结束时会坏掉 <code>x_i</code> 个单位，直到卖完或坏完为止。</li>
+</ul>
+<p>每种蔬菜会按天分批变质，越早不卖，后面能卖的数量就越少。<br>
+现在有 <code>k</code> 次询问，每次给出天数 <code>p_j</code>，问在前 <code>p_j</code> 天内，合理安排每天卖哪些蔬菜，最多能获得多少收益。</p>
+<h1 id="思路">思路</h1>
+<p>只要让蔬菜在坏掉前卖掉就行，所以我们按照坏掉的时间排序下来，把每种蔬菜放到它最晚还能被卖掉的那一天。<br>
+对第 <code>i</code> 种蔬菜：</p>
+<ul>
+<li>库存是 <code>c[i]</code>；</li>
+<li>每天坏 <code>x[i]</code> 个；</li>
+<li>如果 <code>x[i] == 0</code>，它不会坏，所以放到第 <code>p</code> 天；</li>
+<li>否则，它最晚能撑到 <span class="math inline">\(\left\lceil \frac{c_i}{x_i} \right\rceil\)</span> 天。</li>
+</ul>
+<p>那我们可以开一个数组存一下最晚在第 <code>i</code> 天还能被卖掉的蔬菜，这样第一步就搞定了。<br>
+对应代码：</p>
+<pre><code class="language-cpp">for (int i = 1; i &lt;= n; i ++) {
+    if (!x[i]) {
+        d[p].push_back(i);
+    } else {
+        d[min(p, (c[i] + x[i] - 1) / x[i])].push_back(i);
+    }
+}
+</code></pre>
+<p>价值分为销量和单个物品的价值两部分，我们分别处理。<br>
+我们可以先算第 <code>p</code> 天的安排，因为之前的可以直接倒推。</p>
+<p>怎么安排销量呢？<br>
+每一天，把所有最晚只能撑到这一天的蔬菜以价值为关键字加入大根堆。</p>
+<p>怎么算价值呢？<br>
+根据题意，第一次卖某种蔬菜时，收益是 <span class="math inline">\(a_i + s_i\)</span>，之后每次再卖，收益只有 <span class="math inline">\(a_i\)</span>。<br>
+所以我们可以加一个 <code>vis</code> 标记：</p>
+<ul>
+<li>如果这种蔬菜还没卖过，就先卖一个，收益是 <code>a + s</code>；</li>
+<li>如果已经卖过，就尽量多卖普通单位。</li>
+</ul>
+<p>对于已经卖过的我们可以加入栈中，方便后面直接取出，因为同一种蔬菜我们可以等后面再卖。</p>
+<p>那我们后面卖的时候还要计算每种蔬菜还剩下多少。这个很好算，用总量减去卖掉的再减去坏掉的即可。也就是$$c_i - \text{used}_i - (i-1)x_i$$其中 <code>used</code> 表示已经卖过了的。</p>
+<p>如果本轮还没卖完，我们就把剩余部分放回栈 ，之后再放回大根堆，继续参与后面更早天数的选择。</p>
+<p>那我们此时已经算出了 <code>ans[p]</code>，也就是最多 <code>p</code> 天时的最大收益。<br>
+然后我们直接往前倒推就行。<br>
+用 <code>sm</code> 表示总共卖了多少个蔬菜，如果只卖 <code>i</code> 天，最多只能卖 <span class="math inline">\(i \times m\)</span>。</p>
+<ul>
+<li>如果 <code>sm &gt; i * m</code>，说明多卖了，必须退掉一些；</li>
+<li>退掉的时候，优先退收益最小的。<br>
+那我们把之前的大根堆清空，拿来算最小负收益即可。由于是负数，我们用大根堆可以取得减少价值的最小值（因为是负数所以相当于选择最趋近于零的那个，也就是最小值）。</li>
+</ul>
+<pre><code class="language-cpp">{-s[i] - a[i], i}   // 只卖了一个，退掉就失去 a + s
+{-a[i], i}          // 卖了多个，退掉一个只失去 a
+</code></pre>
+<p>每次从堆里取出收益最小的单位退掉：</p>
+<ul>
+<li>如果这种蔬菜卖了超过 <code>1</code> 个，就退普通单位；</li>
+<li>如果只剩 <code>1</code> 个，再退就会失去第一次销售的额外收益 <code>s</code>。</li>
+</ul>
+<p>这样就能从 <code>ans[p]</code> 推出：</p>
+<p></p><div class="math display">\[ans[p-1], ans[p-2], \dots, ans[1]
+\]</div><p></p><p>时间复杂度<span class="math inline">\(O((n + n \times m)logn)\)</span></p>
+<h1 id="参考代码">参考代码</h1>
+<pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+typedef long long ll;
+const ll maxn = 1e5 + 10;
+
+inline int read() {
+    int x = 0;
+    bool t = false;
+    char ch = getchar();
+    while ((ch &lt; '0' || ch &gt; '9') &amp;&amp; ch != '-') {
+        ch = getchar();
+    }
+    if (ch == '-') {
+        t = true;
+        ch = getchar();
+    }
+    while (ch &lt;= '9' &amp;&amp; ch &gt;= '0') {
+        x = x * 10 + ch - 48;
+        ch = getchar();
+    }
+    return t ? -x : x;
+}
+
+struct node {
+    int v, i;
+} stk[maxn];
+
+bool operator&lt;(node a, node b) {
+    return a.v &lt; b.v;
+}
+
+int p = 1e5, tp, sm;
+int n, m, qry, a[maxn], s[maxn], c[maxn], x[maxn], used[maxn];
+ll ans[maxn];
+bool vis[maxn];
+vector&lt;int&gt; d[maxn];
+priority_queue&lt;node&gt; q;
+
+int main() {
+    n = read();
+    m = read();
+    qry = read();
+    for (int i = 1; i &lt;= n; i ++) {
+        a[i] = read();
+        s[i] = read();
+        c[i] = read();
+        x[i] = read();
+    }
+    
+    for (int i = 1; i &lt;= n; i ++) {
+        if (!x[i]) {
+            d[p].push_back(i);
+        }
+        else {
+            d[min(p, (c[i] + x[i] - 1) / x[i])].push_back(i);
+        }
+    }
+    
+    for (int i = p; i; i --) {
+        for (int j = 0, l = d[i].size(); j &lt; l; ++ j) {
+            q.push((node){a[d[i][j]] + s[d[i][j]], d[i][j]});
+        }
+        
+        if (q.empty()) {
+            continue;
+        }
+        
+        for (int j = m; j &amp;&amp; !q.empty(); ) {
+            node u = q.top();
+            q.pop();
+            if (!vis[u.i]) {
+                vis[u.i] = true;
+                ans[p] += u.v;
+                used[u.i] += 1;
+                j --;
+                if (c[u.i] &gt; 1) {
+                    q.push((node){a[u.i], u.i});
+                }
+            }
+            else {
+                int rest = min(j, c[u.i] - used[u.i] - (i - 1) * x[u.i]);
+                ans[p] += 1ll * rest * u.v;
+                used[u.i] += rest;
+                j -= rest;
+                if (used[u.i] != c[u.i]) {
+                    stk[++ tp] = (node){a[u.i], u.i};
+                }
+            }
+        }
+        while (tp) {
+            q.push(stk[tp --]);
+        }
+    }
+    
+    while (!q.empty()) {
+        q.pop();
+    }
+    
+    for (int i = 1; i &lt;= n; i ++) {
+        sm += used[i];
+    }
+    
+    for (int i = 1; i &lt;= n; i ++) {
+        if (used[i] == 1) {
+            q.push((node){-s[i] - a[i], i});
+        }
+        else if (used[i]) {
+            q.push((node){-a[i], i});
+        }
+    }
+    
+    for (int i = p - 1; i; i --) {
+        ans[i] = ans[i + 1];
+        while (sm &gt; i * m &amp;&amp; !q.empty()) {
+            node u = q.top();
+            q.pop();
+            u.v *= -1;
+            if (used[u.i] &gt; 1) {
+                int rest = min(sm - i * m, used[u.i] - 1);
+                used[u.i] -= rest;
+                sm -= rest;
+                ans[i] -= 1ll * rest * u.v;
+                if (used[u.i] == 1) {
+                    q.push((node){-a[u.i] - s[u.i], u.i});
+                }
+                else {
+                    q.push((node){-a[u.i], u.i});
+                }
+            }
+            else {
+                sm --;
+                used[u.i] --;
+                ans[i] -= u.v;
+            }
+        }
+    }
+    
+    while (qry --) {
+        printf("%lld\n", ans[read()]);
+    }
+    
+    return 0;
+}
+</code></pre>
+
+
+</div>
+<div class="clear"></div>
+<div id="blog_post_info_block" role="contentinfo" class="post-meta-container">
+    <div id="blog_post_info"></div>
+    <div class="clear"></div>
+    <div id="post_next_prev"></div>
+</div>
+            </div>
+            <div class="postDesc">posted @ 
+<span id="post-date" data-last-update-days="0" data-date-updated="2026-10-11 09:33">2026-10-11 09:32</span>&nbsp;
+<a href="https://www.cnblogs.com/zhaoyikuan">zykaris</a>&nbsp;
+阅读(<span id="post_view_count">28</span>)&nbsp;
+评论(<span id="post_comment_count">0</span>)&nbsp;
+&nbsp;
+<a href="javascript:void(0)" onclick="AddToWz(23259729);return false;">收藏</a>&nbsp;
+<a href="https://report.cnblogs.com?targetLink=https%3A%2F%2Fwww.cnblogs.com%2Fzhaoyikuan%2Fp%2F23259729&targetId=23259729&targetType=0" target="_blank">举报</a>
+</div>
+        </div>
+	    
+	    
+    </div><!--end: topics 文章、评论容器-->
+</div>
+<script>
+    var cb_entryId = 23259729, cb_entryCreatedDate = '2026-10-11 09:32', cb_postType = 1, cb_postTitle = 'P3826 [NOI2017] 蔬菜 题解';
+    var allowComments = true, cb_blogId = 854871, cb_blogApp = 'zhaoyikuan', cb_blogUserGuid = 'feb74196-47bf-409b-2ea7-08ddf106a12e';
+    mermaidRender.render()
+    markdown_highlight()
+    zoomManager.apply("#cnblogs_post_body img:not(.code_img_closed):not(.code_img_opened)");    
+</script>
+<a id="!comments"></a>
+<div id="blog-comments-placeholder"></div>
+<div id="comment_form" class="commentform">
+    <a name="commentform"></a>
+    <div id="divCommentShow"></div>
+    <div id="comment_nav">
+        <div class="comment-nav-right">
+            <span id="span_refresh_tips"></span><a href="#" onclick="return RefreshPage();">刷新页面</a><a href="#top">返回顶部</a>
+        </div>
+    </div>
+    <div id="comment_form_container"></div>
+    <div class="ad_text_commentbox" id="ad_text_under_commentbox"></div>
+        <div id="cnblogs_ch"></div>
+    <div id="opt_under_post"></div>
+        <div id="blog_c1" class="under-post-card below-post-card">
+            <a href="https://www.trae.cn/sem/?utm_source=advertising&amp;utm_medium=cnblogs_ug_cpa&amp;utm_term=hw_trae_cnblogs" rel="nofollow" target="_blank" onclick="countCreativeClicks('C1-字节-trae')">
+                <img src="https://img2024.cnblogs.com/blog/35695/202607/35695-20260715081632770-1485313413.webp" onload="countCreativeImpressions('C1-字节-trae')" alt="" style="width:300px!important;height:250px!important;min-width:300px!important;max-width:300px!important;" />
+                <span id="c1_impression" style="display:none"></span>
+            </a>
+        </div>
+    <div id="under_post_card1"></div>
+    <div id="related_posts_card"></div>
+    <div id="under_post_card2"></div>
+    <div id="HistoryToday" class="under-post-card below-post-card"></div>
+    <script type="text/javascript">
+        var commentManager = new blogCommentManager();
+        commentManager.renderComments(0);
+        fixPostBody();
+        window.footnoteTipManager.generateFootnoteTips();
+
+            window.tocManager.displayDisableTocTips = false;
+            window.tocManager.generateToc();
+            
+            setTimeout(function() { countViews(cb_blogId, cb_entryId); }, 50);
+            
+            deliverT2();
+            deliverC1C2();
+            loadNewsAndKb();
+            
+            LoadPostCategoriesTags(cb_blogId, cb_entryId);
+            
+            LoadPostInfoBlock(cb_blogId, cb_entryId, cb_blogApp, cb_blogUserGuid);
+            GetPrevNextPost(cb_entryId, cb_blogId, cb_entryCreatedDate, cb_postType);
+            loadOptUnderPost();
+            GetHistoryToday(cb_blogId, cb_blogApp, cb_entryCreatedDate);
+                </script>
+</div>
+
+	</div>
+	</div>
+	<div id="sideBar">
+		<div id="sideBarMain">
+			<div id="sidebar_news" class="newsItem">
+    <h3 class="catListTitle">公告</h3>
+<div id="blog-news" class="sidebar-news">
+    <div id="sidebar_news_container">
+    </div>
+</div>
+<script>loadBlogNews();</script>
+
+
+</div>
+			<div id="blog-calendar" style="display:none"></div><script>loadBlogDefaultCalendar();</script>			
+			<div id="leftcontentcontainer">
+				<div id="blog-sidecolumn"></div>
+					<script>loadBlogSideColumn()</script>
+			</div>			
+		</div>
+	</div>
+	<div class="clear"></div>
+	</div>
+	<div class="clear"></div>
+	<div id="footer">
+		<a href="https://www.cnblogs.com/" id="footer_site_link" class="footer-brand">博客园</a>
+<span class="footer-copyright"> &nbsp;&copy;&nbsp; 2004-2026</span>
+<br /><span class="footer-icp">
+    <a target="_blank" href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=33010602011771"><img src="//assets.cnblogs.com/images/ghs.png" />浙公网安备 33010602011771号</a>
+    <a href="https://beian.miit.gov.cn" target="_blank">浙ICP备2021040463号-3</a>
+</span>
+
+
+
+	</div>
+</div>
+
+
+
+    
+
+    <input type="hidden" id="antiforgery_token" value="CfDJ8Ow5-In01nBEvFwaadRGjqFxH2ey0uhiqRvbcKTmlYFQP8Y8FDQLz2AasVEaecOiN3Qwq_gMlBOw7s1PvEuBMoa4WXDdnq1MjziZ45p-iAtxWSDKUYh3Yz85w26aCX2UfZZFfQDo7JjDL3YrS4ZfC8Y" />
+    <script defer src="https://hm.baidu.com/hm.js?866c9be12d4a814454792b1fd0fed295"></script>
+<script defer src="https://lf1-cdn-tos.bytegoofy.com/goofy/ttzz/push.js?32d945448dd797af605da9156763de3dc11c9886368d0f917d6388e4fcf5542030632485602430134f60bc55ca391050b680e2741bf7233a8f1da9902314a3fa" id="ttzz"></script>
+</body>
+</html>

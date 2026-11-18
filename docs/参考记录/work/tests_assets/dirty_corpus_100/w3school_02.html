@@ -1,0 +1,468 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+
+<meta charset="utf-8">
+<meta name="robots" content="all" />
+<meta name="author" content="w3school.com.cn" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+<link rel="stylesheet" type="text/css" href="/lib/css/typography.css?v=2" />
+<link rel="stylesheet" type="text/css" href="/lib/css/layout.css?v=2" />
+<link rel="stylesheet" type="text/css" href="/lib/css/nav.css?v=2" />
+<link rel="stylesheet" type="text/css" href="/lib/css/fonts.css?v=2" />
+<link rel="stylesheet" type="text/css" href="/lib/css/cssdemo.css?v=2" />
+
+<script src="/lib/cc/prism2.js?v=2"></script>
+<link rel="stylesheet" href="/lib/cc/prism.css?v=2">
+
+<link rel="preload" href="/lib/fonts/fontawesome.woff2?14663396" as="font" type="font/woff2" crossorigin> 
+<link rel="preload" href="/lib/fonts/source-code-pro-v14-latin-regular.woff2" as="font" type="font/woff2" crossorigin> 
+<link rel="preload" href="/lib/fonts/roboto-mono-v13-latin-500.woff2" as="font" type="font/woff2" crossorigin> 
+<link rel="preload" href="/lib/fonts/source-sans-pro-v14-latin-700.woff2" as="font" type="font/woff2" crossorigin> 
+<link rel="preload" href="/lib/fonts/source-sans-pro-v14-latin-600.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/lib/fonts/SourceSansPro-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/lib/fonts/freckle-face-v9-latin-regular.woff2" as="font" type="font/woff2" crossorigin>
+
+<meta name="title" property="og:title" content="W3School.com.cn">
+<meta name="Keywords" content="HTML、CSS、JavaScript、SQL、Python、Java、PHP、How to、C、C++、C#、Bootstrap、React、MySQL、jQuery、Excel、XML、Django、NumPy、Pandas、SciPy、NodeJS、TypeScript、Angular、AngularJS、PostgreSQL、MongoDB、ASP、AI、R、Go、Kotlin、Sass、VUE、Git、Bash、Rust、图形、算法、编程入门、Web 开发、数据科学、色彩、图标、代码游戏、编程、教程、培训、学习、测验、练习、课程、课时、参考手册、示例、源代码、演示、技巧、网站">
+<meta name="Description" content="提供结构清晰、通俗易懂的 Web 开发教程，内含海量实战示例，涵盖 HTML、CSS、JavaScript、SQL、Python、PHP、Bootstrap、Java、XML 等多种技术。">
+<meta property="og:image" content="https://www.w3school.com.cn/i/logo/og-1200x630.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:description" content="W3School 提供涵盖所有主流 Web 开发语言的免费在线教程、参考手册和练习题。内容包含 HTML、CSS、JavaScript、Python、SQL、Java 等众多热门技术领域。">
+<link rel="icon" href="https://www.w3school.com.cn/i/logo/favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="/i/logo/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="96x96" href="/i/logo/favicon-96x96.png">
+<link rel="icon" type="image/png" sizes="64x64" href="/i/logo/favicon-64x64.png">
+<link rel="icon" type="image/png" sizes="48x48" href="/i/logo/favicon-48x48.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/i/logo/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/i/logo/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest" crossorigin="use-credentials">
+<link rel="mask-icon" href="/i/logo/safari-pinned-tab.svg" color="#BD2D30">
+<meta name="msapplication-TileColor" content="#BD2D30">
+<meta name="theme-color" content="#ffffff">
+<meta name="format-detection" content="telephone=no">
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-878633-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-878633-1');
+</script>
+
+
+<title>CSS 教程</title>
+
+
+</head>
+
+<body>
+
+
+
+<header class="header-container">
+<div class="header-content">
+<div class="header-logo-container">
+<a class="header-logo" href="/index.html" title="W3School 在线教程">W3School 在线教程</a>
+</div>
+</div>
+</header>
+
+
+<nav class="nav-top-container">
+<div class="nav-top-content">
+	<button class="menu-toggle" id="menuToggle"></button>
+	<button class="nav-top-controls nav-top-controls-prev" id="navPrev">&#10094;</button>
+	<menu class="nav-top-menu"  id="myTopnav">
+		<li><a href="/html/index.asp" title="HTML 教程">HTML</a></li>
+		<li><a href="/css/index.asp" title="CSS 教程">CSS</a></li>
+		<li><a href="/js/index.asp" title="JavaScript 教程">JAVASCRIPT</a></li>
+		<li><a href="/sql/index.asp" title="SQL 教程">SQL</a></li>
+		<li><a href="/python/index.asp" title="Python 教程">PYTHON</a></li>
+		<li><a href="/java/index.asp" title="Java 教程">JAVA</a></li>
+		<li><a href="/php/index.asp" title="PHP 教程">PHP</a></li>
+		<li><a href="/howto/index.asp" title="W3School 百宝箱">HOWTO</a></li>
+		<li><a href="/c/index.asp" title="C 教程">C</a></li>
+		<li><a href="/cpp/index.asp" title="C++ 教程">C++</a></li>
+		<li><a href="/cs/index.asp" title="C# 教程">C#</a></li>
+		<li><a href="/bootstrap5/index.asp" title="Bootstrap 教程">BOOTSTRAP</a></li>
+		<li><a href="/mysql/index.asp" title="MySQL 教程">MYSQL</a></li>
+		<li><a href="/jquery/index.asp" title="jQuery 教程">JQUERY</a></li>
+		<li><a href="/xml/index.asp" title="XML 教程">XML</a></li>
+		<li><a href="/numpy/index.asp" title="NumPy 教程">NUMPY</a></li>
+		<li><a href="/pandas/index.asp" title="Pandas 教程">PANDAS</a></li>
+		<li><a href="/typescript/index.asp" title="TypeScript 教程">TYPESCRIPT</a></li>
+		<li><a href="/angularjs/index.asp" title="AngularJS 教程">ANGULARJS</a></li>
+		<li><a href="/postgresql/index.asp" title="PostgreSQL 教程">POSTGRESQL</a></li>
+		<li><a href="/mongodb/index.asp" title="MongoDB 教程">MONGODB</a></li>
+		<li><a href="/asp/index.asp" title="ASP 教程">ASP</a></li>
+		<li><a href="/r/index.asp" title="R 教程">R</a></li>
+		<li><a href="/go/index.asp" title="Go 教程">GO</a></li>
+		<li><a href="/kotlin/index.asp" title="Kotlin 教程">KOTLIN</a></li>
+		<li><a href="/sass/index.asp" title="Sass 教程">SASS</a></li>
+		<li><a href="/scipy/index.asp" title="SciPy 教程">SCIPY</a></li>
+	</menu>
+	<button class="nav-top-controls nav-top-controls-next" id="navNext">&#10095;</button>
+</div>
+</nav>
+
+
+
+<main class="main-container">
+
+<aside class="nav-left-container">
+<div class="nav-left-content">
+
+<nav class="nav-left-course">
+<h2>CSS 基础教程</h2>
+<menu>
+<li><a class="active" href="/css/index.asp" title="CSS 教程">CSS 教程</a></li>
+<li><a href="/css/css_jianjie.asp" title="CSS 简介">CSS 简介</a></li>
+<li><a href="/css/css_syntax.asp" title="CSS 语法">CSS 语法</a></li>
+<li><a href="/css/css_selectors.asp" title="CSS 选择器">CSS 选择器</a></li>
+<li><a href="/css/css_shiyong.asp" title="CSS 使用">CSS 使用</a></li>
+<li><a href="/css/css_comments.asp" title="CSS 注释">CSS 注释</a></li>
+<li><a href="/css/css_colors.asp" title="CSS 颜色">CSS 颜色</a></li>
+<li><a href="/css/css_colors_rgb.asp" title="CSS RGB 颜色">CSS RGB 颜色</a></li>
+<li><a href="/css/css_colors_hex.asp" title="CSS HEX 颜色">CSS HEX 颜色</a></li>
+<li><a href="/css/css_colors_hsl.asp" title="CSS HSL 颜色">CSS HSL 颜色</a></li>
+<li><a href="/css/css_background.asp" title="CSS 背景">CSS 背景</a></li>
+<li><a href="/css/css_background_image.asp" title="CSS 背景图像">CSS 背景图像</a></li>
+<li><a href="/css/css_background_repeat.asp" title="CSS 背景重复">CSS 背景重复</a></li>
+<li><a href="/css/css_background_attachment.asp" title="CSS 背景附着">CSS 背景附着</a></li>
+<li><a href="/css/css_background_shorthand.asp" title="CSS 简写背景属性">CSS 简写背景属性</a></li>
+<li><a href="/css/css_border.asp" title="CSS 边框">CSS 边框</a></li>
+<li><a href="/css/css_border_width.asp" title="CSS 边框宽度">CSS 边框宽度</a></li>
+<li><a href="/css/css_border_color.asp" title="CSS 边框颜色">CSS 边框颜色</a></li>
+<li><a href="/css/css_border_sides.asp" title="CSS 边框各边">CSS 边框各边</a></li>
+<li><a href="/css/css_border_shorthand.asp" title="CSS 简写边框属性">CSS 简写边框属性</a></li>
+<li><a href="/css/css_border_rounded.asp" title="CSS 圆角边框">CSS 圆角边框</a></li>
+<li><a href="/css/css_margin.asp" title="CSS 外边距">CSS 外边距</a></li>
+<li><a href="/css/css_margin_collapse.asp" title="CSS 外边距合并">CSS 外边距合并</a></li>
+<li><a href="/css/css_padding.asp" title="CSS 内边距">CSS 内边距</a></li>
+<li><a href="/css/css_dimension.asp" title="CSS 高度和宽度">CSS 高度/宽度</a></li>
+<li><a href="/css/css_boxmodel.asp" title="CSS 框模型">CSS 框模型</a></li>
+<li><a href="/css/css_outline.asp" title="CSS 轮廓">CSS 轮廓</a></li>
+<li><a href="/css/css_outline_width.asp" title="CSS 轮廓宽度">CSS 轮廓宽度</a></li>
+<li><a href="/css/css_outline_color.asp" title="CSS 轮廓颜色">CSS 轮廓颜色</a></li>
+<li><a href="/css/css_outline_shorthand.asp" title="CSS 简写轮廓属性">CSS 简写轮廓属性</a></li>
+<li><a href="/css/css_outline_offset.asp" title="CSS 轮廓偏移">CSS 轮廓偏移</a></li>
+<li><a href="/css/css_text.asp" title="CSS 文本">CSS 文本</a></li>
+<li><a href="/css/css_text_align.asp" title="CSS 文本对齐">CSS 文本对齐</a></li>
+<li><a href="/css/css_text_decoration.asp" title="CSS 文本装饰">CSS 文本装饰</a></li>
+<li><a href="/css/css_text_transformation.asp" title="CSS 文本转换">CSS 文本转换</a></li>
+<li><a href="/css/css_text_spacing.asp" title="CSS 文字间距">CSS 文字间距</a></li>
+<li><a href="/css/css_text_shadow.asp" title="CSS 文本阴影">CSS 文本阴影</a></li>
+<li><a href="/css/css_font.asp" title="CSS 字体">CSS 字体</a></li>
+<li><a href="/css/css_font_style.asp" title="CSS 字体样式">CSS 字体样式</a></li>
+<li><a href="/css/css_font_size.asp" title="CSS 字体大小">CSS 字体大小</a></li>
+<li><a href="/css/css_font_google.asp" title="CSS 谷歌字体">CSS 谷歌字体</a></li>
+<li><a href="/css/css_font_shorthand.asp" title="CSS 简写字体属性">CSS 简写字体属性</a></li>
+<li><a href="/css/css_icons.asp" title="CSS 图标">CSS 图标</a></li>
+<li><a href="/css/css_link.asp" title="CSS 链接">CSS 链接</a></li>
+<li><a href="/css/css_list.asp" title="CSS 列表">CSS 列表</a></li>
+<li><a href="/css/css_table.asp" title="CSS 表格">CSS 表格</a></li>
+</menu>
+<h2>CSS 中级教程</h2>
+<menu>
+<li><a href="/css/css_display_visibility.asp" title="CSS 布局 - display 属性">CSS Display</a></li>
+<li><a href="/css/css_max-width.asp" title="CSS 布局 - width 和 max-width">CSS max-width</a></li>
+<li><a href="/css/css_positioning.asp" title="CSS 布局 - position 属性">CSS 定位</a></li>
+<li><a href="/css/css_z-index.asp" title="CSS 布局 - z-index 属性">CSS z-index</a></li>
+<li><a href="/css/css_overflow.asp" title="CSS 布局 - 溢出">CSS 溢出</a></li>
+<li><a href="/css/css_float.asp" title="CSS 布局 - 浮动和清除">CSS 浮动</a></li>
+<li><a href="/css/css_float_clear.asp" title="CSS 布局 - clear 和 clearfix">CSS 清除浮动</a></li>
+<li><a href="/css/css_float_examples.asp" title="CSS 布局 - 浮动实例">CSS 布局 - 浮动实例</a></li>
+<li><a href="/css/css_inline-block.asp" title="CSS 布局 - display: inline-block">CSS inline-block</a></li>
+<li><a href="/css/css_align.asp" title="CSS 布局 - 水平和垂直对齐">CSS 对齐</a></li>
+<li><a href="/css/css_combinators.asp" title="CSS 选择器">CSS 组合器</a></li>
+<li><a href="/css/css_pseudo_classes.asp" title="CSS 伪类">CSS 伪类</a></li>
+<li><a href="/css/css_pseudo_elements.asp" title="CSS 伪元素">CSS 伪元素</a></li>
+<li><a href="/css/css_image_transparency.asp" title="CSS 不透明度">CSS 不透明度</a></li>
+<li><a href="/css/css_navbar.asp" title="CSS 导航栏">CSS 导航栏</a></li>
+<li><a href="/css/css_navbar_vertical.asp" title="CSS 垂直导航栏">CSS 垂直导航栏</a></li>
+<li><a href="/css/css_navbar_horizontal.asp" title="CSS 水平导航栏">CSS 水平导航栏</a></li>
+<li><a href="/css/css_dropdowns.asp" title="CSS 下拉菜单">CSS 下拉菜单</a></li>
+<li><a href="/css/css_image_gallery.asp" title="CSS 图片库">CSS 图片库</a></li>
+<li><a href="/css/css_image_sprites.asp" title="CSS 图像精灵">CSS 图像精灵</a></li>
+<li><a href="/css/css_attribute_selectors.asp" title="CSS 属性选择器">CSS 属性选择器</a></li>
+<li><a href="/css/css_form.asp" title="CSS 表单">CSS 表单</a></li>
+<li><a href="/css/css_counters.asp" title="CSS 计数器">CSS 计数器</a></li>
+<li><a href="/css/css_website_layout.asp" title="CSS 网站布局">CSS 网站布局</a></li>
+<li><a href="/css/css_units.asp" title="CSS 单位">CSS 单位</a></li>
+<li><a href="/css/css_specificity.asp" title="CSS 特异性">CSS 特异性</a></li>
+<li><a href="/css/css_important.asp" title="CSS !important 规则">CSS !important</a></li>
+<li><a href="/css/css_math_functions.asp" title="CSS 数学函数">CSS 数学函数</a></li>
+</menu>
+<h2>CSS3 高级教程</h2>
+<menu>
+<li><a href="/css/css3_borders.asp" title="CSS 圆角">CSS 圆角</a></li>
+<li><a href="/css/css3_border_images.asp" title="CSS 边框图像">CSS 边框图像</a></li>
+<li><a href="/css/css3_backgrounds.asp" title="CSS 背景">CSS 背景</a></li>
+<li><a href="/css/css3_colors.asp" title="CSS 颜色">CSS 颜色</a></li>
+<li><a href="/css/css_colors_keywords.asp" title="CSS 颜色关键字">CSS 颜色关键字</a></li>
+<li><a href="/css/css3_gradients.asp" title="CSS 渐变">CSS 渐变</a></li>
+<li><a href="/css/css3_gradients_radial.asp" title="CSS 径向渐变">CSS 径向渐变</a></li>
+<li><a href="/css/css3_shadows.asp" title="CSS 阴影">CSS 阴影</a></li>
+<li><a href="/css/css3_shadows_box.asp" title="CSS box-shadow">CSS box-shadow</a></li>
+<li><a href="/css/css3_text_effects.asp" title="CSS 文本效果">CSS 文本效果</a></li>
+<li><a href="/css/css3_fonts.asp" title="CSS 网络字体">CSS 网络字体</a></li>
+<li><a href="/css/css3_2dtransforms.asp" title="CSS 2D 转换">CSS 2D 转换</a></li>
+<li><a href="/css/css3_3dtransforms.asp" title="CSS 3D 转换">CSS 3D 转换</a></li>
+<li><a href="/css/css3_transitions.asp" title="CSS 过渡">CSS 过渡</a></li>
+<li><a href="/css/css3_animations.asp" title="CSS 动画">CSS 动画</a></li>
+<li><a href="/css/css_tooltip.asp" title="CSS 工具提示">CSS 工具提示</a></li>
+<li><a href="/css/css3_images.asp" title="CSS 图像样式">CSS 图像样式</a></li>
+<li><a href="/css/css3_object-fit.asp" title="CSS object-fit">CSS object-fit</a></li>
+<li><a href="/css/css3_object-position.asp" title="CSS object-position 属性">CSS object-position</a></li>
+<li><a href="/css/css3_masking.asp" title="CSS 遮罩">CSS 遮罩</a></li>
+<li><a href="/css/css3_buttons.asp" title="CSS 按钮">CSS 按钮</a></li>
+<li><a href="/css/css3_pagination.asp" title="CSS 分页">CSS 分页</a></li>
+<li><a href="/css/css3_multiple_columns.asp" title="CSS 多列">CSS 多列</a></li>
+<li><a href="/css/css3_user_interface.asp" title="CSS 用户界面">CSS 用户界面</a></li>
+<li><a href="/css/css3_variables.asp" title="CSS 变量">CSS 变量</a></li>
+<li><a href="/css/css3_variables_overriding.asp" title="CSS 覆盖变量">CSS 覆盖变量</a></li>
+<li><a href="/css/css3_variables_javascript.asp" title="CSS 使用 JavaScript 更改变量">CSS 变量 - JavaScript</a></li>
+<li><a href="/css/css3_variables_mediaqueries.asp" title="CSS 在媒体查询中使用变量">CSS 变量 - 媒体查询</a></li>
+<li><a href="/css/css3_property.asp" title="CSS @property 规则">CSS @property</a></li>
+<li><a href="/css/css3_box-sizing.asp" title="CSS Box Sizing">CSS Box Sizing</a></li>
+<li><a href="/css/css3_flexbox.asp" title="CSS Flexbox">CSS Flexbox</a></li>
+<li><a href="/css/css3_mediaqueries.asp" title="CSS 媒体查询">CSS 媒体查询</a></li>
+<li><a href="/css/css3_mediaqueries_ex.asp" title="CSS 媒体查询实例">CSS 媒体查询实例</a></li>
+</menu>
+<h2>CSS 响应式设计</h2>
+<menu>
+<li><a href="/css/css_rwd_intro.asp" title="响应式网站设计 - 简介">RWD 简介</a></li>
+<li><a href="/css/css_rwd_viewport.asp" title="响应式网页设计 - 视口">RWD 视口</a></li>
+<li><a href="/css/css_rwd_grid.asp" title="响应式网页设计 - Grid-View">RWD 网格视图</a></li>
+<li><a href="/css/css_rwd_mediaqueries.asp" title="响应式网页设计 - 媒体查询">RWD 媒体查询</a></li>
+<li><a href="/css/css_rwd_images.asp" title="响应式网页设计 - 图像">RWD 图像</a></li>
+<li><a href="/css/css_rwd_videos.asp" title="响应式网页设计 - 视频">RWD 视频</a></li>
+</menu>
+<h2>CSS 网格教程</h2>
+<menu>
+<li><a href="/css/css_grid.asp" title="CSS 网格布局模块">CSS 网格布局模块</a></li>
+<li><a href="/css/css_grid_container.asp" title="CSS 网格容器">CSS 网格容器</a></li>
+<li><a href="/css/css_grid_item.asp" title="CSS 网格项目">CSS 网格项目</a></li>
+</menu>
+<h2>CSS 实例</h2>
+<menu>
+<li><a href="/css/css_examples.asp" title="CSS 实例">CSS 实例</a></li>
+</menu>
+<h2>CSS 测验</h2>
+<menu>
+<li><a href="/css/css_quiz.asp" title="CSS 测验">CSS 测验</a></li>
+</menu>
+<h2>CSS 参考手册</h2>
+<menu>
+<li><a href="/cssref/index.asp" title="CSS 参考手册">CSS 参考手册</a></li>
+<li><a href="/cssref/css3_browsersupport.asp" title="CSS 浏览器支持">CSS 浏览器支持</a></li>
+<li><a href="/cssref/css_selectors.asp" title="CSS 选择器">CSS 选择器</a></li>
+<li><a href="/cssref/css_functions.asp" title="CSS 函数">CSS 函数</a></li>
+<li><a href="/cssref/css_units.asp" title="CSS 单位">CSS 单位</a></li>
+<li><a href="/cssref/css_ref_aural.asp" title="CSS 听觉">CSS 听觉</a></li>
+<li><a href="/cssref/css_websafe_fonts.asp" title="CSS 网络安全字体">CSS 网络安全字体</a></li>
+<li><a href="/cssref/css_animatable.asp" title="CSS 可动画制作">CSS 可动画制作</a></li>
+<li><a href="/cssref/css_units.asp" title="CSS 单位">CSS 单位</a></li>
+<li><a href="/cssref/css_colors.asp" title="CSS 颜色">CSS 颜色</a></li>
+<li><a href="/cssref/css_colors_legal.asp" title="CSS 颜色值">CSS 颜色值</a></li>
+<li><a href="/cssref/css_default_values.asp" title="CSS 默认值">CSS 默认值</a></li>
+<li><a href="/cssref/css_entities.asp" title="CSS 实体">CSS 实体</a></li>
+</menu>
+</nav>
+
+</div>
+</aside>
+
+
+<article class="main-content">
+
+
+<h1>CSS 教程</h1>
+
+<nav class="nav-prenext">
+<menu class="nav-prenext-menu">
+<li class="btn-pre"><a href="/css/index.asp" title="CSS 教程">CSS 教程</a></li>
+<li class="btn-next"><a href="/css/css_jianjie.asp" title="CSS 简介">CSS 简介</a></li>
+</menu>
+</nav>
+
+
+
+<section class="intro">
+<h2>学习 CSS</h2>
+
+<p>CSS 是一种描述 HTML 文档样式的语言。</p>
+
+<p>CSS 描述应该如何显示 HTML 元素。</p>
+
+<p>本教程将从零起点的基础教程开始，一直到 CSS3 高级教程，为您提供全面系统地讲解。</p>
+
+<p><a class="btn btn-theme-tutorial" href="/css/css_jianjie.asp" title="CSS 教程">现在就开始学习 CSS ❯</a></p>
+</section>
+
+
+
+<section>
+<h2>每一章中的实例</h2>
+
+<p>本 CSS 教程包含数百个 CSS 实例。</p>
+
+<p>通过使用我们的在线编辑器（W3School TIY），您可以编辑 CSS，然后单击运行按钮来查看结果。</p>
+
+<h3>CSS 实例</h3>
+
+<pre class="language-css">
+body {
+  background-color: lightblue;
+}
+
+h1 {
+  color: white;
+  text-align: center;
+}
+
+p {
+  font-family: verdana;
+  font-size: 20px;
+}
+</pre>
+
+<p class="tiy"><a target="_blank" href="/tiy/t.asp?f=css_index">亲自试一试</a></p>
+
+<p>请点击“亲自试一试”按钮来查看它如何运行。</p>
+</section>
+
+
+
+<section>
+<h2>CSS 实例</h2>
+
+<p>从 300 多个实例中学习！使用我们的在线编辑器，您可以编辑 CSS，然后单击运行按钮来查看结果。</p>
+
+<p><a class="btn btn-theme-example" href="/css/css_examples.asp">查看所有 CSS 实例 ❯</a></p>
+</section>
+
+
+
+<section>
+<h2>CSS 习题和测验</h2>
+
+<p>在 W3School 测试您的 CSS 技能！</p>
+
+<p><a class="btn btn-theme-quiz" href="/css/css_quiz.asp">开始 CSS 测验 ❯</a></p>
+</section>
+
+
+
+<section>
+<h2>CSS 参考手册</h2>
+
+<p>在 W3School，您将找到所有属性和选择器的完整 CSS 参考手册，包括语法、示例、浏览器支持等。</p>
+
+<ul class="list-ref">
+<li><a href="/cssref/index.asp" title="CSS 参考手册">CSS 参考手册</a></li>
+<li><a href="/cssref/css_browsersupport.asp" title="CSS 浏览器支持参考手册">CSS 浏览器支持参考手册</a></li>
+<li><a href="/cssref/css_selectors.asp" title="CSS 选择器参考手册">CSS 选择器参考手册</a></li>
+<li><a href="/cssref/css_functions.asp" title="CSS 函数参考手册">CSS 函数参考手册</a></li>
+<li><a href="/cssref/css_animatable.asp" title="CSS 动画相关属性">CSS 动画相关属性</a></li>
+<li><a href="/cssref/css_websafe_fonts.asp" title="CSS 网络安全字体">CSS 网络安全字体</a></li>
+<li><a href="/cssref/css_fonts_fallbacks.asp" title="CSS 字体回退">CSS 字体回退</a></li>
+<li><a href="/cssref/css_units.asp" title="CSS 单位">CSS 单位</a></li>
+<li><a href="/cssref/css_colors.asp" title="CSS 颜色">CSS 颜色</a></li>
+<li><a href="/cssref/css_colors_legal.asp" title="CSS 颜色值">CSS 颜色值</a></li>
+<li><a href="/cssref/css_default_values.asp" title="CSS 默认值">CSS 默认值</a></li>
+<li><a href="/cssref/css_entities.asp" title="CSS 实体">CSS 实体</a></li>
+<li><a href="/cssref/css_ref_aural.asp" title="CSS 听觉参考手册">CSS 听觉参考手册</a></li>
+</ul>
+</section>
+
+
+
+<nav class="nav-prenext">
+<menu class="nav-prenext-menu">
+<li class="btn-pre"><a href="/css/index.asp" title="CSS 教程">CSS 教程</a></li>
+<li class="btn-next"><a href="/css/css_jianjie.asp" title="CSS 简介">CSS 简介</a></li>
+</menu>
+</nav><section>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3381531532877742"
+     crossorigin="anonymous"></script>
+<!-- W3School 正文底部自适应 -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-3381531532877742"
+     data-ad-slot="3120875591"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+</section>
+
+</article>
+
+<aside class="sidebar">
+
+<nav class="nav-tools">
+<menu class="nav-tools-menu">
+<li class="btn-reference"><a href="/cssref/index.asp">CSS 参考手册</a></li>
+<li class="btn-example"><a href="/css/css_examples.asp">CSS 实例</a></li>
+<li class="btn-quiz"><a href="/css/css_quiz.asp">CSS 测验</a></li>
+<li class="btn-professional"><a href="/css/index_pro.asp">CSS 课外书</a></li>
+</menu>
+</nav>
+
+<div class="ad-aside">
+<div class="ad-aside-bar">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3381531532877742"
+     crossorigin="anonymous"></script>
+<!-- W3School 侧栏广告自适应 -->
+
+<ins class="adsbygoogle ad-sidebar"
+     style="display:block"
+     data-ad-client="ca-pub-3381531532877742"
+     data-ad-slot="7684920060"
+</ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+</div>
+</div>
+
+</aside>
+
+
+</main>
+
+
+<div class="menu-overlay" id="menuOverlay"></div>
+
+<script type="application/javascript" language="javascript" src="/lib/js/topnav.js?v=6"></script>
+<script type="application/javascript" language="javascript" src="/lib/js/nav.js?v=1"></script>
+
+<footer class="footer-container">
+<div>
+<a href="/about/index.asp" title="关于 W3School">关于 W3School</a>
+<a target="_blank" href="https://www.ykinvestment.com/">技术支持：赢科</a>
+<a target="_blank" href="http://beian.miit.gov.cn">蒙 ICP 备 06004630 号</a>
+</div>
+
+<div>
+W3School 的朋友：<a target="_blank" href="https://www.w3ctech.com/">w3ctech</a>
+<a target="_blank" href="https://wetest.qq.com/?from=links_w3school">WeTest</a>
+</div>
+</footer>
+
+</body>
+
+</html>

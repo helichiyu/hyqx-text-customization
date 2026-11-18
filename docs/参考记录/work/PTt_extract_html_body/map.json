@@ -1,0 +1,84 @@
+{
+ "operator_name": "PTt_extract_html_body",
+ "detection": "PTt_extract_html_body",
+ "display_name": "提取HTML/网页正文",
+ "tool_type": "规则型",
+ "stage": "清洗·正文",
+ "version": "1.0.0",
+ "skippable": "是（可选-必填1个）",
+ "api_path": "/predict",
+ "description": "接收 HTML/网页文档并提取正文，整合标题、段落、列表和表格内容，保留必要的层级关系与阅读顺序",
+ "input_schema": {
+  "method": "POST",
+  "path": "/predict?detection=PTt_extract_html_body",
+  "content_type": "multipart/form-data",
+  "form_fields": {
+   "file": {
+    "type": "file",
+    "required": true,
+    "description": "待处理文件。html 文件整体作为一条记录；jsonl/json 每行/每元素一条记录（text 字段为 HTML 内容）"
+   }
+  },
+  "params": {},
+  "limits": {
+   "max_input_mb": 10,
+   "max_response_mb": 50
+  }
+ },
+ "output_schema": {
+  "content_type": "application/json",
+  "fields": {
+   "code": {
+    "type": "int",
+    "description": "0=成功 1=失败"
+   },
+   "msg": {
+    "type": "string",
+    "description": "提示信息"
+   },
+   "data": {
+    "type": "list",
+    "items": {
+     "fieldName": {
+      "type": "string",
+      "description": "记录标识"
+     },
+     "tags": {
+      "type": "list",
+      "description": "业务标签，如 [\"原始文件-无法解析\"]"
+     },
+     "action": {
+      "type": "string",
+      "description": "keep / remove / review"
+     },
+     "text": {
+      "type": "string",
+      "description": "提取出的正文"
+     },
+     "reason": {
+      "type": "string",
+      "description": "错误页等场景的失败原因"
+     },
+     "errorCode": {
+      "type": "string",
+      "description": "单条失败时的错误枚举（规范 4.5）"
+     },
+     "status": {
+      "type": "int",
+      "description": "兼容主表 U 列：1=放行/处理成功，0=过滤/需复核（由 action 派生）"
+     }
+    }
+   }
+  }
+ },
+ "error_codes": [
+  "FILE_EMPTY",
+  "FILE_CORRUPT",
+  "DECODE_FAIL",
+  "PARSE_FAIL",
+  "SIZE_EXCEEDED",
+  "PARAM_INVALID",
+  "MODEL_LOAD_FAIL",
+  "INTERNAL_ERROR"
+ ]
+}

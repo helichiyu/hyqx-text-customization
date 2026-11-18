@@ -1,0 +1,14 @@
+Abstract: We study noise-robust training for small corpora. Our method combines denoising rules with model-based filtering.
+Keywords: denoising; small corpus; pretraining
+1. Introduction
+Small datasets degrade pretrained model quality. Section 2 describes our pipeline.
+2. Methods
+Rule filters remove layout noise; a unified gateway judges fluency per sample.
+3. Experiments
+We evaluate on three benchmarks; error rates drop by 18%.
+4. Conclusion
+The combined pipeline is effective for low-resource pretraining.
+Acknowledgements
+We thank the anonymous reviewers.
+References
+[1] Demo A. Corpus Cleaning. 2025.

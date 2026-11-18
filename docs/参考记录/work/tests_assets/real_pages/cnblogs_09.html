@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />            
+    <meta http-equiv="Cache-Control" content="no-transform" />
+    <meta http-equiv="Cache-Control" content="no-siteapp" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="referrer" content="origin-when-cross-origin" />
+    <title>AgentScope第11式&#183;定式输出 - 李福春 - 博客园</title>
+    <meta name="keywords" content="Java技术  技术管理,AI架构师" />
+    <meta name="description" content="AgentScope第11式&amp;#183;定式输出 数字人不怕模型答错，怕它答对了你却解析不出来。 [读者] 用 AgentScope Java 搭数字人后端的工程师 [痛点] 业务代码靠正则解析模型散文，字段一缺就崩 [现在读] 第10式跑通了 ReAct，输出却还不可编程 [读完] 能把意图与动作" />    
+    <meta property="og:description" content="AgentScope第11式&amp;#183;定式输出 数字人不怕模型答错，怕它答对了你却解析不出来。 [读者] 用 AgentScope Java 搭数字人后端的工程师 [痛点] 业务代码靠正则解析模型散文，字段一缺就崩 [现在读] 第10式跑通了 ReAct，输出却还不可编程 [读完] 能把意图与动作" />
+    <meta property="og:image" content="https://assets.cnblogs.com/images/wechat-share.jpg" />
+    <meta property="bytedance:published_time" content="2026-10-11T11:07:39+08:00" />
+    
+    <link rel="stylesheet" href="/css/blog-common.min.css?v=6O_Ku8w_jYd3yw2BX9ElmxGv25AYbAQ-F6ZeOeZfxYc" />
+    <link id="MainCss" rel="stylesheet" href="/skins/blacklowkey/bundle-blacklowkey.min.css?v=QmhJuqutwsyRVPwV8wOHP8zM5sTwHe5vHM1HxnzZE-8" />
+    <link id="highlighter-theme-cnblogs" type="text/css" rel="stylesheet" href="/css/hljs/cnblogs.css?v=5J1NDtbnnIr2Rc2SdhEMlMxD4l9Eydj88B31E7_NhS4" />
+    
+    
+    <link id="mobile-style" media="only screen and (max-width: 767px)" type="text/css" rel="stylesheet" href="/skins/blacklowkey/bundle-blacklowkey-mobile.min.css?v=wEd7BnJNqQXyfaumo8ozL35obJU-KCAQ6YwcQD9bt2M" />
+    
+    <link id="favicon" rel="icon" type="image/x-icon" sizes="32x32" href="https://assets.cnblogs.com/favicon_v3_3.ico" />
+    <link id="favicon_svg" rel="icon" type="image/svg+xml" href="https://assets.cnblogs.com/favicon_v3_3.svg" />
+    <link rel="apple-touch-icon" href="https://assets.cnblogs.com/apple-touch-icon.png?v=2" />
+    <link rel="canonical" href="https://www.cnblogs.com/snidget/p/23260326" />
+    <link type="application/rss+xml" rel="alternate" href="https://www.cnblogs.com/snidget/rss" />
+    <link type="application/rsd+xml" rel="EditURI" href="https://www.cnblogs.com/snidget/rsd.xml" />
+    <link type="application/wlwmanifest+xml" rel="wlwmanifest" href="https://www.cnblogs.com/snidget/wlwmanifest.xml" />
+    
+    <script type="application/ld&#x2B;json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "@id": "https://www.cnblogs.com/snidget/p/23260326",
+      "headline": "AgentScope第11式&amp;#183;定式输出",
+      "description": "AgentScope第11式\u0026#183;定式输出 数字人不怕模型答错，怕它答对了你却解析不出来。 [读者] 用 AgentScope Java 搭数字人后端的工程师 [痛点] 业务代码靠正则解析模型散文，字段一缺就崩 [现在读] 第10式跑通了 ReAct，输出却还不可编程 [读完] 能把意图与动作做成可校验",
+      "image": [
+        
+      ],
+      "author": {
+        "@type": "Person",
+        "@id": "https://www.cnblogs.com/snidget/",
+        "name": "李福春",
+        "url": "https://www.cnblogs.com/snidget/"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "@id": "https://www.cnblogs.com/",
+        "name": "博客园",
+        "url": "https://www.cnblogs.com/"
+      },
+      "datePublished": "2026-10-11T11:08:00.0000000&#x2B;08:00",
+      "dateModified": "2026-10-11T11:08:00.0000000&#x2B;08:00",
+      "wordCount": "17175",
+      "isPartOf": {
+        "@type": "Blog",
+        "@id": "https://www.cnblogs.com/snidget/",
+        "name": "every day is another day!",
+        "publisher": {
+          "@type": "Organization",
+          "@id": "https://www.cnblogs.com/",
+          "name": "博客园"
+        }
+      }
+    }
+    </script>
+
+    <script>
+        var currentBlogId = 83095;
+        var currentBlogApp = 'snidget';
+        var isLogined = false;
+        var isBlogOwner = false;
+        window.isCorp = false;
+        window.skinName = 'BlackLowKey';
+        var visitorUserId = '';
+        window.hasCustomScript = false;
+        window.cb_enable_mathjax = true;
+        window.mathEngine = 0;
+        window.codeHighlightEngine = 1;
+        window.enableCodeLineNumber = true;
+        window.codeHighlightTheme = 'cnblogs';
+        window.darkModeCodeHighlightTheme = 'vs2015';
+        window.isDarkCodeHighlightTheme = false;
+        window.isDarkModeCodeHighlightThemeDark = true;
+        window.isDisableCodeHighlighter = false;
+        window.enableCodeThemeTypeFollowSystem = false;
+        window.enableMacStyleCodeBlock = false;        
+    </script>
+        <script>
+            window.currentPostId = 23260326;
+            window.currentPostDateAdded = '2026-10-11 11:08';
+        </script>
+    <script src="https://assets.cnblogs.com/scripts/jquery-3.3.1.min.js"></script>
+    <script src="https://cdn-www.cnblogs.com/js/blog-common.min.js?v=s4G89hcAIPG0l9Bje44CCNwM-djP_Bpp8JXJnkGs-4o"></script>
+    
+</head>
+<body class="skin-blacklowkey has-navbar mathjax2">
+    <a name="top"></a>
+    <div id="top_nav" class="navbar forpc">
+        <nav id="nav_main" class="navbar-main">
+            <ul id="nav_left" class="navbar-list navbar-left">
+                <li class="navbar-branding">
+                    <a href="https://www.cnblogs.com/" title="开发者的网上家园" role="banner">
+                        <img src="//assets.cnblogs.com/logo.svg" alt="博客园logo" />
+                    </a>
+                </li>
+                <li><a href="https://cnblogs.vip/">会员</a></li>
+                <li><a href="https://cnblogs.vip/store">周边</a></li>
+                <li><a href="https://news.cnblogs.com/" onclick="countClicks('nav', 'skin-navbar-news')">新闻</a></li>
+                <li><a href="https://q.cnblogs.com/" onclick="countClicks('nav', 'skin-navbar-q')">博问</a></li>
+                <li><a href="https://ing.cnblogs.com/" onclick="countClicks('nav', 'skin-navbar-ing')">闪存</a></li>                
+                <li><a href="https://www.cnblogs.com/cmt/p/19316348">赞助商</a></li>
+                <li><a href="https://chat2db-ai.com/" target="_blank">Chat2DB</a></li>
+            </ul>
+            <ul id="nav_right" class="navbar-list navbar-right">
+                <li>
+                    <form id="zzk_search" class="navbar-search dropdown" action="https://zzk.cnblogs.com/s" method="get" role="search">
+                        <input name="w" id="zzk_search_input" placeholder="代码改变世界" type="search" tabindex="3" autocomplete="off" />
+                        <button id="zzk_search_button" onclick="window.navbarSearchManager.triggerActiveOption()">
+                            <img id="search_icon" class="focus-hidden" src="//assets.cnblogs.com/icons/search.svg" alt="搜索" />
+                            <img class="hidden focus-visible" src="//assets.cnblogs.com/icons/enter.svg" alt="搜索" />
+                        </button>
+                        <ul id="navbar_search_options" class="dropdown-menu quick-search-menu">
+                            <li tabindex="0" class="active" onclick="zzkSearch(event, document.getElementById('zzk_search_input').value)">
+                                <div class="keyword-wrapper">
+                                    <img src="//assets.cnblogs.com/icons/search.svg" alt="搜索" />
+                                    <div class="keyword"></div>
+                                </div>
+                                <span class="search-area">所有博客</span>
+                            </li>
+                                    <li tabindex="1" onclick="zzkBlogSearch(event, 'snidget', document.getElementById('zzk_search_input').value)">
+                                        <div class="keyword-wrapper">
+                                            <img src="//assets.cnblogs.com/icons/search.svg" alt="搜索" />
+                                            <div class="keyword"></div>
+                                        </div>
+                                        <span class="search-area">当前博客</span>
+                                    </li>
+                        </ul>
+                    </form>
+                </li>
+                <li id="navbar_login_status" class="navbar-list">
+                    <a class="navbar-user-info navbar-blog" href="https://i.cnblogs.com/EditPosts.aspx?opt=1" alt="写随笔" title="写随笔">
+                        <img id="new_post_icon" class="navbar-icon" src="//assets.cnblogs.com/icons/newpost.svg" alt="写随笔" />
+                    </a>
+                    <a id="navblog-myblog-icon" class="navbar-user-info navbar-blog" href="https://www.cnblogs.com/my" alt="我的博客" title="我的博客">
+                        <img id="myblog_icon" class="navbar-icon" src="//assets.cnblogs.com/icons/myblog.svg" alt="我的博客" />
+                    </a>
+                    <a class="navbar-user-info navbar-message navbar-icon-wrapper" href="https://msg.cnblogs.com/" alt="短消息" title="短消息">
+                        <img id="msg_icon" class="navbar-icon" src="//assets.cnblogs.com/icons/message.svg" alt="短消息" />
+                        <span id="msg_count" style="display: none"></span>
+                    </a>
+                    <a id="navbar_lite_mode_indicator" data-current-page="blog" style="display: none" href="javascript:void(0)" alt="简洁模式" title="简洁模式启用，您在访问他人博客时会使用简洁款皮肤展示">
+                        <img class="navbar-icon" src="//assets.cnblogs.com/icons/lite-mode-on.svg" alt="简洁模式" />
+                    </a>
+                    <div id="user_info" class="navbar-user-info dropdown">
+                        <a class="dropdown-button" href="https://home.cnblogs.com/">
+                            <img id="user_icon" class="navbar-avatar" src="//assets.cnblogs.com/icons/avatar-default.svg" alt="用户头像" />
+                        </a>
+                        <div class="dropdown-menu">
+                            <a id="navblog-myblog-text" href="https://www.cnblogs.com/my">我的博客</a>
+                            <a href="https://home.cnblogs.com/">我的园子</a>
+                            <a href="https://account.cnblogs.com/settings/account">账号设置</a>
+                            <a href="https://vip.cnblogs.com/my">会员中心</a>
+                            <a href="javascript:void(0)" id="navbar_lite_mode_toggle" title="简洁模式会使用简洁款皮肤显示所有博客">
+    简洁模式 <span id="navbar_lite_mode_spinner" class="hide">...</span>
+</a>
+
+                            <a href="javascript:void(0)" onclick="account.logout();">退出登录</a>
+                        </div>
+                    </div>
+                    <a class="navbar-anonymous" href="https://account.cnblogs.com/signup">注册</a>
+                    <a class="navbar-anonymous" href="javascript:void(0);" onclick="account.login()">登录</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    
+
+    <div id="home">
+<div id="header">
+	<div id="blogTitle">
+        <a id="lnkBlogLogo" href="https://www.cnblogs.com/snidget/"><img id="blogLogo" src="/skins/custom/images/logo.gif" alt="返回主页" /></a>		
+		
+
+<h1><a id="Header1_HeaderTitle" class="headermaintitle HeaderMainTitle" href="https://www.cnblogs.com/snidget">every day is another day!</a>
+</h1>
+<h2>用代码解决问题,用代码书写生活.coding for my life.</h2>
+
+
+
+
+		
+	</div>
+	<div id="navigator">
+		
+<ul id="navList">
+<li><a id="blog_nav_sitehome" class="menu" href="https://www.cnblogs.com/">
+博客园</a>
+</li>
+<li>
+<a id="blog_nav_myhome" class="menu" href="https://www.cnblogs.com/snidget/">
+首页</a>
+</li>
+<li>
+
+<a id="blog_nav_newpost" class="menu" href="https://i.cnblogs.com/EditPosts.aspx?opt=1">
+新随笔</a>
+</li>
+<li>
+<a id="blog_nav_contact" class="menu" href="https://msg.cnblogs.com/send/%E6%9D%8E%E7%A6%8F%E6%98%A5">
+联系</a></li>
+<li>
+<a id="blog_nav_rss" class="menu" href="javascript:void(0)" data-rss="https://www.cnblogs.com/snidget/rss/">
+订阅</a>
+<!--<partial name="./Shared/_XmlLink.cshtml" model="Model" /></li>--></li>
+<li>
+<a id="blog_nav_admin" class="menu" href="https://i.cnblogs.com/">
+管理</a>
+</li>
+</ul>
+
+
+		<div class="blogStats">
+			<div id="blog_stats_place_holder"><script>loadBlogStats();</script></div>
+		</div>
+	</div>
+</div>
+<div id="main">
+	<div id="mainContent">
+	<div class="forFlow">
+		<div id="post_detail">
+    
+    <div id="topics">
+        <div class="post">
+            <h1 class = "postTitle">
+                <a id="cb_post_title_url" class="postTitle2 vertical-middle" href="https://www.cnblogs.com/snidget/p/23260326" title="发布于 2026-10-11 11:07">
+    
+
+    <span role="heading" aria-level="2">AgentScope第11式&#183;定式输出</span>
+    
+
+</a>
+
+            </h1>
+            <div class="clear"></div>
+            <div class="postBody">
+                <div id="cnblogs_post_body" class="blogpost-body cnblogs-markdown">
+<h1 id="agentscope第11式定式输出">AgentScope第11式·定式输出</h1>
+<blockquote>
+<p>数字人不怕模型答错，怕它答对了你却解析不出来。</p>
+</blockquote>
+<pre><code class="language-text">[读者] 用 AgentScope Java 搭数字人后端的工程师
+[痛点] 业务代码靠正则解析模型散文，字段一缺就崩
+[现在读] 第10式跑通了 ReAct，输出却还不可编程
+[读完] 能把意图与动作做成可校验 DTO，并设计回退路径
+</code></pre>
+<pre><code class="language-text">[旧方案] ReActAgent 输出自然语言，业务侧正则抠 JSON
+    |
+    v
+[新需求] 前端要卡片字段，工单要草稿字段，动作要可执行枚举
+    |
+    v
+[冲突] 自然语言是给人看的协议，不是给程序看的契约
+    |
+    v
+[后果] 解析失败静默降级，字段缺失无人知晓，线上靠日志考古
+</code></pre>
+<p>我是老李，在一个数字人项目里做后端。第10式收尾时，我们的 ReActAgent 已经能在多轮对话里调工具、记上下文、跑完一次完整的“问—想—做—答”。演示很漂亮，会议室里没人提异议。</p>
+<p>但演示之后是接入。前端要一张卡片：标题、摘要、三个字段、一个跳转链接。工单系统要一份草稿：分类、优先级、联系人、问题描述。动作层要一个可执行决策：是转人工、是查订单，还是继续追问。</p>
+<p>这三个消费方都不是人，它们要的是字段。而我们的 Agent 交出来的，是一段中文散文。于是业务层长出了一堆正则、截断、兜底默认值。那才是真正的技术债起点。</p>
+<p>第一句：模型的输出格式，凭什么由一句提示词保证？</p>
+<p>第二句：是继续在提示词里写“请严格输出 JSON”，还是让模型和运行时之间签一份契约？</p>
+<p>第三句：如果这份契约在某个模型上签不了，你的数字人是退回散文，还是当场报错给用户？</p>
+<blockquote>
+<p>散文易读难解<br>
+契约难写易守<br>
+一步即千里<br>
+取舍在契约</p>
+</blockquote>
+<h1 id="01故事">01、故事</h1>
+<p>现场是一个数字人客服，叫小安。用户在对话框里说：“我昨天买的那双鞋要退，订单号记不清了。”</p>
+<p>任务是：把一句用户话语，转成三个下游能直接消费的结构 —— 意图、下一步动作、工单草稿。</p>
+<p>当时的方案很朴素：在系统提示词末尾写上“请以 JSON 输出，字段包括 intent、confidence、slots、action”，然后从模型回复里抠出第一个 <code>{</code> 到最后一个 <code>}</code>，交给 Jackson 解析；字段缺失就返回 null，null 就在前端显示默认文案。</p>
+<p>第10式的分支从上一式继续创建，第11式要求在这里新建 <code>chapter/11-structured-output</code>，提交信息写成 <code>feat(ch11): add structured intent and action outputs</code>。</p>
+<p>变化在三处同时发生：</p>
+<ul>
+<li>数字人前端升级，卡片从“一段话”变成“结构化字段 + 跳转链接”，多一个字段就少一次改前端。</li>
+<li>工单系统上线，草稿必须直接入库，缺字段会被入库校验拦下。</li>
+<li>动作层要接工具总线，动作名必须是白名单枚举，不能是自然语言里的动词。</li>
+</ul>
+<p>冲突于是很清晰：我们只有一个输出通道 —— 模型的一段文本；而这个文本被三个消费者用三种方式解析，每种解析都在猜。</p>
+<p>第10式之前，我们只关心“模型答得对不对”；第11式开始，我们还得关心“这句话机器能不能读”。</p>
+<blockquote>
+<p>输出是接口<br>
+不是一句话<br>
+谁先定契约<br>
+谁就少折腾</p>
+</blockquote>
+<h1 id="02问题">02、问题</h1>
+<p>旧方案的失效不是一次性崩溃，而是持续的小额漏损。</p>
+<p>业务影响上，它表现为三种：工单草稿缺失字段被入库拦截，客服要手工补录；前端卡片偶发空白，用户以为数字人卡死了；动作层收到一个不在白名单里的动词，只能落进“未知动作”分支，转人工率被动升高。</p>
+<p>技术表现上，可以列出一串：</p>
+<ul>
+<li>提取 JSON 的区间判断在嵌套对象上会截断，外层没闭合就交给解析器；</li>
+<li>意图字段自由发挥，同一件事出现过“退货”“退款”“退单”三种写法；</li>
+<li>confidence 有时是 0.8，有时是字符串 <code>"high"</code>；</li>
+<li>同一句话两次执行，字段名可能不同，<code>intent</code> 和 <code>intention</code> 都出现过；</li>
+<li>卡片字段缺失时前端静默空白，后端日志里什么都没有；</li>
+<li>单元测试写不了，因为输入是字符串，输出还是字符串。</li>
+</ul>
+<p>所以本式需要一个可验证的完成标准，而不是“感觉变好了”：</p>
+<ol>
+<li>同一输入重复执行时，输出始终满足既定 Schema；</li>
+<li>字段缺失或非法值有明确处理：要么带错误信息重试，要么走安全默认并告警，不允许静默；</li>
+<li>业务代码中不再出现针对模型输出的字符级解析；</li>
+<li>新增 <code>IntentResult</code> 与 <code>ActionDecision</code> 两个类型，作为唯一的输出契约。</li>
+</ol>
+<blockquote>
+<p>失败要出声<br>
+缺失要显形<br>
+静默最昂贵<br>
+告警最便宜</p>
+</blockquote>
+<h1 id="03原理">03、原理</h1>
+<p>本篇只需要三层原理。</p>
+<p>第一层，模型侧的结构化输出有强度之分。最弱的是纯提示词：只在 prompt 里描述字段，合法与否全看运气。中间是工具调用级的约束：把 schema 挂在一个函数上，模型必须以参数形式填写，训练数据里这种模式出现得多，服从度通常更高。最强的是约束解码级的原生结构化：请求里携带 JSON Schema，采样阶段就屏蔽非法 token，输出天然合法。</p>
+<p>第二层，运行时侧要做四件事：从类型生成 Schema（保证单一事实源）、发起带 schema 的调用、校验返回、失败时决定回退策略。注意这里没有“让模型更聪明”这一项 —— 运行时不负责提升模型能力，它负责把不确定性收敛成可处理的分支。</p>
+<p>第三层，Java 侧的两条映射路径。Java Class 直接映射：类型即契约，<code>IntentResult</code>、<code>ActionDecision</code> 这样的 record 编译期就知道字段构成，校验可以写在紧凑构造器里；缺点是 schema 跟着代码走，动态场景不灵活。JsonNode 映射：先把结果接成树，再按需取字段，适合 schema 由外部决定的场景，比如工具注册表驱动的动作分发、或者卡片结构由前端配置下发。两条路径不互斥：稳定字段用 Class，动态部分用 JsonNode。</p>
+<p>反直觉判断一：给模型加 Schema，不会让它更聪明，只会让失败更早暴露。以前它给你一段听起来对但字段乱的话，你要到前端渲染时才发现；加了 Schema，它在第一次校验就被拦下。失败总量没变，失败位置提前了 —— 而提前的失败是可以在代码里处理的失败。</p>
+<p>反直觉判断二：最严格的结构化输出，往往不是 response format，而是 tool calling。工具调用天生带参数 schema，模型见过得多；当某个模型对 json_schema 支持不好时，把它当工具调，常常比逼它写 JSON 更省事。</p>
+<p>最后回到 <code>ReActAgent</code>（位于 <code>agentscope-core/src/main/java/io/agentscope/core/ReActAgent.java</code>）。ReAct 的循环是“想—做—看”。当“想”这一步产出的是自由文本，整个循环是一段散文流；当“想”这一步产出的是 <code>ActionDecision</code> —— 一个带 action 枚举和 arguments 的对象，循环就从文本推理变成了状态机跳转。这一步的收益不在准确率，而在可观测性与可断言性：你能在日志里打出每一次决策的 action 和参数。</p>
+<blockquote>
+<p>类型即契约<br>
+提前即便宜<br>
+工具即约束<br>
+循环即状态</p>
+</blockquote>
+<h1 id="04架构">04、架构</h1>
+<pre><code class="language-text">[输入] 用户话语 + 会话上下文
+    |
+    v
+[模块] ReActAgent（想/做/看） + Model 能力探测
+    |
+    v
+[数据/状态] Java 类型 → JSON Schema（单一事实源） + 会话记忆
+    |
+    v
+[处理] 原生结构化 → 校验 → 失败重试 → 兼容回退
+    |
+    v
+[输出] IntentResult / ActionDecision / TicketDraft / CardPayload
+</code></pre>
+<p>边界：这一层只管“模型输出到业务对象”这一段，不管业务对象怎么用。契约由 Java 类型定义，Schema 是它的派生物，不允许手写。回退策略属于这一层，不属于调用方 —— 调用方只应该看到“成功”或“一个带上下文的领域异常”。</p>
+<p>收益：业务代码从“解析器”退化成“消费者”；失败模式从“下游渲染空白”变成“这里抛异常”；可以写单元测试，因为输入输出都是类型。</p>
+<p>代价：多一次校验开销，多一条重试路径，最坏情况一次请求变成两次模型调用；类型演进要考虑旧的 JSON 是否还能反序列化；能力探测本身有一次探测成本，通常需要缓存。</p>
+<p>适用条件：下游是程序而不是人；字段集合相对稳定；能接受“格式正确优先于表达花哨”。如果输出本来就只给人看，比如闲聊寒暄或情感陪伴，硬上 Schema 只会增加失败点和成本。</p>
+<p>官方文档中 <code>docs/v2/zh/docs/building-blocks/model.md</code> 讲的是模型接入与调用能力，<code>docs/v2/zh/docs/building-blocks/agent.md</code> 讲的是智能体循环与状态，本篇的架构正好落在两者的接缝上：模型决定能签多严的契约，智能体决定契约在循环里被用在哪一步。</p>
+<blockquote>
+<p>契约一层写<br>
+校验一处做<br>
+回退一路明<br>
+下游一直稳</p>
+</blockquote>
+<h1 id="05实战一次">05、实战一次</h1>
+<p>环境与版本：JDK 17 及以上、Maven、AgentScope Java v2.0.3。依赖从官方仓库 v2.0.3 引入 <code>agentscope-core</code> 模块（官方源码路径为 <code>agentscope-core/src/main/java/io/agentscope/core/</code>），JSON 处理使用 Jackson。具体 Maven 坐标与最新版本号需按当前官方文档核验。</p>
+<p>先定义契约。两个类型都是 record，校验写在紧凑构造器里，非法值在构造那一刻就抛。</p>
+<pre><code class="language-java">package com.example.digitalhuman.contract;
+
+import java.util.List;
+import java.util.Map;
+
+public record IntentResult(
+        String intent,
+        double confidence,
+        Map&lt;String, String&gt; slots,
+        boolean needHuman
+) {
+    public static final List&lt;String&gt; ALLOWED_INTENTS = List.of(
+            "REFUND_REQUEST", "ORDER_QUERY", "COMPLAINT", "SMALL_TALK", "UNKNOWN"
+    );
+
+    public IntentResult {
+        if (intent == null || intent.isBlank()) {
+            throw new IllegalArgumentException("intent 不能为空");
+        }
+        if (confidence &lt; 0.0 || confidence &gt; 1.0) {
+            throw new IllegalArgumentException("confidence 越界: " + confidence);
+        }
+        slots = (slots == null) ? Map.of() : Map.copyOf(slots);
+    }
+}
+</code></pre>
+<pre><code class="language-java">package com.example.digitalhuman.contract;
+
+import java.util.List;
+import java.util.Map;
+
+public record ActionDecision(
+        String action,
+        Map&lt;String, Object&gt; arguments,
+        String reason
+) {
+    public static final List&lt;String&gt; ALLOWED_ACTIONS = List.of(
+            "QUERY_ORDER", "CREATE_TICKET", "TRANSFER_HUMAN", "ASK_CLARIFY", "RENDER_CARD"
+    );
+
+    public ActionDecision {
+        if (action == null || !ALLOWED_ACTIONS.contains(action)) {
+            throw new IllegalArgumentException("非法 action: " + action);
+        }
+        arguments = (arguments == null) ? Map.of() : Map.copyOf(arguments);
+        reason = (reason == null) ? "" : reason;
+    }
+}
+</code></pre>
+<p>配置：模型凭据从环境变量注入，具体 Model 实现与 builder 方法以 v2.0.3 官方文档 <code>model.md</code> 与对应源码为准。这里用一层薄适配把 AgentScope 的模型调用暴露成本项目需要的最小接口。</p>
+<pre><code class="language-java">package com.example.digitalhuman.model;
+
+public interface StructuredModel {
+    String chat(String systemPrompt, String userInput);
+}
+</code></pre>
+<pre><code class="language-java">package com.example.digitalhuman.model;
+
+public final class ModelFactory {
+
+    public static StructuredModel create() {
+        String provider = System.getenv("AGENTSCOPE_MODEL_PROVIDER");
+        String apiKey = System.getenv("AGENTSCOPE_API_KEY");
+        String modelName = System.getenv("AGENTSCOPE_MODEL_NAME");
+        return new AgentScopeModelAdapter(provider, apiKey, modelName);
+    }
+}
+</code></pre>
+<p><code>AgentScopeModelAdapter</code> 是本项目自己写的适配类，内部持有 AgentScope 的 Model 实例；它的构造与调用签名需要对照 v2.0.3 的源码来写，这里不展开具体类名，避免和固定版本的 API 漂移。</p>
+<p>V1 的核心实现：只做一次提示词级结构化，不做校验重试。</p>
+<pre><code class="language-java">package com.example.digitalhuman.v1;
+
+import com.example.digitalhuman.model.StructuredModel;
+
+public final class PromptOnlyInvoker implements StructuredModel {
+
+    private final StructuredModel delegate;
+
+    public PromptOnlyInvoker(StructuredModel delegate) {
+        this.delegate = delegate;
+    }
+
+    @Override
+    public String chat(String systemPrompt, String userInput) {
+        String prompt = """
+                %s
+
+                你必须只输出一个 JSON 对象，不要输出解释，不要使用 Markdown 代码块。
+                字段说明：intent 为字符串，confidence 为 0 到 1 之间的小数，
+                slots 为字符串到字符串的映射，needHuman 为布尔值。
+                """.formatted(systemPrompt);
+        return delegate.chat(prompt, userInput);
+    }
+}
+</code></pre>
+<pre><code class="language-java">package com.example.digitalhuman.v1;
+
+import com.example.digitalhuman.contract.IntentResult;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+public final class IntentParser {
+
+    private final ObjectMapper mapper;
+
+    public IntentParser(ObjectMapper mapper) {
+        this.mapper = mapper;
+    }
+
+    public IntentResult parse(String raw) throws Exception {
+        int start = raw.indexOf('{');
+        int end = raw.lastIndexOf('}');
+        if (start &lt; 0 || end &lt;= start) {
+            throw new IllegalArgumentException("未找到 JSON 片段");
+        }
+        return mapper.readValue(raw.substring(start, end + 1), IntentResult.class);
+    }
+}
+</code></pre>
+<p>启动与请求：同一句用户输入连跑三轮，把原始输出和解析结果都打出来。</p>
+<pre><code class="language-java">package com.example.digitalhuman.v1;
+
+import com.example.digitalhuman.model.ModelFactory;
+import com.example.digitalhuman.model.StructuredModel;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+public final class V1Main {
+
+    public static void main(String[] args) throws Exception {
+        StructuredModel invoker = new PromptOnlyInvoker(ModelFactory.create());
+        IntentParser parser = new IntentParser(new ObjectMapper());
+
+        String systemPrompt = "你是数字人客服小安，负责识别用户意图。";
+        String userInput = "我昨天买的那双鞋要退，订单号记不清了";
+
+        for (int i = 1; i &lt;= 3; i++) {
+            String raw = invoker.chat(systemPrompt, userInput);
+            System.out.println("---- round " + i + " ----");
+            System.out.println(raw);
+            try {
+                System.out.println(parser.parse(raw));
+            } catch (Exception e) {
+                System.out.println("PARSE_FAILED: " + e.getMessage());
+            }
+        }
+    }
+}
+</code></pre>
+<p>验证：未在当前环境实测，以下为预期结果。</p>
+<p>示例输出：</p>
+<pre><code class="language-log">---- round 1 ----
+{"intent":"REFUND_REQUEST","confidence":0.9,"slots":{"product":"鞋"},"needHuman":false}
+IntentResult[intent=REFUND_REQUEST, confidence=0.9, slots={product=鞋}, needHuman=false]
+
+---- round 2 ----
+好的，我先帮你确认一下。
+{"intent":"REFUND_REQUEST","confidence":0.9,"slots":{"product":"鞋"},"needHuman":false}
+IntentResult[intent=REFUND_REQUEST, confidence=0.9, slots={product=鞋}, needHuman=false]
+
+---- round 3 ----
+{"intention":"退货","confidence":"high","slots":{},"needHuman":false}
+PARSE_FAILED: Unrecognized field "intention"
+</code></pre>
+<p>V1 跑通了：前两轮解析成功，业务侧终于能拿到对象。但第三轮暴露了两个还没解决的问题 —— 字段名漂移、confidence 类型漂移。这两个问题留给第06章。</p>
+<blockquote>
+<p>先跑通再谈稳<br>
+先留痕再谈改<br>
+失败不必怕<br>
+怕的是静默</p>
+</blockquote>
+<h1 id="06排查">06、排查</h1>
+<p>诊断一：字段名漂移。</p>
+<p>现象：同一句输入，三轮里有一轮解析失败，报 <code>Unrecognized field "intention"</code>。</p>
+<p>怀疑：模型不稳定，随机性导致字段名漂移。</p>
+<p>检查：把三轮的原始回复全文打印出来对比，同时把实际发出的 system prompt 一并落盘。</p>
+<p>证据：三轮请求里，第一、二轮的 system prompt 是 A 版本（字段名 <code>intent</code>），第三轮走的是另一条代码路径，用的是 B 版本（字段名 <code>intention</code>）。原因是工单模块自己拼了一份提示词，没有复用主链路。</p>
+<p>根因：契约只存在于提示词文本里，而提示词有多份副本。Schema 没有单一事实源。</p>
+<p>修复：把提示词收敛到一个 PromptBuilder，字段定义只写一处。</p>
+<p>诊断二：类型漂移。</p>
+<p>现象：<code>confidence</code> 反序列化失败，实际值是 <code>"high"</code>。</p>
+<p>怀疑：Jackson 配置问题。</p>
+<p>检查：打印原始 JSON 全文，并记录当次请求使用的模型名与请求参数构造路径。</p>
+<p>证据：该次调用没有携带 schema 参数，走的是纯提示词路径；而上一次成功的调用携带了 schema。同一个模型名，不同的请求构造路径。</p>
+<p>根因：没有做能力探测。所有模型、所有调用点都假定“原生结构化可用”。</p>
+<p><strong>错误尝试：</strong> 我们第一反应是在提示词里加十行警告 —— “confidence 必须是 0 到 1 之间的小数，禁止使用 high/medium/low”，同时在 Jackson 上注册一个把 <code>"high"</code> 映射成 0.9 的反序列化器。为什么错：这是用代码的宽容度去抵消模型的随机性。它不建立契约，只是把不确定性搬到了业务侧。更糟的是，<code>"high"</code> 究竟是 0.9 还是 0.95 无从判断，下游一旦拿这个数做阈值判断，同一句话在不同时刻会得到不同决策，问题从“格式错”升级成了“决策不可复现”。</p>
+<p>修复方向：能力探测 + 原生结构化优先 + 校验失败重试 + 最终显式回退。</p>
+<p>诊断三：静默吞掉失败。</p>
+<p>现象：前端卡片偶尔整块空白，后端日志里没有任何异常。</p>
+<p>怀疑：前端渲染问题。</p>
+<p>检查：在后端出口打点，记录每一次出去的卡片字段快照。</p>
+<p>证据：卡片为空的那几次，<code>intent</code> 字段是 null，而业务代码里写着 <code>if (intent == null) return;</code> 静默返回。</p>
+<p>根因：契约类型是宽松的（字段可为 null），并且在消费侧用静默返回代替了显式处理。</p>
+<p>修复：让 <code>IntentResult</code> 的紧凑构造器拒绝空 intent，把静默变成异常。</p>
+<blockquote>
+<p>先取证再猜<br>
+先复现再改<br>
+宽容非善意<br>
+静默是债务</p>
+</blockquote>
+<h1 id="07优化">07、优化</h1>
+<p>基于第06章的三条证据做 V2。</p>
+<p>修改一：Schema 由类型生成。<br>
+根因是契约写在提示词文本里、存在多份副本漂移。改法是用 Java 类型生成 JSON Schema，Schema 与类型同源。理由是单一事实源，改字段只会改一处。新行为是提示词里不再手写字段名，Schema 在调用时由类型派生并注入请求。验证方法：改动 <code>IntentResult</code> 的字段名，重新编译后 Schema 同步变化，无需全文搜索提示词。</p>
+<p>修改二：能力探测。<br>
+根因是所有调用都假定原生结构化可用。改法是为 Model 增加一次性能力探测，结果缓存，区分三种能力位：原生 schema、工具参数约束、纯文本。理由是不同模型、不同版本、不同网关转发的支持度不同，把这件事交给调用点判断必然发散。新行为是能力位决定走哪条路径，而不是由调用点决定。验证方法：同一份业务代码在不同模型上跑，路径可打印、可断言。</p>
+<p>修改三：校验失败重试一次，并带上错误信息。<br>
+根因是校验失败直接抛给调用方，调用方拿不到可修正的上下文。改法是把校验错误信息作为附加输入回灌，重试一次。理由是模型在多数情况下能根据具体错误自我修正，而“字段 X 类型不对”比“重来一次”信息量大得多。新行为是失败请求有一次自愈机会，仍失败才走回退。验证方法：构造非法值输入，观察是否走重试分支、重试请求里是否带上了错误文本。</p>
+<p>修改四：回退必须显式。<br>
+根因是静默返回 null。改法是把回退分三档：重试成功、回退到安全默认（<code>intent=UNKNOWN</code>、<code>needHuman=true</code>）、抛出领域异常。理由是静默之下无人知道发生过什么。新行为是每次回退都产生一条结构化日志和一个指标。验证方法：注入一个必失败的桩模型，确认三档回退都被触发且都有日志。</p>
+<p>综合后的调用流程：</p>
+<pre><code class="language-java">package com.example.digitalhuman.v2;
+
+import com.example.digitalhuman.model.StructuredModel;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+public final class StructuredInvokerV2 {
+
+    private final StructuredModel model;
+    private final ObjectMapper mapper;
+    private final ModelCapability capability;
+
+    public StructuredInvokerV2(StructuredModel model,
+                               ObjectMapper mapper,
+                               ModelCapability capability) {
+        this.model = model;
+        this.mapper = mapper;
+        this.capability = capability;
+    }
+
+    public &lt;T&gt; T invoke(String systemPrompt, String userInput, Class&lt;T&gt; type) {
+        String schema = JsonSchemaSupport.generate(type);
+
+        String raw = switch (capability) {
+            case NATIVE_SCHEMA -&gt; model.chatWithSchema(systemPrompt, userInput, schema);
+            case TOOL_CALL -&gt; model.chatWithToolSchema(systemPrompt, userInput, schema);
+            case TEXT_ONLY -&gt; model.chat(systemPrompt + "\n只输出 JSON，满足：" + schema, userInput);
+        };
+
+        try {
+            return mapper.readValue(JsonExtractor.extract(raw), type);
+        } catch (Exception first) {
+            String retryPrompt = """
+                    %s
+                    上次输出不合法，错误是：%s
+                    请只输出满足 Schema 的 JSON。
+                    """.formatted(systemPrompt, first.getMessage());
+            String retryRaw = model.chat(retryPrompt, userInput);
+            try {
+                return mapper.readValue(JsonExtractor.extract(retryRaw), type);
+            } catch (Exception second) {
+                throw new StructuredOutputException(
+                        "两次结构化输出均失败，type=" + type.getSimpleName(), second);
+            }
+        }
+    }
+}
+</code></pre>
+<p>其中 <code>chatWithSchema</code> 与 <code>chatWithToolSchema</code> 是对 AgentScope Model 能力的薄封装，具体调用签名需按当前官方文档核验；<code>JsonSchemaSupport.generate</code> 负责从 record 类型派生 Schema，<code>JsonExtractor.extract</code> 只在回退路径上使用，不再是主路径。</p>
+<p>验证方案：同一输入重复执行若干轮，统计 Schema 通过率与重试触发率，并断言字段缺失时走的是哪一档回退。本篇不给出具体数字，因为那取决于模型与网络，任何写死的结果都不可复现。</p>
+<blockquote>
+<p>单源防漂移<br>
+探测防错路<br>
+重试带上下文<br>
+回退必有声</p>
+</blockquote>
+<h1 id="08演进">08、演进</h1>
+<pre><code class="language-text">[同一输入]
+    |
+    +--[V1] 提示词写字段 / 区间抠 JSON / 失败即抛
+    |       代价：字段名与类型靠运气，失败无上下文
+    |
+    +--[V2] 类型生成 Schema / 能力探测 / 校验重试 / 显式回退
+    |       代价：多一层封装，最坏多一次模型调用
+    |
+[Trade-off]
+得到：可校验、可测试、可观测的输出契约
+失去：一次调用的最简单路径，以及“随便改提示词”的自由
+适用边界：下游是程序而非人，字段集合相对稳定
+</code></pre>
+<p>正确性上，V1 依赖模型自觉，V2 依赖运行时校验。V2 的正确性上限由 Schema 决定，下限由回退策略决定；而 V1 没有下限。</p>
+<p>稳定性上，V1 的失败是隐式、随机、事后才被发现的；V2 的失败是显式的、有路径的，并且每次失败都会留下痕迹。</p>
+<p>复杂度上，V1 的复杂度分散在调用方 —— 每个消费方各写一套解析；V2 的复杂度集中在中间层，调用方反而变薄。这是典型的“把复杂度挪到该在的地方”。</p>
+<p>成本上，V2 最坏情况一次请求两次模型调用。这是为可复现性付的价。值不值得，取决于下游能否接受不确定：工单入库不能接受，闲聊回复可以接受。</p>
+<p>适用范围上，V2 适合字段稳定的结构化场景；如果输出本来就只给人看，没必要上 Schema。</p>
+<p>遗留问题有三个：模型原生不支持时，纯文本路径依然脆弱；Schema 演进时的向后兼容策略还没定；多语言输出与多模态卡片尚未纳入统一契约。</p>
+<blockquote>
+<p>换的是层<br>
+稳的是边<br>
+代价在调用<br>
+收益在可控</p>
+</blockquote>
+<h1 id="09洞见">09、洞见</h1>
+<h2 id="91-结构化输出是协议协商不是提示词技巧">9.1 结构化输出是协议协商，不是提示词技巧</h2>
+<p>把“请输出 JSON”写得再长，也只是请求，不是契约。契约必须是双向的：模型侧有能力位，运行时侧有校验器和回退路径。</p>
+<p>反直觉判断：在结构化输出这件事上，花时间最多的地方不是提示词，而是能力探测与失败路径。提示词只能提高成功的概率，能力探测与回退决定系统的下限。而线上出问题，几乎总是下限在起作用。</p>
+<h2 id="92-schema-的作用不是让模型更准而是让失败更早">9.2 Schema 的作用不是让模型更准，而是让失败更早</h2>
+<p>反直觉判断：加 Schema 之后，你会觉得“出错变多了”。其实不是出错变多，是以前藏在散文里的错误被提前拦下来了。错误总量没变，位置前移了，而位置前移的错误是可以在代码里处理的。</p>
+<p>这也是为什么结构化输出的第一收益是可观测性，而不是准确率。想要准确率，得改模型和提示词语义；想要可观测，改类型和校验层就够了。</p>
+<h2 id="93-回退路径必须是显式的兜底不能是静默">9.3 回退路径必须是显式的，兜底不能是静默</h2>
+<p>V1 里最危险的一行代码不是那段抠 JSON 的区间判断，而是 <code>if (intent == null) return;</code>。它让一次失败在日志里彻底消失。</p>
+<p>工程判据很简单：任何一次结构化失败，都必须留下三样东西 —— 原始输出、失败原因、走了哪一档回退。凑不齐这三样，这次失败就等于没发生过，下次还会以同样的形态出现。</p>
+<h2 id="94-react-的想一旦结构化循环就变成状态机">9.4 ReAct 的“想”一旦结构化，循环就变成状态机</h2>
+<p>第10式的 ReActAgent 是“想—做—看”。当“想”输出的是自由推理文本，它是解释；当“想”输出的是 <code>ActionDecision</code>，它就是跳转。</p>
+<p>这一步带来的最大变化不是模型变强，而是你可以对循环做断言：给定输入，期望的 action 是 <code>QUERY_ORDER</code> 还是 <code>TRANSFER_HUMAN</code>。可断言，才可回归；可回归，才敢改提示词。</p>
+<blockquote>
+<p>契约非请求<br>
+前移即可控<br>
+显式即安全<br>
+可断即可回归</p>
+</blockquote>
+<h1 id="10系统落地">10、系统落地</h1>
+<p>原来有什么：一个能跑通 ReAct 循环的数字人，输出是自然语言；业务侧堆着一批区间判断、截断和静默默认值；没有任何可执行的输出契约，也没有针对输出结构的测试。</p>
+<p>本篇新增什么：<code>IntentResult</code> 与 <code>ActionDecision</code> 两个契约类型；由类型生成 Schema 的单一事实源；模型能力探测；校验失败重试；三档显式回退；以及从第10式继续创建的分支 <code>chapter/11-structured-output</code>，提交信息为 <code>feat(ch11): add structured intent and action outputs</code>。</p>
+<p>现在能做什么：同一输入重复执行时，输出始终满足 Schema；字段缺失或非法值时，系统能明确告诉你走了哪条路径；业务代码不再解析散文；意图与动作可以在单元测试里被断言。</p>
+<p>还缺什么：工单草稿 <code>TicketDraft</code> 与前端卡片 <code>CardPayload</code> 的契约还没定义；Schema 演进时的兼容规则未定；回退率与重试率还没有可观测指标；多轮上下文对结构化决策的影响尚未评估。</p>
+<p>下一步如何演进：先把 <code>TicketDraft</code> 与 <code>CardPayload</code> 纳入同一套契约机制，让所有下游消费方走同一条路；再为回退率与重试率建立指标，把它们当成和错误率同级的健康度信号；然后给 Schema 引入版本号与兼容规则，避免类型一改旧数据就炸；最后专门在最坏路径上做验证 —— 探测失败、重试失败、回退触发，这三条路径比正常路径更需要被测试覆盖。</p>
+<blockquote>
+<p>先立契与约<br>
+再谈快与准<br>
+层层可观测<br>
+才有下一步</p>
+</blockquote>
+<h1 id="11小结">11、小结</h1>
+<pre><code class="language-text">Q1 → 模型的输出格式不能由提示词保证，必须由类型与校验共同保证
+Q2 → 从提示词里写字段，升级为类型生成 Schema + 能力探测 + 校验重试 + 显式回退
+Q3 → 契约签不了时不退回散文，而是走显式回退并告警，让失败可见
+状态 → 数字人输出从散文升级为可校验 DTO，业务代码不再解析自然语言
+</code></pre>
+<blockquote>
+<p>一问破前提<br>
+二选定路径<br>
+三立兜底法<br>
+终得可编程</p>
+</blockquote>
+<h1 id="12作业">12、作业</h1>
+<h2 id="121-理解题为什么说加-schema-之后错误变多了是一种错觉">12.1 理解题：为什么说“加 Schema 之后错误变多了”是一种错觉？</h2>
+<p>参考答案：Schema 不会让模型出错更多，它只是把原本藏在自由文本里的格式错误提前暴露。V1 时代一次意图识别错误可能表现为前端卡片空白，看上去“没出错”；V2 时代同样的错误在校验层就被拦下并计入日志。错误总量不变，暴露位置前移，而前移的错误可处理、可观测、可回归。</p>
+<h2 id="122-实战题为-intentresult-增加一个-version-字段并保证旧的-json-仍能反序列化">12.2 实战题：为 IntentResult 增加一个 version 字段，并保证旧的 JSON 仍能反序列化。</h2>
+<p>参考答案：给 record 增加 <code>int version</code>，并提供一个带默认值的创建路径 —— 用 <code>@JsonCreator</code> 标注一个静态工厂或补充构造方法，在字段缺失时补默认值。也可以调整 ObjectMapper 对缺失字段的处理策略，但要注意宽松只应作用于“新增的可选字段”，不应作用于核心字段；核心字段缺失仍应走校验失败与重试路径，否则等于把契约重新变回建议。</p>
+<h2 id="123-排障题同一模型两次调用一次返回合法-json一次返回-confidence-high列出你的排查顺序">12.3 排障题：同一模型，两次调用一次返回合法 JSON，一次返回 <code>"confidence": "high"</code>。列出你的排查顺序。</h2>
+<p>参考答案：第一，确认两次请求的构造路径是否一致，是否都携带了 schema 参数；第二，确认是否命中同一个模型版本或同一个网关转发；第三，检查能力探测结果是否被缓存且与实际不符；第四，确认超时或降级逻辑是否悄悄把请求切到了纯文本路径。若最终确认是模型侧不支持原生 schema，应把结论固化为能力位，而不是回到提示词里堆警告。</p>
+<h2 id="124-架构判断题把结构化输出的字段约束放在-prompt-里还是放在中间层哪个更合适">12.4 架构判断题：把结构化输出的字段约束放在 Prompt 里，还是放在中间层，哪个更合适？</h2>
+<p>参考答案：放在中间层。Prompt 里的字段说明会随着调用点复制，副本一多必然漂移（第06章诊断一就是活例）；中间层能提供单一事实源、统一校验、统一重试和统一回退。Prompt 只负责语义层面的角色与任务描述，结构约束由类型和运行时承担。</p>
+<blockquote>
+<p>题在契约心<br>
+答在证据处<br>
+判在边界上<br>
+行在代码里</p>
+</blockquote>
+<h1 id="13思考">13、思考</h1>
+<p>回到本篇的核心冲突：下游是程序，模型给的是散文，中间这一层由谁负责。</p>
+<p>V1 的答案是把责任推给调用方，于是每个消费者都成了半个解析器，每个人都在猜同一段文本。V2 的答案是把责任收敛到中间层：用类型定义契约，用能力探测选路径，用校验和回退兜住下限。</p>
+<p>可复用的判断有三条。第一，凡是给程序消费的模型输出，都应该有类型；类型不在，契约就不在，剩下的只是习惯。第二，凡是契约，都要假设它会失败；没有失败路径的契约只是愿望，愿望在流量变化时会先碎。第三，凡是失败，都要可见；静默的兜底不是健壮，是债务的延期支付，而且利息由下一个值班的人承担。</p>
+<p>第11式之后，数字人的“想”第一次变成了可以被断言的対象。这不是模型变强了，是我们终于把它的输出当接口，而不是当人话来对待。</p>
+<blockquote>
+<p>谁定下契约<br>
+谁承担校验<br>
+谁写下回退<br>
+谁才配上线</p>
+</blockquote>
+
+
+</div>
+<div id="MySignature" role="contentinfo">
+    no pays,no gains!
+</div>
+<div class="clear"></div>
+<div id="blog_post_info_block" role="contentinfo" class="post-meta-container">
+    <div id="blog_post_info"></div>
+    <div class="clear"></div>
+    <div id="post_next_prev"></div>
+</div>
+            </div>
+            <div class="postDesc">posted @ 
+<span id="post-date" data-last-update-days="0" data-date-updated="2026-10-11 11:08">2026-10-11 11:07</span>&nbsp;
+<a href="https://www.cnblogs.com/snidget">李福春</a>&nbsp;
+阅读(<span id="post_view_count">28</span>)&nbsp;
+评论(<span id="post_comment_count">0</span>)&nbsp;
+&nbsp;
+<a href="javascript:void(0)" onclick="AddToWz(23260326);return false;">收藏</a>&nbsp;
+<a href="https://report.cnblogs.com?targetLink=https%3A%2F%2Fwww.cnblogs.com%2Fsnidget%2Fp%2F23260326&targetId=23260326&targetType=0" target="_blank">举报</a>
+</div>
+        </div>
+	    
+	    
+    </div><!--end: topics 文章、评论容器-->
+</div>
+<script>
+    var cb_entryId = 23260326, cb_entryCreatedDate = '2026-10-11 11:07', cb_postType = 1, cb_postTitle = 'AgentScope第11式&#183;定式输出';
+    var allowComments = true, cb_blogId = 83095, cb_blogApp = 'snidget', cb_blogUserGuid = '0b4e7489-3229-e011-ac81-842b2b196315';
+    mermaidRender.render()
+    markdown_highlight()
+    zoomManager.apply("#cnblogs_post_body img:not(.code_img_closed):not(.code_img_opened)");    
+</script>
+<a id="!comments"></a>
+<div id="blog-comments-placeholder"></div>
+<div id="comment_form" class="commentform">
+    <a name="commentform"></a>
+    <div id="divCommentShow"></div>
+    <div id="comment_nav">
+        <div class="comment-nav-right">
+            <span id="span_refresh_tips"></span><a href="#" onclick="return RefreshPage();">刷新页面</a><a href="#top">返回顶部</a>
+        </div>
+    </div>
+    <div id="comment_form_container"></div>
+    <div class="ad_text_commentbox" id="ad_text_under_commentbox"></div>
+        <div id="cnblogs_ch"></div>
+    <div id="opt_under_post"></div>
+        <div id="blog_c1" class="under-post-card below-post-card">
+            <a href="https://www.trae.cn/sem/?utm_source=advertising&amp;utm_medium=cnblogs_ug_cpa&amp;utm_term=hw_trae_cnblogs" rel="nofollow" target="_blank" onclick="countCreativeClicks('C1-字节-trae')">
+                <img src="https://img2024.cnblogs.com/blog/35695/202607/35695-20260715081632770-1485313413.webp" onload="countCreativeImpressions('C1-字节-trae')" alt="" style="width:300px!important;height:250px!important;min-width:300px!important;max-width:300px!important;" />
+                <span id="c1_impression" style="display:none"></span>
+            </a>
+        </div>
+    <div id="under_post_card1"></div>
+    <div id="related_posts_card"></div>
+    <div id="under_post_card2"></div>
+    <div id="HistoryToday" class="under-post-card below-post-card"></div>
+    <script type="text/javascript">
+        var commentManager = new blogCommentManager();
+        commentManager.renderComments(0);
+        fixPostBody();
+        window.footnoteTipManager.generateFootnoteTips();
+
+            window.tocManager.displayDisableTocTips = false;
+            window.tocManager.generateToc();
+            
+            setTimeout(function() { countViews(cb_blogId, cb_entryId); }, 50);
+            
+            deliverT2();
+            deliverC1C2();
+            loadNewsAndKb();
+            
+            LoadPostCategoriesTags(cb_blogId, cb_entryId);
+            
+            LoadPostInfoBlock(cb_blogId, cb_entryId, cb_blogApp, cb_blogUserGuid);
+            GetPrevNextPost(cb_entryId, cb_blogId, cb_entryCreatedDate, cb_postType);
+            loadOptUnderPost();
+            GetHistoryToday(cb_blogId, cb_blogApp, cb_entryCreatedDate);
+                </script>
+</div>
+
+	</div>
+	</div>
+	<div id="sideBar">
+		<div id="sideBarMain">
+			<div id="sidebar_news" class="newsItem">
+    <h3 class="catListTitle">公告</h3>
+<div id="blog-news" class="sidebar-news">
+    <div id="sidebar_news_container">
+    </div>
+</div>
+<script>loadBlogNews();</script>
+
+
+</div>
+			<div id="blog-calendar" style="display:none"></div><script>loadBlogDefaultCalendar();</script>			
+			<div id="leftcontentcontainer">
+				<div id="blog-sidecolumn"></div>
+					<script>loadBlogSideColumn()</script>
+			</div>			
+		</div>
+	</div>
+	<div class="clear"></div>
+	</div>
+	<div class="clear"></div>
+	<div id="footer">
+		<a href="https://www.cnblogs.com/" id="footer_site_link" class="footer-brand">博客园</a>
+<span class="footer-copyright"> &nbsp;&copy;&nbsp; 2004-2026</span>
+<br /><span class="footer-icp">
+    <a target="_blank" href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=33010602011771"><img src="//assets.cnblogs.com/images/ghs.png" />浙公网安备 33010602011771号</a>
+    <a href="https://beian.miit.gov.cn" target="_blank">浙ICP备2021040463号-3</a>
+</span>
+
+
+
+	</div>
+</div>
+
+
+
+    
+
+    <input type="hidden" id="antiforgery_token" value="CfDJ8Ow5-In01nBEvFwaadRGjqEo2QVoMVqwxfX0LO6XLy-N58lEja6uD0S_kumx-US3n4TvV7E_so7dSl45u6SGAe144rYH4-5fbmnpvyzcW0gynd-stIOJcXtj_H-0UGK4vyrPPeW6bcW8UhQ29lHQw5o" />
+    <script defer src="https://hm.baidu.com/hm.js?866c9be12d4a814454792b1fd0fed295"></script>
+<script defer src="https://lf1-cdn-tos.bytegoofy.com/goofy/ttzz/push.js?32d945448dd797af605da9156763de3dc11c9886368d0f917d6388e4fcf5542030632485602430134f60bc55ca391050b680e2741bf7233a8f1da9902314a3fa" id="ttzz"></script>
+</body>
+</html>

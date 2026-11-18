@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />            
+    <meta http-equiv="Cache-Control" content="no-transform" />
+    <meta http-equiv="Cache-Control" content="no-siteapp" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="referrer" content="origin-when-cross-origin" />
+    <title>CodeGraph学习笔记:给代码建索引,节省Token和时间 - 养肥胖虎 - 博客园</title>
+    <meta name="keywords" content="AI,CodeGraph,代码索引" />
+    <meta name="description" content="CodeGraph学习笔记:给代码建索引,节省Token和时间 好家伙, 最近在用 AI 看项目代码时,我开始关注一件事: 问一个实现问题, AI 到底花了多少力气在找代码, 又花了多少力气在解释代码? 比如我想知道: 一条伤害战报在哪里生成? 如果修改战报记录逻辑,哪些地方需要一起检查? 最直接的" />    
+    <meta property="og:description" content="CodeGraph学习笔记:给代码建索引,节省Token和时间 好家伙, 最近在用 AI 看项目代码时,我开始关注一件事: 问一个实现问题, AI 到底花了多少力气在找代码, 又花了多少力气在解释代码? 比如我想知道: 一条伤害战报在哪里生成? 如果修改战报记录逻辑,哪些地方需要一起检查? 最直接的" />
+    <meta property="og:image" content="https://assets.cnblogs.com/images/wechat-share.jpg" />
+    <meta property="bytedance:published_time" content="2026-10-10T23:29:41+08:00" />
+    
+    <link rel="stylesheet" href="/css/blog-common.min.css?v=6O_Ku8w_jYd3yw2BX9ElmxGv25AYbAQ-F6ZeOeZfxYc" />
+    <link id="MainCss" rel="stylesheet" href="/skins/simplememory/bundle-simplememory.min.css?v=X2uwYHAKzGGLEaiB5SRZOPRR3jYJaSqk7tr8ptQin1s" />
+    <link media="(prefers-color-scheme: light)" id="highlighter-theme-arduino-light" type="text/css" rel="stylesheet" href="/css/hljs/arduino-light.css?v=fx0NclUlNcuN9eNpwynCvTd4U1WTMlbhoKkK7zz86T8" />
+    <link media="(prefers-color-scheme: dark)" id="highlighter-theme-vs2015-dark" type="text/css" rel="stylesheet" href="/css/hljs/vs2015.css?v=CW_0vf5ci1rUGokoTVmmkav1K7xe6lNGyjWNwugPUFg" />
+    <link type="text/css" rel="stylesheet" href="https://www.cnblogs.com/FatTiger4399/custom.css?v=0ElGUbsqVwXcmKva2GKb/KIePFo=" />
+    <link type="text/css" rel="stylesheet" href="/css/fonts/Consolas.min.css" />
+    <link id="mobile-style" media="only screen and (max-width: 767px)" type="text/css" rel="stylesheet" href="/skins/SimpleMemory/bundle-simplememory-mobile.min.css?v=efOGRGI0dxQ__xm2NVyuTk32wtXIiSFGaudtlfkc2H8" />
+    
+    <link id="favicon" rel="icon" type="image/x-icon" sizes="32x32" href="https://assets.cnblogs.com/favicon_v3_3.ico" />
+    <link id="favicon_svg" rel="icon" type="image/svg+xml" href="https://assets.cnblogs.com/favicon_v3_3.svg" />
+    <link rel="apple-touch-icon" href="https://assets.cnblogs.com/apple-touch-icon.png?v=2" />
+    <link rel="canonical" href="https://www.cnblogs.com/FatTiger4399/p/23257375" />
+    <link type="application/rss+xml" rel="alternate" href="https://www.cnblogs.com/FatTiger4399/rss" />
+    <link type="application/rsd+xml" rel="EditURI" href="https://www.cnblogs.com/FatTiger4399/rsd.xml" />
+    <link type="application/wlwmanifest+xml" rel="wlwmanifest" href="https://www.cnblogs.com/FatTiger4399/wlwmanifest.xml" />
+    
+    <script type="application/ld&#x2B;json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "@id": "https://www.cnblogs.com/FatTiger4399/p/23257375",
+      "headline": "CodeGraph学习笔记:给代码建索引,节省Token和时间",
+      "description": "CodeGraph学习笔记:给代码建索引,节省Token和时间 好家伙, 最近在用 AI 看项目代码时,我开始关注一件事: 问一个实现问题, AI 到底花了多少力气在找代码, 又花了多少力气在解释代码? 比如我想知道: 一条伤害战报在哪里生成? 如果修改战报记录逻辑,哪些地方需要一起检查? 最直接的",
+      "image": [
+        
+      ],
+      "author": {
+        "@type": "Person",
+        "@id": "https://www.cnblogs.com/FatTiger4399/",
+        "name": "养肥胖虎",
+        "url": "https://www.cnblogs.com/FatTiger4399/"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "@id": "https://www.cnblogs.com/",
+        "name": "博客园",
+        "url": "https://www.cnblogs.com/"
+      },
+      "datePublished": "2026-10-10T23:30:00.0000000&#x2B;08:00",
+      "dateModified": "2026-10-10T23:33:00.0000000&#x2B;08:00",
+      "wordCount": "12263",
+      "isPartOf": {
+        "@type": "Blog",
+        "@id": "https://www.cnblogs.com/FatTiger4399/",
+        "name": "养肥胖虎",
+        "publisher": {
+          "@type": "Organization",
+          "@id": "https://www.cnblogs.com/",
+          "name": "博客园"
+        }
+      }
+    }
+    </script>
+
+    <script>
+        var currentBlogId = 703631;
+        var currentBlogApp = 'FatTiger4399';
+        var isLogined = false;
+        var isBlogOwner = false;
+        window.isCorp = false;
+        window.skinName = 'SimpleMemory';
+        var visitorUserId = '';
+        window.hasCustomScript = false;
+        window.cb_enable_mathjax = false;
+        window.mathEngine = 0;
+        window.codeHighlightEngine = 1;
+        window.enableCodeLineNumber = true;
+        window.codeHighlightTheme = 'arduino-light';
+        window.darkModeCodeHighlightTheme = 'vs2015';
+        window.isDarkCodeHighlightTheme = false;
+        window.isDarkModeCodeHighlightThemeDark = true;
+        window.isDisableCodeHighlighter = false;
+        window.enableCodeThemeTypeFollowSystem = true;
+        window.enableMacStyleCodeBlock = false;        
+    </script>
+        <script>
+            window.currentPostId = 23257375;
+            window.currentPostDateAdded = '2026-10-10 23:30';
+        </script>
+    <script src="https://assets.cnblogs.com/scripts/jquery-3.3.1.min.js"></script>
+    <script src="https://cdn-www.cnblogs.com/js/blog-common.min.js?v=s4G89hcAIPG0l9Bje44CCNwM-djP_Bpp8JXJnkGs-4o"></script>
+    
+</head>
+<body class="skin-simplememory has-navbar">
+    <a name="top"></a>
+    <div id="top_nav" class="navbar forpc">
+        <nav id="nav_main" class="navbar-main">
+            <ul id="nav_left" class="navbar-list navbar-left">
+                <li class="navbar-branding">
+                    <a href="https://www.cnblogs.com/" title="开发者的网上家园" role="banner">
+                        <img src="//assets.cnblogs.com/logo.svg" alt="博客园logo" />
+                    </a>
+                </li>
+                <li><a href="https://cnblogs.vip/">会员</a></li>
+                <li><a href="https://cnblogs.vip/store">周边</a></li>
+                <li><a href="https://news.cnblogs.com/" onclick="countClicks('nav', 'skin-navbar-news')">新闻</a></li>
+                <li><a href="https://q.cnblogs.com/" onclick="countClicks('nav', 'skin-navbar-q')">博问</a></li>
+                <li><a href="https://ing.cnblogs.com/" onclick="countClicks('nav', 'skin-navbar-ing')">闪存</a></li>                
+                <li><a href="https://www.cnblogs.com/cmt/p/19316348">赞助商</a></li>
+                <li><a href="https://chat2db-ai.com/" target="_blank">Chat2DB</a></li>
+            </ul>
+            <ul id="nav_right" class="navbar-list navbar-right">
+                <li>
+                    <form id="zzk_search" class="navbar-search dropdown" action="https://zzk.cnblogs.com/s" method="get" role="search">
+                        <input name="w" id="zzk_search_input" placeholder="代码改变世界" type="search" tabindex="3" autocomplete="off" />
+                        <button id="zzk_search_button" onclick="window.navbarSearchManager.triggerActiveOption()">
+                            <img id="search_icon" class="focus-hidden" src="//assets.cnblogs.com/icons/search.svg" alt="搜索" />
+                            <img class="hidden focus-visible" src="//assets.cnblogs.com/icons/enter.svg" alt="搜索" />
+                        </button>
+                        <ul id="navbar_search_options" class="dropdown-menu quick-search-menu">
+                            <li tabindex="0" class="active" onclick="zzkSearch(event, document.getElementById('zzk_search_input').value)">
+                                <div class="keyword-wrapper">
+                                    <img src="//assets.cnblogs.com/icons/search.svg" alt="搜索" />
+                                    <div class="keyword"></div>
+                                </div>
+                                <span class="search-area">所有博客</span>
+                            </li>
+                                    <li tabindex="1" onclick="zzkBlogSearch(event, 'FatTiger4399', document.getElementById('zzk_search_input').value)">
+                                        <div class="keyword-wrapper">
+                                            <img src="//assets.cnblogs.com/icons/search.svg" alt="搜索" />
+                                            <div class="keyword"></div>
+                                        </div>
+                                        <span class="search-area">当前博客</span>
+                                    </li>
+                        </ul>
+                    </form>
+                </li>
+                <li id="navbar_login_status" class="navbar-list">
+                    <a class="navbar-user-info navbar-blog" href="https://i.cnblogs.com/EditPosts.aspx?opt=1" alt="写随笔" title="写随笔">
+                        <img id="new_post_icon" class="navbar-icon" src="//assets.cnblogs.com/icons/newpost.svg" alt="写随笔" />
+                    </a>
+                    <a id="navblog-myblog-icon" class="navbar-user-info navbar-blog" href="https://www.cnblogs.com/my" alt="我的博客" title="我的博客">
+                        <img id="myblog_icon" class="navbar-icon" src="//assets.cnblogs.com/icons/myblog.svg" alt="我的博客" />
+                    </a>
+                    <a class="navbar-user-info navbar-message navbar-icon-wrapper" href="https://msg.cnblogs.com/" alt="短消息" title="短消息">
+                        <img id="msg_icon" class="navbar-icon" src="//assets.cnblogs.com/icons/message.svg" alt="短消息" />
+                        <span id="msg_count" style="display: none"></span>
+                    </a>
+                    <a id="navbar_lite_mode_indicator" data-current-page="blog" style="display: none" href="javascript:void(0)" alt="简洁模式" title="简洁模式启用，您在访问他人博客时会使用简洁款皮肤展示">
+                        <img class="navbar-icon" src="//assets.cnblogs.com/icons/lite-mode-on.svg" alt="简洁模式" />
+                    </a>
+                    <div id="user_info" class="navbar-user-info dropdown">
+                        <a class="dropdown-button" href="https://home.cnblogs.com/">
+                            <img id="user_icon" class="navbar-avatar" src="//assets.cnblogs.com/icons/avatar-default.svg" alt="用户头像" />
+                        </a>
+                        <div class="dropdown-menu">
+                            <a id="navblog-myblog-text" href="https://www.cnblogs.com/my">我的博客</a>
+                            <a href="https://home.cnblogs.com/">我的园子</a>
+                            <a href="https://account.cnblogs.com/settings/account">账号设置</a>
+                            <a href="https://vip.cnblogs.com/my">会员中心</a>
+                            <a href="javascript:void(0)" id="navbar_lite_mode_toggle" title="简洁模式会使用简洁款皮肤显示所有博客">
+    简洁模式 <span id="navbar_lite_mode_spinner" class="hide">...</span>
+</a>
+
+                            <a href="javascript:void(0)" onclick="account.logout();">退出登录</a>
+                        </div>
+                    </div>
+                    <a class="navbar-anonymous" href="https://account.cnblogs.com/signup">注册</a>
+                    <a class="navbar-anonymous" href="javascript:void(0);" onclick="account.login()">登录</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    
+
+    <div id="home">
+<div id="header">
+	<div id="blogTitle">
+        <a id="lnkBlogLogo" href="https://www.cnblogs.com/FatTiger4399/"><img id="blogLogo" src="/skins/custom/images/logo.gif" alt="返回主页" /></a>		
+		
+
+<h1><a id="Header1_HeaderTitle" class="headermaintitle HeaderMainTitle" href="https://www.cnblogs.com/FatTiger4399">养肥胖虎</a>
+</h1>
+<h2></h2>
+
+
+
+
+		
+	</div>
+	<div id="navigator">
+		
+<ul id="navList">
+<li><a id="blog_nav_sitehome" class="menu" href="https://www.cnblogs.com/">
+博客园</a>
+</li>
+<li>
+<a id="blog_nav_myhome" class="menu" href="https://www.cnblogs.com/FatTiger4399/">
+首页</a>
+</li>
+<li>
+
+<a id="blog_nav_newpost" class="menu" href="https://i.cnblogs.com/EditPosts.aspx?opt=1">
+新随笔</a>
+</li>
+<li>
+<a id="blog_nav_contact" class="menu" href="https://msg.cnblogs.com/send/%E5%85%BB%E8%82%A5%E8%83%96%E8%99%8E">
+联系</a></li>
+<li>
+<a id="blog_nav_rss" class="menu" href="javascript:void(0)" data-rss="https://www.cnblogs.com/FatTiger4399/rss/">
+订阅</a>
+<!--<partial name="./Shared/_XmlLink.cshtml" model="Model" /></li>--></li>
+<li>
+<a id="blog_nav_admin" class="menu" href="https://i.cnblogs.com/">
+管理</a>
+</li>
+</ul>
+
+
+		<div class="blogStats">
+			<div id="blog_stats_place_holder"><script>loadBlogStats();</script></div>
+		</div>
+	</div>
+</div>
+<div id="main">
+	<div id="mainContent">
+	<div class="forFlow">
+		<div id="post_detail">
+    
+    <div id="topics">
+        <div class="post">
+            <h1 class = "postTitle">
+                <a id="cb_post_title_url" class="postTitle2 vertical-middle" href="https://www.cnblogs.com/FatTiger4399/p/23257375" title="发布于 2026-10-10 23:29">
+    
+
+    <span role="heading" aria-level="2">CodeGraph学习笔记:给代码建索引,节省Token和时间</span>
+    
+
+</a>
+
+            </h1>
+            <div class="clear"></div>
+            <div class="postBody">
+                <div id="cnblogs_post_body" class="blogpost-body blogpost-body-html">
+<h1>CodeGraph学习笔记:给代码建索引,节省Token和时间</h1>
+<p>好家伙,</p>
+<p>最近在用 AI 看项目代码时,我开始关注一件事:</p>
+<pre><code class="language-text">问一个实现问题,
+AI 到底花了多少力气在找代码,
+又花了多少力气在解释代码?</code></pre>
+<p>比如我想知道:</p>
+<pre><code class="language-text">一条伤害战报在哪里生成?
+如果修改战报记录逻辑,哪些地方需要一起检查?</code></pre>
+<p>最直接的办法,是搜索 <code>damage</code>、<code>report</code>,打开几个文件,再沿着调用继续找.</p>
+<p>这个办法能用.但项目大了以后,找入口、排除同名函数、拼接调用关系,本身就会消耗不少时间和上下文.</p>
+<p>所以我想,给ai做一个代码搜索工具,但现在已经有成熟的开源工具了,代码索引CodeGraph</p>
+<p>所以这篇研究一个工具:CodeGraph.</p>
+<p>正如字典的索引,我们去查某个字"索引"的"索","索"的索引是"s" 它提前给代码建立结构索引,让后续查询能够直接定位符号,沿着已解析的关系继续追查.</p>
+<p>然后我们再看一个实际问题:</p>
+<pre><code class="language-text">使用代码索引前后,
+Token 消耗和完成任务的时间,
+究竟差了多少?</code></pre>
+<blockquote>观察日期:2026-10-10.本文介绍 <code>colbymchenry/codegraph</code>,本机使用版本为 1.6.0.第 6 节引用作者公开基准,第 7 节记录本机实际测试,数据来源分别说明.</blockquote>
+<h2>0.背景:找到文件,距离找到答案还有多远</h2>
+<p>先固定问题:</p>
+<pre><code class="language-text">伤害结算完成后,
+战报中的 damage.dealt 事件由哪里写入?</code></pre>
+<p>用文本搜索,可以先执行:</p>
+<pre><code class="language-powershell">rg -n "damage.dealt" src</code></pre>
+<p>事件名准确时,可以直接定位写入位置.进一步还要回答:</p>
+<pre><code class="language-text">这段逻辑通过哪个对象写入?
+这个写入方法还有哪些调用者?
+宿主能不能换掉这个对象的实现?</code></pre>
+<p>还要阅读定义、追踪调用并核对对象来源.代码索引可以提前整理这些关系.</p>
+<h2>1.先分清:搜字符串、找相关代码、查关系</h2>
+<p>查代码常见三种需求:</p>
+<table>
+<thead>
+<tr><th>问题</th><th>需要的信息</th><th>常用方式</th></tr>
+</thead>
+<tbody>
+<tr><td>哪里出现了<code>damage.dealt</code></td><td>字面量出现的位置</td><td><code>rg</code> 等文本搜索</td></tr>
+<tr><td>哪些代码可能与伤害战报有关</td><td>与问题相关的代码片段</td><td>关键词、语义检索等</td></tr>
+<tr><td>谁调用了战报追加方法</td><td>符号之间已解析的关系</td><td>结构索引与关系查询</td></tr>
+</tbody>
+</table>
+<p>假设一个项目里有三个 <code>add</code>:</p>
+<pre><code class="language-typescript">report.add(...)
+inventory.add(...)
+queue.add(...)</code></pre>
+<p>文本搜索会命中这三种调用.结构查询则要区分:</p>
+<pre><code class="language-text">我要找的是 Report.add 的调用者.</code></pre>
+<p>准确度取决于工具对语言、类型和调用方式的解析能力.</p>
+<p>代码关系图也可以作为 RAG 的检索来源,为模型提供函数调用等结构信息.</p>
+<h2>2.CodeGraph的地图里,到底有什么</h2>
+<p><strong>符号</strong>是可以单独定位的代码实体,例如:</p>
+<pre><code class="language-text">Report 类
+Report.add 方法
+damage 函数
+runBattle 函数</code></pre>
+<p>每个符号还记录文件、行号和对应源码.</p>
+<p><strong>关系</strong>描述调用、导入、继承等连接.拿战报举例:</p>
+<pre><code class="language-text">damage
+   │ 调用
+   ▼
+Report.add
+   │ 默认实现追加记录
+   ▼
+Report.entries</code></pre>
+<p>顺着箭头可以追执行路径,反向查询可以找调用者,作为修改时的检查清单.业务规则仍要结合源码、配置和运行行为判断.</p>
+<h2>3.从源码到索引:地图怎么建起来</h2>
+<p>CodeGraph 的基本流程可以这样理解:</p>
+<pre><code class="language-text">源码文件
+   │
+   ▼
+解析语法,提取函数、类、方法等符号
+   │
+   ▼
+整理调用、导入、继承等关系
+   │
+   ▼
+保存到本地索引
+   │
+   ▼
+按问题查询,返回相关源码和关系</code></pre>
+<p>先看一个很小的例子:</p>
+<pre><code class="language-typescript">function appendReport() {
+  // ...
+}
+
+function damage() {
+  appendReport();
+}</code></pre>
+<p>这里需要识别两个函数定义,并将 <code>damage</code> 中的调用解析到 <code>appendReport</code> 的定义.跨文件导入、同名方法和动态调用会增加解析难度.</p>
+<p>CodeGraph 使用 Tree-sitter 解析源码,提取符号和关系,并保存到本地 SQLite 数据库中,再进行引用解析和查询上下文整理.<a href="https://colbymchenry.github.io/codegraph/core-concepts/how-it-works/" rel="noopener nofollow">官方原理说明</a></p>
+<p>索引可以复用,代码变化后再同步更新.工具提供自动同步和手动同步命令.<a href="https://colbymchenry.github.io/codegraph/getting-started/your-first-graph/" rel="noopener nofollow">官方建图与同步指南</a></p>
+<h2>4.实战:用索引找到一条伤害记录的来源</h2>
+<p>假设游戏里有人受到伤害,战报中出现了一条伤害记录.现在我要改记录逻辑,先得弄清两件事:</p>
+<pre><code class="language-text">谁生成了这条记录?
+修改记录方法,还会影响哪些地方?</code></pre>
+<p>项目给这类记录起的事件名是 <code>damage.dealt</code>.第一步用 <code>rg</code> 搜这个名字,定位到 <code>src/ops.ts:281</code>,发现它在 <code>damage</code> 函数中调用了 <code>engine.report.add</code>.</p>
+<p>这时我们已经知道两个名字:<code>damage</code> 和 <code>Report</code>.把它们交给 CodeGraph 查询,继续找方法定义和调用关系.实际工具参数如下,<code>projectPath</code> 还需指定项目绝对路径:</p>
+<pre><code class="language-text">codegraph_explore
+  query: damage Report
+  maxFiles: 3</code></pre>
+<p>核对返回的源码后,默认记录路径是:</p>
+<pre><code class="language-text">damage:算好伤害,组织目标、伤害量等数据
+   ↓ 调用
+Report.add:给记录编号
+   ↓ 追加
+Report.entries:保存记录的数组</code></pre>
+<p>也就是说,这里的“写战报”就是往数组里加一条记录.关键位置是 <code>src/ops.ts:281</code> 和 <code>src/engine.ts:28</code>.</p>
+<p>第二步,查询“谁还调用了这个 <code>add</code>”.为了避开其他同名方法,指定文件:</p>
+<pre><code class="language-text">codegraph_callers
+  symbol: add
+  file: src/engine.ts
+  limit: 6</code></pre>
+<p>实际返回了 <code>runBattle</code>、<code>snapshot</code>、<code>phaseInitiative</code>、<code>declareInitiative</code>、<code>phaseEffect</code>、<code>phaseSort</code> 六个调用者.例如 <code>snapshot</code> 写战场快照,<code>phaseSort</code> 写行动排序.这六个是本次查询返回的部分结果,不是全部调用者.</p>
+<p>因此,如果只改伤害记录的数据,先看 <code>damage</code>;如果改公共的 <code>Report.add</code>,快照、排序等记录也要一起检查.索引在这里帮我们找到“还要看谁”,具体影响仍要读源码确认.</p>
+<p>还有一个实际例外:<code>runBattle</code> 可以接收外部传入的记录对象.项目中的 <code>NarrativeSink</code> 就重写了 <code>add</code>,会筛选记录并压缩快照,不能把默认数组实现当作所有入口的行为.第 7 节把这条完整查找任务作为测试题.</p>
+<h2>5.AI怎么用它:MCP把查询接进来</h2>
+<p>对 AI 来说,基本过程是:</p>
+<pre><code class="language-text">用户提出代码问题
+   ↓
+模型选择查询工具,给出参数
+   ↓
+CodeGraph 查询索引并组织源码上下文
+   ↓
+模型根据返回结果解释实现</code></pre>
+<p>这次查询的参数:</p>
+<pre><code class="language-json">{
+  "projectPath": "C:/Users/Administrator/Desktop/xxx",
+  "query": "src/engine.ts Report add Engine.run src/ops.ts damage",
+  "maxFiles": 3
+}</code></pre>
+<p><code>codegraph_explore</code> 返回相关源码、行号、调用路径和依赖信息.只查位置或调用者时可以选更窄的工具,具体取决于版本和配置.<a href="https://colbymchenry.github.io/codegraph/reference/mcp-server/" rel="noopener nofollow">官方 MCP 文档</a></p>
+<p>查询时先限定问题和范围,多个项目明确指定 <code>projectPath</code>.若结果提示源码截断,继续按准确符号查询.</p>
+<h2>6.使用前后,Token和时间差多少</h2>
+<blockquote><strong>数据来源声明:</strong>本节性能对比数据转引自 CodeGraph 项目作者公开的 Agent A/B 基准测试,本文未独立复现作者这组测试.这些数字不代表本项目的实际收益;自己的引擎项目实测另见第 7 节.</blockquote>
+<blockquote></blockquote>
+<blockquote>资料查阅日期:2026-10-10.单题数据来源为官方 README 的 <a href="https://github.com/colbymchenry/codegraph#benchmark-results" rel="noopener nofollow">Benchmark Results</a>;多轮数据来源为作者的 <a href="https://github.com/colbymchenry/codegraph/blob/main/docs/benchmarks/residual-context-occupancy.md" rel="noopener nofollow">上下文占用测试报告</a>.</blockquote>
+<p>作者公开的单题测试使用 Claude Opus 4.8.同一项目、同一问题,分别开放或关闭 CodeGraph MCP,每组运行四次,报告中位数.两组都保留普通读取、搜索和终端工具,同时阻止通过 CLI 绕过分组限制.<a href="https://github.com/colbymchenry/codegraph#benchmark-results" rel="noopener nofollow">测试方法与结果</a></p>
+<h3>先说明:这里统计的Token是什么</h3>
+<p>这里统计任务累计处理的 token.下面是口径示意,数值并非实测:</p>
+<pre><code class="language-text">第一轮输入:10k token
+第二轮输入:14k token
+第三轮输入:18k token
+
+三轮累计输入:42k token
+最后一轮输入:18k token</code></pre>
+<p>多轮请求可能重复携带历史,只看最后一轮会漏算.作者统计逐轮累计的输入、缓存相关输入和输出,时间取任务总墙钟时间.</p>
+<h3>单题测试:累计Token对比</h3>
+<p>以下摘取三个项目,<code>k</code> 为千 token.原始数值来自作者,百分比由本文按 <code>(不使用索引 − 使用CodeGraph) ÷ 不使用索引 × 100%</code> 计算;取整数值对应近似比例.</p>
+<table>
+<thead>
+<tr><th>项目</th><th style="text-align: right">不使用索引</th><th style="text-align: right">使用CodeGraph</th><th style="text-align: right">累计Token约减少</th></tr>
+</thead>
+<tbody>
+<tr><td>VS Code</td><td style="text-align: right">670k</td><td style="text-align: right">155k</td><td style="text-align: right">76.9%</td></tr>
+<tr><td>Excalidraw</td><td style="text-align: right">991k</td><td style="text-align: right">156k</td><td style="text-align: right">84.3%</td></tr>
+<tr><td>Gin</td><td style="text-align: right">180k</td><td style="text-align: right">87k</td><td style="text-align: right">51.7%</td></tr>
+</tbody>
+</table>
+<p>数据来源:CodeGraph 官方 README 的 <a href="https://github.com/colbymchenry/codegraph#benchmark-results" rel="noopener nofollow">单题基准原始表格</a>,作者标注测试日期为 2026-08-05.表中结果为每组四次运行的中位数.</p>
+<h3>同一组测试:完成任务的时间对比</h3>
+<table>
+<thead>
+<tr><th>项目</th><th style="text-align: right">不使用索引</th><th style="text-align: right">使用CodeGraph</th><th style="text-align: right">耗时约减少</th></tr>
+</thead>
+<tbody>
+<tr><td>VS Code</td><td style="text-align: right">130秒</td><td style="text-align: right">58秒</td><td style="text-align: right">55.4%</td></tr>
+<tr><td>Excalidraw</td><td style="text-align: right">162秒</td><td style="text-align: right">45秒</td><td style="text-align: right">72.2%</td></tr>
+<tr><td>Gin</td><td style="text-align: right">46秒</td><td style="text-align: right">28秒</td><td style="text-align: right">39.1%</td></tr>
+</tbody>
+</table>
+<p>数据来源:与上一张 token 表相同,均摘自作者的 <a href="https://github.com/colbymchenry/codegraph#benchmark-results" rel="noopener nofollow">单题基准原始表格</a>.耗时为完成任务的墙钟时间;“耗时约减少”由本文按公开数值计算,不属于额外实测结果.</p>
+<p>这组三个项目的累计 token 和耗时均下降.我的理解是,收益来自减少寻找实现、排除无关代码和拼接关系的工作,具体幅度受模型、问题和项目结构影响.</p>
+<h3>多轮测试:Token更少,也可能更慢</h3>
+<p>另一组三轮对话测试中,VS Code 的结果如下:</p>
+<table>
+<thead>
+<tr><th>指标</th><th style="text-align: right">不使用索引</th><th style="text-align: right">使用CodeGraph</th></tr>
+</thead>
+<tbody>
+<tr><td>累计Token</td><td style="text-align: right">约1.6M</td><td style="text-align: right">约940k</td></tr>
+<tr><td>总耗时</td><td style="text-align: right">119秒</td><td style="text-align: right">179秒</td></tr>
+</tbody>
+</table>
+<p>数据来源:作者的 <a href="https://github.com/colbymchenry/codegraph/blob/main/docs/benchmarks/residual-context-occupancy.md" rel="noopener nofollow">上下文占用测试报告</a>中“Throughput in the same campaign (sonnet · 3 turns)”一节.这是另一组模型与对话轮数不同的实验,不能与前面的单题测试混为同一组结果.</p>
+<p>这一组 token 下降、总时间增加.较大的检索结果还可能持续占用上下文.评估时要同时看累计 token、上下文占用、总时间和答案质量.<a href="https://github.com/colbymchenry/codegraph/blob/main/docs/benchmarks/residual-context-occupancy.md" rel="noopener nofollow">多轮测试及上下文测量</a></p>
+<h2>7.本机实测:追查伤害战报,实际省多少</h2>
+<p>这次实际测试的场景,就是第 4 节的引擎项目.让 AI 完成一道完整的查代码题:</p>
+<pre><code class="language-text">damage.dealt 事件在哪里写入,最终保存到哪里?
+列出公共战报追加方法至少四个不同调用者.
+runBattle 能否接收另一种记录实现?
+找到仓库内实际注入的例子,解释行为差异,标出文件与行号.</code></pre>
+<p>两组条件如下:</p>
+<ul>
+<li>测试日期为 2026-10-10,源码 commit 为 <code>3df3c36012e4</code>,测试前后相关源码没有变化.</li>
+<li>固定 Codex CLI <code>0.154.0</code>、模型 <code>gpt-5.6-sol</code>、推理强度 <code>high</code>;CodeGraph 为 <code>1.6.0</code>.</li>
+<li>每组各跑三次独立新会话,提示词和输出要求相同,交替安排两组的执行顺序.</li>
+<li>无索引组关闭全部 MCP,禁止通过 CLI 或 SQLite 查询索引,日志核查未发现绕过.索引组开放 CodeGraph MCP;两组都允许普通搜索和源码读取.</li>
+</ul>
+<p>Token 直接读取 CLI 返回的 <code>turn.completed.usage</code>,统计整个任务的累计输入和输出,不是按源码字符数估算.<a href="https://developers.openai.com/codex/noninteractive/" rel="noopener nofollow">CLI 统计格式</a></p>
+<pre><code class="language-text">累计 Token = input_tokens + output_tokens
+cached_input_tokens 已包含在输入中,不再重复相加.</code></pre>
+<p>时间从启动 CLI 进程计到退出,包括 MCP 启动、模型推理、工具执行和等待.这测的是 AI 完成查代码任务的总开销.</p>
+<h3>六次实际运行结果</h3>
+<table>
+<thead>
+<tr><th>轮次</th><th style="text-align: right">不使用索引:累计Token</th><th style="text-align: right">使用CodeGraph:累计Token</th><th style="text-align: right">不使用索引:耗时</th><th style="text-align: right">使用CodeGraph:耗时</th></tr>
+</thead>
+<tbody>
+<tr><td>1</td><td style="text-align: right">309,781</td><td style="text-align: right">214,178</td><td style="text-align: right">134.6秒</td><td style="text-align: right">105.7秒</td></tr>
+<tr><td>2</td><td style="text-align: right">430,940</td><td style="text-align: right">179,921</td><td style="text-align: right">142.7秒</td><td style="text-align: right">87.8秒</td></tr>
+<tr><td>3</td><td style="text-align: right">855,806</td><td style="text-align: right">189,425</td><td style="text-align: right">175.5秒</td><td style="text-align: right">92.2秒</td></tr>
+<tr><td>中位数</td><td style="text-align: right">430,940</td><td style="text-align: right">189,425</td><td style="text-align: right">142.7秒</td><td style="text-align: right">92.2秒</td></tr>
+</tbody>
+</table>
+<blockquote><strong>数据来源:</strong>以上为 2026-10-10 本机执行六次 <code>codex exec --json</code> 的结果,与第 6 节作者公开的基准分开统计.原始 usage、精确耗时和工具调用记录摘录已在本地留档:<code>codegraph-benchmark-2026-10-10/summary.json</code>.</blockquote>
+<p><strong>在这道题上,按三次中位数比较,累计 Token 减少 56.0%,耗时减少 35.4%.</strong> 百分比按未四舍五入的耗时计算.</p>
+<p>六份答案都经当前源码核对,满足事件写入、默认存储、至少四个调用者、真实注入例子和替代实现行为这五项要求.两组都找到了 <code>NarrativeSink</code>,并区分了默认 <code>entries</code> 数组与它的私有 <code>out</code>、<code>finish()</code> 取出方式.</p>
+<p>普通搜索组三次用了 22、21、12 次工具调用,索引组为 5、6、9 次.但普通搜索第三次调用更少,累计 Token 却最高:返回内容的大小和历史累积同样影响消耗.</p>
+<p>本次使用已有索引,首次建图和同步成本另计.服务端缓存未强制清空,CLI 后台请求存在失败告警,工具重试和环境等待均保留在统计中.每组三次的小样本,只描述当前模型在这道题上的表现.</p>
+<p>完整提示词、运行条件和复跑命令保存在本地测试目录的 <code>README.md</code>;六份回答及核对记录保存在 <code>answers.md</code>.</p>
+<h2>参考资料</h2>
+<p>解释源码解析、符号提取、关系解析和本地存储,对应本文“地图怎么建立”的部分.</p>
+<p>说明 AI 可以查询哪些信息,以及工具如何返回源码和关系.</p>
+<p>提供本文单题 token 与耗时对比的原始数据和实验条件.</p>
+<p>补充多轮会话的结果,并解释累计 token、上下文残留及统计口径的问题.</p>
+<ul>
+<li><a href="https://colbymchenry.github.io/codegraph/core-concepts/how-it-works/" rel="noopener nofollow">CodeGraph原理说明</a></li>
+<li><a href="https://colbymchenry.github.io/codegraph/reference/mcp-server/" rel="noopener nofollow">CodeGraph MCP文档</a></li>
+<li><a href="https://github.com/colbymchenry/codegraph#benchmark-results" rel="noopener nofollow">公开A/B测试</a></li>
+<li><a href="https://github.com/colbymchenry/codegraph/blob/main/docs/benchmarks/residual-context-occupancy.md" rel="noopener nofollow">多轮测试与上下文占用</a></li>
+</ul>
+
+</div>
+<div class="clear"></div>
+<div id="blog_post_info_block" role="contentinfo" class="post-meta-container">
+    <div id="blog_post_info"></div>
+    <div class="clear"></div>
+    <div id="post_next_prev"></div>
+</div>
+            </div>
+            <div class="postDesc">posted @ 
+<span id="post-date" data-last-update-days="0.0020833333333333333" data-date-updated="2026-10-10 23:33">2026-10-10 23:29</span>&nbsp;
+<a href="https://www.cnblogs.com/FatTiger4399">养肥胖虎</a>&nbsp;
+阅读(<span id="post_view_count">68</span>)&nbsp;
+评论(<span id="post_comment_count">0</span>)&nbsp;
+&nbsp;
+<a href="javascript:void(0)" onclick="AddToWz(23257375);return false;">收藏</a>&nbsp;
+<a href="https://report.cnblogs.com?targetLink=https%3A%2F%2Fwww.cnblogs.com%2FFatTiger4399%2Fp%2F23257375&targetId=23257375&targetType=0" target="_blank">举报</a>
+</div>
+        </div>
+	    
+	    
+    </div><!--end: topics 文章、评论容器-->
+</div>
+<script>
+    var cb_entryId = 23257375, cb_entryCreatedDate = '2026-10-10 23:29', cb_postType = 1, cb_postTitle = 'CodeGraph学习笔记:给代码建索引,节省Token和时间';
+    var allowComments = true, cb_blogId = 703631, cb_blogApp = 'FatTiger4399', cb_blogUserGuid = '0540e7e5-48fa-46ae-bda6-08d94d013a4f';
+    mermaidRender.render()
+    markdown_highlight()
+    zoomManager.apply("#cnblogs_post_body img:not(.code_img_closed):not(.code_img_opened)");    
+</script>
+<a id="!comments"></a>
+<div id="blog-comments-placeholder"></div>
+<div id="comment_form" class="commentform">
+    <a name="commentform"></a>
+    <div id="divCommentShow"></div>
+    <div id="comment_nav">
+        <div class="comment-nav-right">
+            <span id="span_refresh_tips"></span><a href="#" onclick="return RefreshPage();">刷新页面</a><a href="#top">返回顶部</a>
+        </div>
+    </div>
+    <div id="comment_form_container"></div>
+    <div class="ad_text_commentbox" id="ad_text_under_commentbox"></div>
+        <div id="cnblogs_ch"></div>
+    <div id="opt_under_post"></div>
+        <div id="blog_c1" class="under-post-card below-post-card">
+            <a href="https://ais.cn/u/3Qf22e" rel="nofollow" target="_blank" onclick="countCreativeClicks('C1-艾思科蓝')">
+                <img src="https://img2024.cnblogs.com/blog/35695/202512/35695-20251205182619157-1150461542.webp" onload="countCreativeImpressions('C1-艾思科蓝')" alt="" style="width:300px!important;height:250px!important;min-width:300px!important;max-width:300px!important;" />
+                <span id="c1_impression" style="display:none"></span>
+            </a>
+        </div>
+    <div id="under_post_card1"></div>
+    <div id="related_posts_card"></div>
+    <div id="under_post_card2"></div>
+    <div id="HistoryToday" class="under-post-card below-post-card"></div>
+    <script type="text/javascript">
+        var commentManager = new blogCommentManager();
+        commentManager.renderComments(0);
+        fixPostBody();
+        window.footnoteTipManager.generateFootnoteTips();
+
+            window.tocManager.displayDisableTocTips = false;
+            window.tocManager.generateToc();
+            
+            setTimeout(function() { countViews(cb_blogId, cb_entryId); }, 50);
+            
+            deliverT2();
+            deliverC1C2();
+            loadNewsAndKb();
+            
+            LoadPostCategoriesTags(cb_blogId, cb_entryId);
+            
+            LoadPostInfoBlock(cb_blogId, cb_entryId, cb_blogApp, cb_blogUserGuid);
+            GetPrevNextPost(cb_entryId, cb_blogId, cb_entryCreatedDate, cb_postType);
+            loadOptUnderPost();
+            GetHistoryToday(cb_blogId, cb_blogApp, cb_entryCreatedDate);
+                </script>
+</div>
+
+	</div>
+	</div>
+	<div id="sideBar">
+		<div id="sideBarMain">
+			<div id="sidebar_news" class="newsItem">
+    <h3 class="catListTitle">公告</h3>
+<div id="blog-news" class="sidebar-news">
+    <div id="sidebar_news_container">
+    </div>
+</div>
+<script>loadBlogNews();</script>
+
+
+</div>
+			<div id="blog-calendar" style="display:none"></div><script>loadBlogDefaultCalendar();</script>			
+			<div id="leftcontentcontainer">
+				<div id="blog-sidecolumn"></div>
+					<script>loadBlogSideColumn()</script>
+			</div>			
+		</div>
+	</div>
+	<div class="clear"></div>
+	</div>
+	<div class="clear"></div>
+	<div id="footer">
+		<a href="https://www.cnblogs.com/" id="footer_site_link" class="footer-brand">博客园</a>
+<span class="footer-copyright"> &nbsp;&copy;&nbsp; 2004-2026</span>
+<br /><span class="footer-icp">
+    <a target="_blank" href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=33010602011771"><img src="//assets.cnblogs.com/images/ghs.png" />浙公网安备 33010602011771号</a>
+    <a href="https://beian.miit.gov.cn" target="_blank">浙ICP备2021040463号-3</a>
+</span>
+
+
+
+	</div>
+</div>
+
+
+
+    
+
+    <input type="hidden" id="antiforgery_token" value="CfDJ8Ow5-In01nBEvFwaadRGjqHrJYiECTEWbtpjT8Q-gv7Lo_Z8iGI-FoZeQB6oKaEaxsBnISLzYezzTFt0Hru13bU250utGs4rip_Mo_m7CDt3Jx6aTI0lWFCWwZ_7qPMnAjt8vjFbXTB_q3IoWqOwP8c" />
+    <script defer src="https://hm.baidu.com/hm.js?866c9be12d4a814454792b1fd0fed295"></script>
+<script defer src="https://lf1-cdn-tos.bytegoofy.com/goofy/ttzz/push.js?32d945448dd797af605da9156763de3dc11c9886368d0f917d6388e4fcf5542030632485602430134f60bc55ca391050b680e2741bf7233a8f1da9902314a3fa" id="ttzz"></script>
+</body>
+</html>

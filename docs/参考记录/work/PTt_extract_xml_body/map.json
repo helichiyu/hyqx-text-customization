@@ -1,0 +1,86 @@
+{
+ "operator_name": "PTt_extract_xml_body",
+ "detection": "PTt_extract_xml_body",
+ "display_name": "XML抽出正文",
+ "tool_type": "规则型",
+ "stage": "清洗·正文",
+ "version": "1.0.0",
+ "skippable": "是（可选-必填1个）",
+ "api_path": "/predict",
+ "description": "接收 XML 文档并提取正文，解析文档结构，去除标记符号，仅保留正文文字内容",
+ "input_schema": {
+  "method": "POST",
+  "path": "/predict?detection=PTt_extract_xml_body",
+  "content_type": "multipart/form-data",
+  "form_fields": {
+   "file": {
+    "type": "file",
+    "required": true,
+    "description": "待处理文件（jsonl 每行一条记录；其他格式整体一条）"
+   }
+  },
+  "params": {
+   "param_正文提取范围": {
+    "default": "全文"
+   },
+   "param_标签过滤": {
+    "default": "启用"
+   },
+   "param_属性过滤": {
+    "default": "启用"
+   }
+  },
+  "limits": {
+   "max_input_mb": 10,
+   "max_response_mb": 50
+  }
+ },
+ "output_schema": {
+  "content_type": "application/json",
+  "fields": {
+   "code": {
+    "type": "int",
+    "description": "0=成功 1=失败"
+   },
+   "msg": {
+    "type": "string",
+    "description": "提示信息"
+   },
+   "data": {
+    "type": "list",
+    "items": {
+     "fieldName": {
+      "type": "string",
+      "description": "记录标识"
+     },
+     "tags": {
+      "type": "list",
+      "description": "业务标签（主表拦截处理列标签原文）"
+     },
+     "action": {
+      "type": "string",
+      "description": "keep / remove / review"
+     },
+     "text": {
+      "type": "string",
+      "description": "抽取出的正文"
+     },
+     "status": {
+      "type": "int",
+      "description": "兼容主表 U 列：1=放行/处理成功，0=过滤/需复核（由 action 派生）"
+     }
+    }
+   }
+  }
+ },
+ "error_codes": [
+  "FILE_EMPTY",
+  "FILE_CORRUPT",
+  "DECODE_FAIL",
+  "PARSE_FAIL",
+  "SIZE_EXCEEDED",
+  "PARAM_INVALID",
+  "MODEL_LOAD_FAIL",
+  "INTERNAL_ERROR"
+ ]
+}

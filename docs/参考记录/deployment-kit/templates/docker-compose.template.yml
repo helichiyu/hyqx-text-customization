@@ -1,0 +1,29 @@
+name: ${APP_NAME}
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ${APP_NAME}:${APP_VERSION}
+    container_name: ${APP_NAME}
+    command: ["uvicorn", "inference:app", "--host", "0.0.0.0", "--port", "${APP_PORT}"]
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT}:${APP_PORT}"
+    environment:
+      AUTH_TOKEN_SHA256: "${AUTH_TOKEN_SHA256:?AUTH_TOKEN_SHA256 is required}"
+      AUTH_WHITELIST_PATHS: "${AUTH_WHITELIST_PATHS:-/health,/healthz}"
+      # Add application-specific environment variables below.
+    volumes:
+      - app_data:/var/lib/app
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:${APP_PORT}${HEALTH_PATH:-/health}', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+volumes:
+  app_data:
+    name: ${APP_NAME}_data

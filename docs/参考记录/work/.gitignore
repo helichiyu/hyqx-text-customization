@@ -1,0 +1,11 @@
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# 大体积模型权重（不入库，部署时由交付包携带）
+PTt_filter_sensitive_content/weight/sensitive_models/
+
+# 运行产物
+logs/
+*.log

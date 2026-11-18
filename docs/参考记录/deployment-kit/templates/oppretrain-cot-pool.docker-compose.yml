@@ -1,0 +1,59 @@
+name: oppretrain-cot-pool
+
+services:
+  oppretrain-cot-pool:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: oppretrain-cot-pool:${APP_VERSION:-1.0.0}
+    container_name: oppretrain-cot-pool
+    command: ["uvicorn", "inference:app", "--host", "0.0.0.0", "--port", "17056"]
+    restart: unless-stopped
+    ports:
+      - "17056:17056"
+    environment:
+      AUTH_TOKEN_SHA256: "${AUTH_TOKEN_SHA256:?AUTH_TOKEN_SHA256 is required}"
+      COT_PORT: "17056"
+      COT_MODEL_PROVIDER: "${COT_MODEL_PROVIDER:-idg}"
+      COT_MODEL_BASE_URL: "${COT_MODEL_BASE_URL:?COT_MODEL_BASE_URL is required}"
+      COT_MODEL_APP_ID: "${COT_MODEL_APP_ID:?COT_MODEL_APP_ID is required}"
+      COT_MODEL_APP_KEY: "${COT_MODEL_APP_KEY:?COT_MODEL_APP_KEY is required}"
+      COT_MODEL_TIMEOUT_SECONDS: "${COT_MODEL_TIMEOUT_SECONDS:-600}"
+      COT_MODEL_RETRIES: "${COT_MODEL_RETRIES:-2}"
+
+      COT_T04_MODEL: "${COT_T04_MODEL:-Qwen3.8-27B}"
+      COT_T04_MODEL_PATH: "${COT_T04_MODEL_PATH:-/data-produce-1}"
+      COT_T06_MODEL: "${COT_T06_MODEL:-Qwen3.5-4B}"
+      COT_T06_MODEL_PATH: "${COT_T06_MODEL_PATH:-/data-qwen3.5-4b}"
+      COT_T07_MODEL: "${COT_T07_MODEL:-Qwen3.5-4B}"
+      COT_T07_MODEL_PATH: "${COT_T07_MODEL_PATH:-/data-qwen3.5-4b}"
+      COT_T08_MODEL: "${COT_T08_MODEL:-Qwen3.5-4B}"
+      COT_T08_MODEL_PATH: "${COT_T08_MODEL_PATH:-/data-qwen3.5-4b}"
+      COT_T09_MODEL: "${COT_T09_MODEL:-Qwen3.5-4B}"
+      COT_T09_MODEL_PATH: "${COT_T09_MODEL_PATH:-/data-qwen3.5-4b}"
+      COT_T10_MODEL: "${COT_T10_MODEL:-Qwen3.5-4B}"
+      COT_T10_MODEL_PATH: "${COT_T10_MODEL_PATH:-/data-qwen3.5-4b}"
+      COT_T12_MODEL: "${COT_T12_MODEL:-Qwen3.8-27B}"
+      COT_T12_MODEL_PATH: "${COT_T12_MODEL_PATH:-/data-produce-1}"
+      COT_T13_MODEL: "${COT_T13_MODEL:-Qwen3.5-2B}"
+      COT_T13_MODEL_PATH: "${COT_T13_MODEL_PATH:-/data-qwen35-2b-api}"
+      COT_T14_MODEL: "${COT_T14_MODEL:-Qwen3.8-27B}"
+      COT_T14_MODEL_PATH: "${COT_T14_MODEL_PATH:-/data-produce-1}"
+      COT_T15_EMBEDDING_MODEL: "${COT_T15_EMBEDDING_MODEL:-Qwen3-Embedding-0.6B}"
+      COT_T15_EMBEDDING_PATH: "${COT_T15_EMBEDDING_PATH:-/Qwen3-Embedding-0.6B/embeddings}"
+
+      COT_RUNTIME_ROOT: "/app/runtime"
+      MAX_INPUT_BYTES: "${MAX_INPUT_BYTES:-536870912}"
+      MAX_OUTPUT_ROWS: "${MAX_OUTPUT_ROWS:-100000}"
+    volumes:
+      - cot_runtime:/app/runtime
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:17056/healthz', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+volumes:
+  cot_runtime:
+    name: oppretrain-cot-pool_runtime

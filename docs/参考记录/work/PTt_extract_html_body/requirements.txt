@@ -1,0 +1,7 @@
+# PTt_extract_html_body 依赖（含共享壳 common/ 的依赖）
+fastapi>=0.100.0
+uvicorn>=0.23.0
+gunicorn>=21.2.0
+python-multipart>=0.0.6
+orjson>=3.19.0
+PyYAML>=6.0

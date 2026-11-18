@@ -1,0 +1,388 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+
+<meta charset="utf-8">
+<meta name="robots" content="all" />
+<meta name="author" content="w3school.com.cn" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+<link rel="stylesheet" type="text/css" href="/lib/css/typography.css?v=2" />
+<link rel="stylesheet" type="text/css" href="/lib/css/layout.css?v=2" />
+<link rel="stylesheet" type="text/css" href="/lib/css/nav.css?v=2" />
+<link rel="stylesheet" type="text/css" href="/lib/css/fonts.css?v=2" />
+<link rel="stylesheet" type="text/css" href="/lib/css/cssdemo.css?v=2" />
+
+<script src="/lib/cc/prism2.js?v=2"></script>
+<link rel="stylesheet" href="/lib/cc/prism.css?v=2">
+
+<link rel="preload" href="/lib/fonts/fontawesome.woff2?14663396" as="font" type="font/woff2" crossorigin> 
+<link rel="preload" href="/lib/fonts/source-code-pro-v14-latin-regular.woff2" as="font" type="font/woff2" crossorigin> 
+<link rel="preload" href="/lib/fonts/roboto-mono-v13-latin-500.woff2" as="font" type="font/woff2" crossorigin> 
+<link rel="preload" href="/lib/fonts/source-sans-pro-v14-latin-700.woff2" as="font" type="font/woff2" crossorigin> 
+<link rel="preload" href="/lib/fonts/source-sans-pro-v14-latin-600.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/lib/fonts/SourceSansPro-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/lib/fonts/freckle-face-v9-latin-regular.woff2" as="font" type="font/woff2" crossorigin>
+
+<meta name="title" property="og:title" content="W3School.com.cn">
+<meta name="Keywords" content="HTML、CSS、JavaScript、SQL、Python、Java、PHP、How to、C、C++、C#、Bootstrap、React、MySQL、jQuery、Excel、XML、Django、NumPy、Pandas、SciPy、NodeJS、TypeScript、Angular、AngularJS、PostgreSQL、MongoDB、ASP、AI、R、Go、Kotlin、Sass、VUE、Git、Bash、Rust、图形、算法、编程入门、Web 开发、数据科学、色彩、图标、代码游戏、编程、教程、培训、学习、测验、练习、课程、课时、参考手册、示例、源代码、演示、技巧、网站">
+<meta name="Description" content="提供结构清晰、通俗易懂的 Web 开发教程，内含海量实战示例，涵盖 HTML、CSS、JavaScript、SQL、Python、PHP、Bootstrap、Java、XML 等多种技术。">
+<meta property="og:image" content="https://www.w3school.com.cn/i/logo/og-1200x630.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:description" content="W3School 提供涵盖所有主流 Web 开发语言的免费在线教程、参考手册和练习题。内容包含 HTML、CSS、JavaScript、Python、SQL、Java 等众多热门技术领域。">
+<link rel="icon" href="https://www.w3school.com.cn/i/logo/favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="/i/logo/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="96x96" href="/i/logo/favicon-96x96.png">
+<link rel="icon" type="image/png" sizes="64x64" href="/i/logo/favicon-64x64.png">
+<link rel="icon" type="image/png" sizes="48x48" href="/i/logo/favicon-48x48.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/i/logo/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/i/logo/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest" crossorigin="use-credentials">
+<link rel="mask-icon" href="/i/logo/safari-pinned-tab.svg" color="#BD2D30">
+<meta name="msapplication-TileColor" content="#BD2D30">
+<meta name="theme-color" content="#ffffff">
+<meta name="format-detection" content="telephone=no">
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-878633-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-878633-1');
+</script>
+
+
+<title>SQL 教程</title>
+
+
+</head>
+
+<body>
+
+
+
+<header class="header-container">
+<div class="header-content">
+<div class="header-logo-container">
+<a class="header-logo" href="/index.html" title="W3School 在线教程">W3School 在线教程</a>
+</div>
+</div>
+</header>
+
+
+<nav class="nav-top-container">
+<div class="nav-top-content">
+	<button class="menu-toggle" id="menuToggle"></button>
+	<button class="nav-top-controls nav-top-controls-prev" id="navPrev">&#10094;</button>
+	<menu class="nav-top-menu"  id="myTopnav">
+		<li><a href="/html/index.asp" title="HTML 教程">HTML</a></li>
+		<li><a href="/css/index.asp" title="CSS 教程">CSS</a></li>
+		<li><a href="/js/index.asp" title="JavaScript 教程">JAVASCRIPT</a></li>
+		<li><a href="/sql/index.asp" title="SQL 教程">SQL</a></li>
+		<li><a href="/python/index.asp" title="Python 教程">PYTHON</a></li>
+		<li><a href="/java/index.asp" title="Java 教程">JAVA</a></li>
+		<li><a href="/php/index.asp" title="PHP 教程">PHP</a></li>
+		<li><a href="/howto/index.asp" title="W3School 百宝箱">HOWTO</a></li>
+		<li><a href="/c/index.asp" title="C 教程">C</a></li>
+		<li><a href="/cpp/index.asp" title="C++ 教程">C++</a></li>
+		<li><a href="/cs/index.asp" title="C# 教程">C#</a></li>
+		<li><a href="/bootstrap5/index.asp" title="Bootstrap 教程">BOOTSTRAP</a></li>
+		<li><a href="/mysql/index.asp" title="MySQL 教程">MYSQL</a></li>
+		<li><a href="/jquery/index.asp" title="jQuery 教程">JQUERY</a></li>
+		<li><a href="/xml/index.asp" title="XML 教程">XML</a></li>
+		<li><a href="/numpy/index.asp" title="NumPy 教程">NUMPY</a></li>
+		<li><a href="/pandas/index.asp" title="Pandas 教程">PANDAS</a></li>
+		<li><a href="/typescript/index.asp" title="TypeScript 教程">TYPESCRIPT</a></li>
+		<li><a href="/angularjs/index.asp" title="AngularJS 教程">ANGULARJS</a></li>
+		<li><a href="/postgresql/index.asp" title="PostgreSQL 教程">POSTGRESQL</a></li>
+		<li><a href="/mongodb/index.asp" title="MongoDB 教程">MONGODB</a></li>
+		<li><a href="/asp/index.asp" title="ASP 教程">ASP</a></li>
+		<li><a href="/r/index.asp" title="R 教程">R</a></li>
+		<li><a href="/go/index.asp" title="Go 教程">GO</a></li>
+		<li><a href="/kotlin/index.asp" title="Kotlin 教程">KOTLIN</a></li>
+		<li><a href="/sass/index.asp" title="Sass 教程">SASS</a></li>
+		<li><a href="/scipy/index.asp" title="SciPy 教程">SCIPY</a></li>
+	</menu>
+	<button class="nav-top-controls nav-top-controls-next" id="navNext">&#10095;</button>
+</div>
+</nav>
+
+
+
+<main class="main-container">
+
+<aside class="nav-left-container">
+<div class="nav-left-content">
+
+<nav class="nav-left-course">
+<h2>SQL 基础教程</h2>
+<menu>
+<li><a class="active" href="/sql/index.asp" title="SQL 教程">SQL 教程</a></li>
+<li><a href="/sql/sql_intro.asp" title="SQL 简介">SQL 简介</a></li>
+<li><a href="/sql/sql_syntax.asp" title="SQL 语法">SQL 语法</a></li>
+<li><a href="/sql/sql_select.asp" title="SQL SELECT 语句">SQL SELECT</a></li>
+<li><a href="/sql/sql_distinct.asp" title="SQL SELECT DISTINCT 语句">SQL SELECT DISTINCT</a></li>
+<li><a href="/sql/sql_where.asp" title="SQL WHERE 子句">SQL WHERE</a></li>
+<li><a href="/sql/sql_orderby.asp" title="SQL ORDER BY 关键字">SQL ORDER BY</a></li>
+<li><a href="/sql/sql_and.asp" title="SQL AND 操作符">SQL AND</a></li>
+<li><a href="/sql/sql_or.asp" title="SQL OR 操作符">SQL OR</a></li>
+<li><a href="/sql/sql_not.asp" title="SQL NOT 操作符">SQL NOT</a></li>
+<li><a href="/sql/sql_insert.asp" title="SQL INSERT INTO 语句">SQL INSERT INTO</a></li>
+<li><a href="/sql/sql_null_values.asp" title="SQL NULL 值">SQL NULL 值</a></li>
+<li><a href="/sql/sql_update.asp" title="SQL UPDATE 语句">SQL UPDATE</a></li>
+<li><a href="/sql/sql_delete.asp" title="SQL DELETE 语句">SQL DELETE</a></li>
+<li><a href="/sql/sql_top.asp" title="SQL TOP、LIMIT、FETCH FIRST 或 ROWNUM 子句">SQL SELECT TOP</a></li>
+<li><a href="/sql/sql_aggregate_functions.asp" title="SQL 聚合函数">SQL 聚合函数</a></li>
+<li><a href="/sql/sql_min_max.asp" title="SQL MIN() 函数">SQL MIN()</a></li>
+<li><a href="/sql/sql_max.asp" title="SQL MAX() 函数">SQL MAX()</a></li>
+<li><a href="/sql/sql_count.asp" title="SQL COUNT() 函数">SQL COUNT</a></li>
+<li><a href="/sql/sql_sum.asp" title="SQL SUM() 函数">SQL SUM</a></li>
+<li><a href="/sql/sql_avg.asp" title="SQL AVG() 函数">SQL AVG</a></li>
+<li><a href="/sql/sql_like.asp" title="SQL LIKE 操作符">SQL LIKE</a></li>
+<li><a href="/sql/sql_wildcards.asp" title="SQL 通配符">SQL 通配符</a></li>
+<li><a href="/sql/sql_in.asp" title="SQL IN 运算符">SQL IN</a></li>
+<li><a href="/sql/sql_between.asp" title="SQL BETWEEN 运算符">SQL BETWEEN</a></li>
+<li><a href="/sql/sql_alias.asp" title="SQL 别名">SQL 别名</a></li>
+<li><a href="/sql/sql_join.asp" title="SQL JOIN">SQL JOIN</a></li>
+<li><a href="/sql/sql_join_inner.asp" title="SQL INNER JOIN 关键字">SQL INNER JOIN</a></li>
+<li><a href="/sql/sql_join_left.asp" title="SQL LEFT JOIN 关键字">SQL LEFT JOIN</a></li>
+<li><a href="/sql/sql_join_right.asp" title="SQL RIGHT JOIN 关键字">SQL RIGHT JOIN</a></li>
+<li><a href="/sql/sql_join_full.asp" title="SQL FULL OUTER JOIN 关键字">SQL FULL JOIN</a></li>
+<li><a href="/sql/sql_join_self.asp" title="SQL 自连接">SQL 自连接</a></li>
+<li><a href="/sql/sql_union.asp" title="SQL UNION 操作符">SQL UNION</a></li>
+<li><a href="/sql/sql_union_all.asp" title="SQL UNION ALL 操作符">SQL UNION ALL</a></li>
+<li><a href="/sql/sql_groupby.asp" title="SQL GROUP BY 语句">SQL GROUP BY</a></li>
+<li><a href="/sql/sql_having.asp" title="SQL HAVING 子句">SQL HAVING</a></li>
+<li><a href="/sql/sql_exists.asp" title="SQL EXISTS 操作符">SQL EXISTS</a></li>
+<li><a href="/sql/sql_any_all.asp" title="SQL ANY 操作符">SQL ANY</a></li>
+<li><a href="/sql/sql_all.asp" title="SQL ALL 操作符">SQL ALL</a></li>
+<li><a href="/sql/sql_select_into.asp" title="SQL SELECT INTO 语句">SQL SELECT INTO</a></li>
+<li><a href="/sql/sql_insert_into_select.asp" title="SQL INSERT INTO SELECT 语句">SQL INSERT INTO SELECT</a></li>
+<li><a href="/sql/sql_case.asp" title="SQL CASE 表达式">SQL CASE</a></li>
+<li><a href="/sql/sql_isnull.asp" title="SQL NULL 函数">SQL NULL 函数</a></li>
+<li><a href="/sql/sql_stored_procedures.asp" title="SQL Server 的 SQL 存储过程">SQL 存储过程</a></li>
+<li><a href="/sql/sql_comments.asp" title="SQL 注释">SQL 注释</a></li>
+<li><a href="/sql/sql_operators.asp" title="SQL 运算符">SQL 运算符</a></li>
+</menu>
+<h2>SQL 数据库</h2>
+<menu>
+<li><a href="/sql/sql_create_database.asp" title="SQL CREATE DATABASE 语句">SQL CREATE DATABASE</a></li>
+<li><a href="/sql/sql_drop_database.asp" title="SQL DROP DATABASE 语句">SQL DROP DATABASE</a></li>
+<li><a href="/sql/sql_backup_database.asp" title="SQL Server 的 SQL BACKUP DATABASE">SQL BACKUP DATABASE</a></li>
+<li><a href="/sql/sql_create_table.asp" title="SQL CREATE TABLE 语句">SQL CREATE TABLE</a></li>
+<li><a href="/sql/sql_drop_table.asp" title="SQL DROP TABLE 语句">SQL DROP TABLE</a></li>
+<li><a href="/sql/sql_alter.asp" title="SQL ALTER TABLE 语句">SQL ALTER TABLE</a></li>
+<li><a href="/sql/sql_constraints.asp" title="SQL 约束">SQL 约束</a></li>
+<li><a href="/sql/sql_notnull.asp" title="SQL NOT NULL">SQL NOT NULL</a></li>
+<li><a href="/sql/sql_unique.asp" title="SQL UNIQUE 约束">SQL UNIQUE</a></li>
+<li><a href="/sql/sql_primarykey.asp" title="SQL PRIMARY KEY 约束">SQL PRIMARY KEY</a></li>
+<li><a href="/sql/sql_foreignkey.asp" title="SQL FOREIGN KEY 约束">SQL FOREIGN KEY</a></li>
+<li><a href="/sql/sql_check.asp" title="SQL CHECK 约束">SQL CHECK</a></li>
+<li><a href="/sql/sql_default.asp" title="SQL DEFAULT 约束">SQL DEFAULT</a></li>
+<li><a href="/sql/sql_create_index.asp" title="SQL CREATE INDEX 语句">SQL CREATE INDEX</a></li>
+<li><a href="/sql/sql_autoincrement.asp" title="SQL AUTO INCREMENT 字段">SQL AUTO INCREMENT</a></li>
+<li><a href="/sql/sql_dates.asp" title="SQL 日期操作">SQL 日期</a></li>
+<li><a href="/sql/sql_view.asp" title="SQL 视图">SQL 视图</a></li>
+<li><a href="/sql/sql_injection.asp" title="SQL 注入">SQL 注入</a></li>
+<li><a href="/sql/sql_parameterized_queries.asp" title="SQL 参数">SQL 参数</a></li>
+<li><a href="/sql/sql_prepared_statements.asp" title="SQL 预处理语句">SQL 预处理语句</a></li>
+<li><a href="/sql/sql_hosting.asp" title="SQL 托管">SQL 托管</a></li>
+<li><a href="/sql/sql_datatypes.asp" title="MySQL、SQL Server 和 MS Access 的 SQL 数据类型">SQL 数据类型</a></li>
+</menu>
+<h2>SQL 参考手册</h2>
+<menu>
+<li><a href="/sql/sql_reference.asp" title="SQL 参考手册">SQL 参考手册</a></li>
+<li><a href="/sql/sql_ref_keywords.asp" title="SQL 关键词">SQL 关键词</a></li>
+<li><a href="/sql/sql_ref_mysql.asp" title="MySQL 函数">MySQL 函数</a></li>
+<li><a href="/sql/sql_ref_sqlserver.asp" title="SQL Server 函数">SQL Server 函数</a></li>
+<li><a href="/sql/sql_ref_msaccess.asp" title="MS Access 函数">MS Access 函数</a></li>
+<li><a href="/sql/sql_quickref.asp" title="SQL 快速参考">SQL 快速参考</a></li>
+</menu>
+<h2>SQL 实例</h2>
+<menu>
+<li><a href="/sql/sql_examples.asp" title="SQL 实例">SQL 实例</a></li>
+<li><a href="/sql/sql_quiz.asp" title="SQL 测验">SQL 测验</a></li>
+</menu>
+</nav>
+
+</div>
+</aside>
+
+
+<article class="main-content">
+
+
+<h1>SQL 教程</h1>
+
+<nav class="nav-prenext">
+<menu class="nav-prenext-menu">
+<li class="btn-pre"><a href="/sql/index.asp" title="SQL 教程">SQL 教程</a></li>
+<li class="btn-next"><a href="/sql/sql_intro.asp" title="SQL 简介">SQL 简介</a></li>
+</menu>
+</nav>
+
+
+
+<section class="intro">
+<h2>学习 SQL</h2>
+
+<p>SQL 是在数据库中存储、操作和检索数据的标准语言。</p>
+
+<p>我们的 SQL 教程讲解如何在 MySQL、SQL Server、MS Access、Oracle、Sybase、Informix、Postgres 和其他数据库系统中使用 SQL。</p>
+
+<p><a class="btn btn-theme-tutorial" href="/sql/sql_intro.asp" title="SQL 教程">现在就开始学习 SQL ❯</a></p>
+</section>
+
+
+
+<section>
+<h2>每一章的实例</h2>
+
+<p>通过我们的在线 SQL 编辑器，你可以编辑 SQL 语句，并点击按钮查看结果。</p>
+
+<h3>实例</h3>
+
+<pre class="language-sql">
+SELECT * FROM Customers;
+</pre>
+
+<p class="tiy"><a target="_blank" href="/sql/t.php?f=sql_select_all">亲自试一试</a></p>
+
+<p>点击“亲自试一试”按钮，看看它是如何工作的。</p>
+</section>
+
+
+
+<section>
+<h2>SQL 实例</h2>
+
+<p>通过实例学习！本教程提供了大量实例以及清晰的解释。</p>
+
+<p><a class="btn btn-theme-example" target="_blank" href="/sql/sql_examples.asp" title="SQL 实例">查看所有 SQL 实例 ❯</a></p>
+</section>
+
+
+
+<section>
+<h2>SQL 测验</h2>
+
+<p>在 W3School 测试你的 SQL 技能！</p>
+
+<p><a class="btn btn-theme-quiz" href="/sql/sql_quiz.asp" title="SQL 测验">开始 SQL 测验 ❯</a></p>
+</section>
+
+
+
+<section>
+<h2>SQL 参考手册</h2>
+
+<p>在 W3School，您可以找到关键词和函数的完整参考：</p>
+
+<ul class="list-ref">
+<li><a href="/sql/sql_ref_keywords.asp" title="SQL 关键词">SQL 关键词</a></li>
+<li><a href="/sql/sql_ref_mysql.asp" title="MySQL 函数">MySQL 函数</a></li>
+<li><a href="/sql/sql_ref_sqlserver.asp" title="SQL Server 函数">SQL Server 函数</a></li>
+<li><a href="/sql/sql_ref_msaccess.asp" title="MS Access 函数">MS Access 函数</a></li>
+<li><a href="/sql/sql_quickref.asp" title="SQL 快速参考">SQL 快速参考</a></li>
+</ul>
+</section>
+
+
+
+<section>
+<h2>SQL 数据类型</h2>
+
+<p>Microsoft Access、MySQL 和 SQL Server 的数据类型和范围。</p>
+
+<ul class="list-ref">
+<li><a href="/sql/sql_datatypes.asp" title="SQL 数据类型">SQL 数据类型</a></li>
+</ul>
+</section>
+
+
+
+<nav class="nav-prenext">
+<menu class="nav-prenext-menu">
+<li class="btn-pre"><a href="/sql/index.asp" title="SQL 教程">SQL 教程</a></li>
+<li class="btn-next"><a href="/sql/sql_intro.asp" title="SQL 简介">SQL 简介</a></li>
+</menu>
+</nav><section>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3381531532877742"
+     crossorigin="anonymous"></script>
+<!-- W3School 正文底部自适应 -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-3381531532877742"
+     data-ad-slot="3120875591"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+</section>
+
+</article>
+
+<aside class="sidebar">
+
+<nav class="nav-tools">
+<menu class="nav-tools-menu">
+<li class="btn-reference"><a href="/sql/sql_reference.asp">SQL 参考手册</a></li>
+<li class="btn-example"><a href="/sql/sql_examples.asp">SQL 实例</a></li>
+<li class="btn-quiz"><a href="/sql/sql_quiz.asp">SQL 测验</a></li>
+</menu>
+</nav>
+
+<div class="ad-aside">
+<div class="ad-aside-bar">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3381531532877742"
+     crossorigin="anonymous"></script>
+<!-- W3School 侧栏广告自适应 -->
+
+<ins class="adsbygoogle ad-sidebar"
+     style="display:block"
+     data-ad-client="ca-pub-3381531532877742"
+     data-ad-slot="7684920060"
+</ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+</div>
+</div>
+
+</aside>
+
+
+</main>
+
+
+<div class="menu-overlay" id="menuOverlay"></div>
+
+<script type="application/javascript" language="javascript" src="/lib/js/topnav.js?v=6"></script>
+<script type="application/javascript" language="javascript" src="/lib/js/nav.js?v=1"></script>
+
+<footer class="footer-container">
+<div>
+<a href="/about/index.asp" title="关于 W3School">关于 W3School</a>
+<a target="_blank" href="https://www.ykinvestment.com/">技术支持：赢科</a>
+<a target="_blank" href="http://beian.miit.gov.cn">蒙 ICP 备 06004630 号</a>
+</div>
+
+<div>
+W3School 的朋友：<a target="_blank" href="https://www.w3ctech.com/">w3ctech</a>
+<a target="_blank" href="https://wetest.qq.com/?from=links_w3school">WeTest</a>
+</div>
+</footer>
+
+</body>
+
+</html>

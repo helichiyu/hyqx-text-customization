@@ -1,0 +1,478 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+
+<meta charset="utf-8">
+<meta name="robots" content="all" />
+<meta name="author" content="w3school.com.cn" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+<link rel="stylesheet" type="text/css" href="/lib/css/typography.css?v=2" />
+<link rel="stylesheet" type="text/css" href="/lib/css/layout.css?v=2" />
+<link rel="stylesheet" type="text/css" href="/lib/css/nav.css?v=2" />
+<link rel="stylesheet" type="text/css" href="/lib/css/fonts.css?v=2" />
+<link rel="stylesheet" type="text/css" href="/lib/css/cssdemo.css?v=2" />
+
+<script src="/lib/cc/prism2.js?v=2"></script>
+<link rel="stylesheet" href="/lib/cc/prism.css?v=2">
+
+<link rel="preload" href="/lib/fonts/fontawesome.woff2?14663396" as="font" type="font/woff2" crossorigin> 
+<link rel="preload" href="/lib/fonts/source-code-pro-v14-latin-regular.woff2" as="font" type="font/woff2" crossorigin> 
+<link rel="preload" href="/lib/fonts/roboto-mono-v13-latin-500.woff2" as="font" type="font/woff2" crossorigin> 
+<link rel="preload" href="/lib/fonts/source-sans-pro-v14-latin-700.woff2" as="font" type="font/woff2" crossorigin> 
+<link rel="preload" href="/lib/fonts/source-sans-pro-v14-latin-600.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/lib/fonts/SourceSansPro-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/lib/fonts/freckle-face-v9-latin-regular.woff2" as="font" type="font/woff2" crossorigin>
+
+<meta name="title" property="og:title" content="W3School.com.cn">
+<meta name="Keywords" content="HTML、CSS、JavaScript、SQL、Python、Java、PHP、How to、C、C++、C#、Bootstrap、React、MySQL、jQuery、Excel、XML、Django、NumPy、Pandas、SciPy、NodeJS、TypeScript、Angular、AngularJS、PostgreSQL、MongoDB、ASP、AI、R、Go、Kotlin、Sass、VUE、Git、Bash、Rust、图形、算法、编程入门、Web 开发、数据科学、色彩、图标、代码游戏、编程、教程、培训、学习、测验、练习、课程、课时、参考手册、示例、源代码、演示、技巧、网站">
+<meta name="Description" content="提供结构清晰、通俗易懂的 Web 开发教程，内含海量实战示例，涵盖 HTML、CSS、JavaScript、SQL、Python、PHP、Bootstrap、Java、XML 等多种技术。">
+<meta property="og:image" content="https://www.w3school.com.cn/i/logo/og-1200x630.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:description" content="W3School 提供涵盖所有主流 Web 开发语言的免费在线教程、参考手册和练习题。内容包含 HTML、CSS、JavaScript、Python、SQL、Java 等众多热门技术领域。">
+<link rel="icon" href="https://www.w3school.com.cn/i/logo/favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="/i/logo/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="96x96" href="/i/logo/favicon-96x96.png">
+<link rel="icon" type="image/png" sizes="64x64" href="/i/logo/favicon-64x64.png">
+<link rel="icon" type="image/png" sizes="48x48" href="/i/logo/favicon-48x48.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/i/logo/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/i/logo/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest" crossorigin="use-credentials">
+<link rel="mask-icon" href="/i/logo/safari-pinned-tab.svg" color="#BD2D30">
+<meta name="msapplication-TileColor" content="#BD2D30">
+<meta name="theme-color" content="#ffffff">
+<meta name="format-detection" content="telephone=no">
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-878633-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-878633-1');
+</script>
+
+
+<title>PHP 教程</title>
+
+
+</head>
+
+<body>
+
+
+
+<header class="header-container">
+<div class="header-content">
+<div class="header-logo-container">
+<a class="header-logo" href="/index.html" title="W3School 在线教程">W3School 在线教程</a>
+</div>
+</div>
+</header>
+
+
+<nav class="nav-top-container">
+<div class="nav-top-content">
+	<button class="menu-toggle" id="menuToggle"></button>
+	<button class="nav-top-controls nav-top-controls-prev" id="navPrev">&#10094;</button>
+	<menu class="nav-top-menu"  id="myTopnav">
+		<li><a href="/html/index.asp" title="HTML 教程">HTML</a></li>
+		<li><a href="/css/index.asp" title="CSS 教程">CSS</a></li>
+		<li><a href="/js/index.asp" title="JavaScript 教程">JAVASCRIPT</a></li>
+		<li><a href="/sql/index.asp" title="SQL 教程">SQL</a></li>
+		<li><a href="/python/index.asp" title="Python 教程">PYTHON</a></li>
+		<li><a href="/java/index.asp" title="Java 教程">JAVA</a></li>
+		<li><a href="/php/index.asp" title="PHP 教程">PHP</a></li>
+		<li><a href="/howto/index.asp" title="W3School 百宝箱">HOWTO</a></li>
+		<li><a href="/c/index.asp" title="C 教程">C</a></li>
+		<li><a href="/cpp/index.asp" title="C++ 教程">C++</a></li>
+		<li><a href="/cs/index.asp" title="C# 教程">C#</a></li>
+		<li><a href="/bootstrap5/index.asp" title="Bootstrap 教程">BOOTSTRAP</a></li>
+		<li><a href="/mysql/index.asp" title="MySQL 教程">MYSQL</a></li>
+		<li><a href="/jquery/index.asp" title="jQuery 教程">JQUERY</a></li>
+		<li><a href="/xml/index.asp" title="XML 教程">XML</a></li>
+		<li><a href="/numpy/index.asp" title="NumPy 教程">NUMPY</a></li>
+		<li><a href="/pandas/index.asp" title="Pandas 教程">PANDAS</a></li>
+		<li><a href="/typescript/index.asp" title="TypeScript 教程">TYPESCRIPT</a></li>
+		<li><a href="/angularjs/index.asp" title="AngularJS 教程">ANGULARJS</a></li>
+		<li><a href="/postgresql/index.asp" title="PostgreSQL 教程">POSTGRESQL</a></li>
+		<li><a href="/mongodb/index.asp" title="MongoDB 教程">MONGODB</a></li>
+		<li><a href="/asp/index.asp" title="ASP 教程">ASP</a></li>
+		<li><a href="/r/index.asp" title="R 教程">R</a></li>
+		<li><a href="/go/index.asp" title="Go 教程">GO</a></li>
+		<li><a href="/kotlin/index.asp" title="Kotlin 教程">KOTLIN</a></li>
+		<li><a href="/sass/index.asp" title="Sass 教程">SASS</a></li>
+		<li><a href="/scipy/index.asp" title="SciPy 教程">SCIPY</a></li>
+	</menu>
+	<button class="nav-top-controls nav-top-controls-next" id="navNext">&#10095;</button>
+</div>
+</nav>
+
+
+
+<main class="main-container">
+
+<aside class="nav-left-container">
+<div class="nav-left-content">
+
+<nav class="nav-left-course">
+<h2>PHP 教程</h2>
+<menu>
+<li><a class="active" href="/php/index.asp" title="PHP 教程">PHP 教程</a></li>
+<li><a href="/php/php_intro.asp" title="PHP 简介">PHP 简介</a></li>
+<li><a href="/php/php_install.asp" title="PHP 安装">PHP 安装</a></li>
+<li><a href="/php/php_syntax.asp" title="PHP 语法">PHP 语法</a></li>
+<li><a href="/php/php_comments.asp" title="PHP 注释">PHP 注释</a></li>
+<li><a href="/php/php_comments_multiline.asp" title="PHP 多行注释">PHP 多行注释</a></li>
+<li><a href="/php/php_variables.asp" title="PHP 变量">PHP 变量</a></li>
+<li><a href="/php/php_variables_scope.asp" title="PHP 变量作用域">PHP 变量作用域</a></li>
+<li><a href="/php/php_echo_print.asp" title="PHP Echo 和 Print 语句">PHP Echo / Print</a></li>
+<li><a href="/php/php_datatypes.asp" title="PHP 数据类型">PHP 数据类型</a></li>
+<li><a href="/php/php_string.asp" title="PHP 字符串">PHP 字符串</a></li>
+<li><a href="/php/php_string_modify.asp" title="PHP 字符串修改">PHP 字符串修改</a></li>
+<li><a href="/php/php_string_concatenate.asp" title="PHP 字符串连接">PHP 字符串连接</a></li>
+<li><a href="/php/php_string_slicing.asp" title="PHP 字符串切片">PHP 字符串切片</a></li>
+<li><a href="/php/php_string_escape.asp" title="PHP 转义字符">PHP 转义字符</a></li>
+<li><a href="/php/php_numbers.asp" title="PHP 数字">PHP 数字</a></li>
+<li><a href="/php/php_casting.asp" title="PHP 类型转换">PHP 类型转换</a></li>
+<li><a href="/php/php_math.asp" title="PHP 数学">PHP 数学</a></li>
+<li><a href="/php/php_constants.asp" title="PHP 常量">PHP 常量</a></li>
+<li><a href="/php/php_magic_constants.asp" title="PHP 魔法常量">PHP 魔法常量</a></li>
+<li><a href="/php/php_operators.asp" title="PHP 运算符">PHP 运算符</a></li>
+<li><a href="/php/php_if_else.asp" title="PHP if 语句">PHP if</a></li>
+<li><a href="/php/php_if_operators.asp" title="PHP if 运算符">PHP if 运算符</a></li>
+<li><a href="/php/php_if_else_if.asp" title="PHP if...else 语句">PHP if...else</a></li>
+<li><a href="/php/php_if_shorthand.asp" title="PHP 简写 if">PHP 简写 if</a></li>
+<li><a href="/php/php_if_nested.asp" title="PHP 嵌套 if 语句">PHP 嵌套 if</a></li>
+<li><a href="/php/php_switch.asp" title="PHP switch 语句">PHP switch</a></li>
+<li><a href="/php/php_looping.asp" title="PHP 循环">PHP 循环</a></li>
+<li><a href="/php/php_looping_while.asp" title="PHP while 循环">PHP While 循环</a></li>
+<li><a href="/php/php_looping_do_while.asp" title="PHP do while 循环">PHP do while 循环</a></li>
+<li><a href="/php/php_looping_for.asp" title="PHP for 循环">PHP for 循环</a></li>
+<li><a href="/php/php_looping_foreach.asp" title="PHP foreach 循环">PHP foreach 循环</a></li>
+<li><a href="/php/php_looping_break.asp" title="PHP Break">PHP Break</a></li>
+<li><a href="/php/php_looping_continue.asp" title="PHP Continue">PHP Continue</a></li>
+<li><a href="/php/php_functions.asp" title="PHP 函数">PHP 函数</a></li>
+<li><a href="/php/php_arrays.asp" title="PHP 数组">PHP 数组</a></li>
+<li><a href="/php/php_arrays_indexed.asp" title="PHP 索引数组">PHP 索引数组</a></li>
+<li><a href="/php/php_arrays_associative.asp" title="PHP 关联数组">PHP 关联数组</a></li>
+<li><a href="/php/php_arrays_create.asp" title="PHP 创建数组">PHP 创建数组</a></li>
+<li><a href="/php/php_arrays_access.asp" title="PHP 访问数组">PHP 访问数组</a></li>
+<li><a href="/php/php_arrays_update.asp" title="PHP 更新数组项">PHP 更新数组项</a></li>
+<li><a href="/php/php_arrays_add.asp" title="PHP 添加数组项">PHP 添加数组项</a></li>
+<li><a href="/php/php_arrays_remove.asp" title="PHP 删除数组项">PHP 删除数组项</a></li>
+<li><a href="/php/php_arrays_sort.asp" title="PHP 数组排序">PHP 数组排序</a></li>
+<li><a href="/php/php_arrays_multidimensional.asp" title="PHP 多维数组">PHP 多维数组</a></li>
+<li><a href="/php/php_arrays_functions.asp" title="PHP 数组函数">PHP 数组函数</a></li>
+<li><a href="/php/php_superglobals.asp" title="PHP 全局变量 - 超全局变量">PHP 超全局变量</a></li>
+<li><a href="/php/php_superglobals_globals.asp" title="PHP $GLOBALS">PHP $GLOBALS</a></li>
+<li><a href="/php/php_superglobals_server.asp" title="PHP $_SERVER">PHP $_SERVER</a></li>
+<li><a href="/php/php_superglobals_request.asp" title="PHP $_REQUEST">PHP $_REQUEST</a></li>
+<li><a href="/php/php_superglobals_post.asp" title="PHP $_POST">PHP $_POST</a></li>
+<li><a href="/php/php_superglobals_get.asp" title="PHP $_GET">PHP $_GET</a></li>
+<li><a href="/php/php_regex.asp" title="PHP 正则表达式">PHP 正则表达式</a></li>
+</menu>
+<h2>PHP 表单</h2>
+<menu>
+<li><a href="/php/php_forms.asp" title="PHP 表单处理">PHP 表单处理</a></li>
+<li><a href="/php/php_form_validation.asp" title="PHP 表单验证">PHP 表单验证</a></li>
+<li><a href="/php/php_form_required.asp" title="PHP 表单 - 必填字段">PHP 表单必填字段</a></li>
+<li><a href="/php/php_form_url_email.asp" title="PHP 表单 - 验证电子邮件和 URL">PHP 表单 URL/E-mail</a></li>
+<li><a href="/php/php_form_complete.asp" title="PHP 完整表单实例">PHP 完整表单实例</a></li>
+</menu>
+<h2>PHP 高级教程</h2>
+<menu>
+<li><a href="/php/php_date.asp" title="PHP 日期和时间">PHP 日期和时间</a></li>
+<li><a href="/php/php_includes.asp" title="PHP 包含文件">PHP 包含文件</a></li>
+<li><a href="/php/php_file.asp" title="PHP 文件处理">PHP 文件处理</a></li>
+<li><a href="/php/php_file_open.asp" title="PHP 文件打开/读取/关闭">PHP 文件打开/读取</a></li>
+<li><a href="/php/php_file_create.asp" title="PHP 文件创建/写入">PHP 文件创建/写入</a></li>
+<li><a href="/php/php_file_upload.asp" title="PHP 文件上传">PHP 文件上传</a></li>
+<li><a href="/php/php_cookies.asp" title="PHP Cookie">PHP Cookie</a></li>
+<li><a href="/php/php_sessions.asp" title="PHP 会话">PHP 会话</a></li>
+<li><a href="/php/php_filter.asp" title="PHP 过滤器">PHP 过滤器</a></li>
+<li><a href="/php/php_filter_advanced.asp" title="PHP 过滤器进阶">PHP 过滤器进阶</a></li>
+<li><a href="/php/php_callback_functions.asp" title="PHP 回调函数">PHP 回调函数</a></li>
+<li><a href="/php/php_json.asp" title="PHP 和 JSON">PHP JSON</a></li>
+<li><a href="/php/php_exceptions.asp" title="PHP 异常">PHP 异常</a></li>
+</menu>
+<h2>PHP OOP</h2>
+<menu>
+<li><a href="/php/php_oop_what_is.asp" title="PHP - 什么是 OOP？">PHP 什么是 OOP？</a></li>
+<li><a href="/php/php_oop_classes_objects.asp" title="PHP OOP - 类和对象">PHP 类/对象</a></li>
+<li><a href="/php/php_oop_constructor.asp" title="PHP OOP - 构造函数">PHP 构造函数</a></li>
+<li><a href="/php/php_oop_destructor.asp" title="PHP OOP - 析构函数">PHP 析构函数</a></li>
+<li><a href="/php/php_oop_access_modifiers.asp" title="PHP OOP - 访问修饰符">PHP 访问修饰符</a></li>
+<li><a href="/php/php_oop_inheritance.asp" title="PHP OOP - 继承">PHP 继承</a></li>
+<li><a href="/php/php_oop_constants.asp" title="PHP OOP - 类常量">PHP 类常量</a></li>
+<li><a href="/php/php_oop_classes_abstract.asp" title="PHP OOP - 抽象类">PHP 抽象类</a></li>
+<li><a href="/php/php_oop_interfaces.asp" title="PHP OOP - 接口">PHP 接口</a></li>
+<li><a href="/php/php_oop_traits.asp" title="PHP OOP - Trait">PHP Trait</a></li>
+<li><a href="/php/php_oop_static_methods.asp" title="PHP OOP - 静态方法">PHP 静态方法</a></li>
+<li><a href="/php/php_oop_static_properties.asp" title="PHP OOP - 静态属性">PHP 静态属性</a></li>
+<li><a href="/php/php_namespaces.asp" title="PHP OOP - 命名空间">PHP 命名空间</a></li>
+<li><a href="/php/php_iterables.asp" title="PHP Iterable">PHP Iterable</a></li>
+</menu>
+<h2>PHP 数据库</h2>
+<menu>
+<li><a href="/php/php_mysql_intro.asp" title="PHP MySQL 数据库">MySQL 数据库</a></li>
+<li><a href="/php/php_mysql_connect.asp" title="PHP 连接 MySQL">MySQL 连接</a></li>
+<li><a href="/php/php_mysql_create.asp" title="PHP 创建 MySQL 数据库">MySQL 创建 DB</a></li>
+<li><a href="/php/php_mysql_create_table.asp" title="PHP MySQL 创建表格">MySQL 创建表格</a></li>
+<li><a href="/php/php_mysql_insert.asp" title="PHP MySQL 插入数据">MySQL 插入数据</a></li>
+<li><a href="/php/php_mysql_insert_lastid.asp" title="PHP MySQL 获取最后插入的 ID">MySQL 获取最后的 ID</a></li>
+<li><a href="/php/php_mysql_insert_multiple.asp" title="PHP MySQL 插入多条记录">MySQL 插入多条记录</a></li>
+<li><a href="/php/php_mysql_prepared_statements.asp" title="PHP MySQL Prepared 语句">MySQL Prepared</a></li>
+<li><a href="/php/php_mysql_select.asp" title="PHP MySQL 选取数据">MySQL 选取数据</a></li>
+<li><a href="/php/php_mysql_select_where.asp" title="PHP MySQL 使用 WHERE 子句">MySQL WHERE</a></li>
+<li><a href="/php/php_mysql_select_orderby.asp" title="PHP MySQL 使用 ORDER BY 子句">MySQL ORDER BY</a></li>
+<li><a href="/php/php_mysql_delete.asp" title="PHP MySQL 删除数据">MySQL 删除数据</a></li>
+<li><a href="/php/php_mysql_update.asp" title="PHP MySQL 更新数据">MySQL 更新数据</a></li>
+<li><a href="/php/php_mysql_select_limit.asp" title="PHP MySQL 限制数据选择">MySQL 限制数据</a></li>
+</menu>
+<h2>PHP XML</h2>
+<menu>
+<li><a href="/php/php_xml_parsers.asp" title="PHP XML 解析器">PHP XML 解析器</a></li>
+<li><a href="/php/php_xml_simplexml_read.asp" title="PHP SimpleXML 解析器">PHP SimpleXML 解析器</a></li>
+<li><a href="/php/php_xml_simplexml_get.asp" title="PHP SimpleXML - 获取节点/属性值">PHP SimpleXML - 获取</a></li>
+<li><a href="/php/php_xml_parser_expat.asp" title="PHP XML Expat 解析器">PHP XML Expat</a></li>
+<li><a href="/php/php_xml_dom.asp" title="PHP XML DOM 解析器">PHP XML DOM 解析器</a></li>
+</menu>
+<h2>PHP 和 AJAX</h2>
+<menu>
+<li><a href="/php/php_ajax_intro.asp" title="PHP - AJAX 简介">AJAX 简介</a></li>
+<li><a href="/php/php_ajax_php.asp" title="PHP - AJAX 与 PHP">AJAX PHP</a></li>
+<li><a href="/php/php_ajax_database.asp" title="PHP - AJAX 与 MySQL">AJAX 数据库</a></li>
+<li><a href="/php/php_ajax_xml.asp" title="PHP 实例 - AJAX 与 XML">AJAX XML</a></li>
+<li><a href="/php/php_ajax_livesearch.asp" title="PHP 实例 - AJAX 实时搜索">AJAX 实时搜索</a></li>
+<li><a href="/php/php_ajax_poll.asp" title="PHP 实例 - AJAX 投票">AJAX Poll</a></li>
+</menu>
+<h2>PHP 参考手册</h2>
+<menu>
+<li><a href="/php/php_ref.asp" title="PHP 参考手册">PHP 参考手册</a></li>
+<li><a href="/php/php_ref_array.asp" title="PHP Array 函数">PHP Array</a></li>
+<li><a href="/php/php_ref_calendar.asp" title="PHP Calendar 函数">PHP Calendar</a></li>
+<li><a href="/php/php_ref_date.asp" title="PHP Date / Time 函数">PHP Date</a></li>
+<li><a href="/php/php_ref_directory.asp" title="PHP Directory 函数">PHP Directory</a></li>
+<li><a href="/php/php_ref_error.asp" title="PHP Error 和 Logging 函数">PHP Error</a></li>
+<li><a href="/php/php_ref_exception.asp" title="PHP Exception 参考手册">PHP Exception</a></li>
+<li><a href="/php/php_ref_filesystem.asp" title="PHP Filesystem 函数">PHP Filesystem</a></li>
+<li><a href="/php/php_ref_filter.asp" title="PHP Filter 函数">PHP Filter</a></li>
+<li><a href="/php/php_ref_ftp.asp" title="PHP FTP 函数">PHP FTP</a></li>
+<li><a href="/php/php_ref_http.asp" title="PHP HTTP 函数">PHP HTTP</a></li>
+<li><a href="/php/php_ref_json.asp" title="PHP JSON 函数">PHP JSON</a></li>
+<li><a href="/php/php_ref_libxml.asp" title="PHP LibXML 函数">PHP LibXML</a></li>
+<li><a href="/php/php_ref_mail.asp" title="PHP Mail 函数">PHP Mail</a></li>
+<li><a href="/php/php_ref_math.asp" title="PHP Math 函数">PHP Math</a></li>
+<li><a href="/php/php_ref_mysql.asp" title="PHP MySQL 函数">PHP MySQL</a></li>
+<li><a href="/php/php_ref_mysqli.asp" title="PHP 5 MySQLi 函数">PHP MySQLi</a></li>
+<li><a href="/php/php_ref_network.asp" title="PHP Network 函数">PHP Network</a></li>
+<li><a href="/php/php_ref_regex.asp" title="PHP 正则表达式函数">PHP RegEx</a></li>
+<li><a href="/php/php_ref_simplexml.asp" title="PHP SimpleXML 函数">PHP SimpleXML</a></li>
+<li><a href="/php/php_ref_stream.asp" title="PHP Stream 函数">PHP Stream</a></li>
+<li><a href="/php/php_ref_string.asp" title="PHP String 函数">PHP String</a></li>
+<li><a href="/php/php_ref_xml.asp" title="PHP XML Parser 函数">PHP XML</a></li>
+<li><a href="/php/php_ref_zip.asp" title="PHP Zip File 函数">PHP Zip</a></li>
+<li><a href="/php/php_ref_variable_handling.asp" title="PHP 变量处理函数">PHP 变量处理</a></li>
+<li><a href="/php/php_ref_output_control.asp" title="PHP 输出控制函数">PHP 输出控制</a></li>
+<li><a href="/php/php_ref_timezones.asp" title="PHP 时区">PHP 时区</a></li>
+<li><a href="/php/php_ref_misc.asp" title="PHP 杂项函数">PHP 杂项</a></li>
+<li><a href="/php/php_ref_keywords.asp" title="PHP 关键词">PHP 关键词</a></li>
+</menu>
+<h2>PHP 实例</h2>
+<menu>
+<li><a href="/php/php_examples.asp" title="PHP 实例">PHP 实例</a></li>
+<li><a href="/php/php_quiz.asp" title="PHP 测验">PHP 测验</a></li>
+</menu>
+</nav>
+
+</div>
+</aside>
+
+
+<article class="main-content">
+
+
+<h1>PHP 教程</h1>
+
+<nav class="nav-prenext">
+<menu class="nav-prenext-menu">
+<li class="btn-pre"><a href="/php/index.asp" title="PHP 教程">PHP 教程</a></li>
+<li class="btn-next"><a href="/php/php_intro.asp" title="PHP 简介">PHP 简介</a></li>
+</menu>
+</nav>
+
+
+
+<section class="intro">
+<h2>学习 PHP</h2>
+
+<p>PHP 是一种创建动态交互性站点的强有力的服务器端脚本语言。</p>
+
+<p>PHP 是免费的，并且使用广泛。对于像微软 ASP 这样的竞争者来说，PHP 无疑是另一种高效率的选项。</p>
+
+<p><a class="btn btn-theme-tutorial" href="/php/php_intro.asp" title="PHP 简介">开始学习 PHP ❯</a></p>
+</section>
+
+
+
+<section>
+<h2>通过在线实例学习 PHP</h2>
+
+<p>我们的 “运行实例” 工具降低了 PHP 的学习难度，它可以同时显示出 PHP 源代码以及代码的 HTML 输出。</p>
+
+<h3>实例</h3>
+
+<pre class="language-php">
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;body&gt;
+
+&lt;?php
+echo &quot;我的第一段 PHP 脚本！&quot;;
+?&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;
+</pre>
+
+<p class="tiy"><a target="_blank" href="/php/t.php?f=php_intro">运行实例</a></p>
+
+<p>请点击“运行实例”，看看它是如何工作。</p>
+</section>
+
+
+
+<section>
+<h2>PHP 参考手册</h2>
+
+<p>在 W3School，我们为您提供包括所有 PHP 函数的完整参考手册：</p>
+
+<ul class="list-ref">
+<li><a href="/php/php_ref_array.asp" title="PHP Array 函数">PHP Array</a></li>
+<li><a href="/php/php_ref_calendar.asp" title="PHP Calendar 函数">PHP Calendar</a></li>
+<li><a href="/php/php_ref_date.asp" title="PHP Date / Time 函数">PHP Date</a></li>
+<li><a href="/php/php_ref_directory.asp" title="PHP Directory 函数">PHP Directory</a></li>
+<li><a href="/php/php_ref_error.asp" title="PHP Error 和 Logging 函数">PHP Error</a></li>
+<li><a href="/php/php_ref_exception.asp" title="PHP Exception 参考手册">PHP Exception</a></li>
+<li><a href="/php/php_ref_filesystem.asp" title="PHP Filesystem 函数">PHP Filesystem</a></li>
+<li><a href="/php/php_ref_filter.asp" title="PHP Filter 函数">PHP Filter</a></li>
+<li><a href="/php/php_ref_ftp.asp" title="PHP FTP 函数">PHP FTP</a></li>
+<li><a href="/php/php_ref_http.asp" title="PHP HTTP 函数">PHP HTTP</a></li>
+<li><a href="/php/php_ref_json.asp" title="PHP JSON 函数">PHP JSON</a></li>
+<li><a href="/php/php_ref_libxml.asp" title="PHP LibXML 函数">PHP LibXML</a></li>
+<li><a href="/php/php_ref_mail.asp" title="PHP Mail 函数">PHP Mail</a></li>
+<li><a href="/php/php_ref_math.asp" title="PHP Math 函数">PHP Math</a></li>
+<li><a href="/php/php_ref_mysql.asp" title="PHP MySQL 函数">PHP MySQL</a></li>
+<li><a href="/php/php_ref_mysqli.asp" title="PHP 5 MySQLi 函数">PHP MySQLi</a></li>
+<li><a href="/php/php_ref_network.asp" title="PHP Network 函数">PHP Network</a></li>
+<li><a href="/php/php_ref_regex.asp" title="PHP 正则表达式函数">PHP RegEx</a></li>
+<li><a href="/php/php_ref_simplexml.asp" title="PHP SimpleXML 函数">PHP SimpleXML</a></li>
+<li><a href="/php/php_ref_stream.asp" title="PHP Stream 函数">PHP Stream</a></li>
+<li><a href="/php/php_ref_string.asp" title="PHP String 函数">PHP String</a></li>
+<li><a href="/php/php_ref_xml.asp" title="PHP XML Parser 函数">PHP XML</a></li>
+<li><a href="/php/php_ref_zip.asp" title="PHP Zip File 函数">PHP Zip</a></li>
+<li><a href="/php/php_ref_variable_handling.asp" title="PHP 变量处理函数">PHP 变量处理</a></li>
+<li><a href="/php/php_ref_output_control.asp" title="PHP 输出控制函数">PHP 输出控制</a></li>
+<li><a href="/php/php_ref_timezones.asp" title="PHP 时区">PHP 时区</a></li>
+<li><a href="/php/php_ref_misc.asp" title="PHP 杂项函数">PHP 杂项</a></li>
+<li><a href="/php/php_ref_keywords.asp" title="PHP 关键词">PHP 关键词</a></li>
+</ul>
+</section>
+
+
+
+<section>
+<h2>PHP 测验</h2>
+
+<p>在 W3School 测试您的 PHP 技能！</p>
+
+<p><a class="btn btn-theme-quiz" href="/php/php_quiz.asp">开始 PHP 测验 ❯</a></p>
+</section>
+
+
+
+<nav class="nav-prenext">
+<menu class="nav-prenext-menu">
+<li class="btn-pre"><a href="/php/index.asp" title="PHP 教程">PHP 教程</a></li>
+<li class="btn-next"><a href="/php/php_intro.asp" title="PHP 简介">PHP 简介</a></li>
+</menu>
+</nav><section>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3381531532877742"
+     crossorigin="anonymous"></script>
+<!-- W3School 正文底部自适应 -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-3381531532877742"
+     data-ad-slot="3120875591"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+</section>
+
+</article>
+
+<aside class="sidebar">
+
+<nav class="nav-tools">
+<menu class="nav-tools-menu">
+<li class="btn-reference"><a href="/php/php_ref.asp">PHP 参考手册</a></li>
+<li class="btn-example"><a href="/php/php_examples.asp">PHP 实例</a></li>
+<li class="btn-quiz"><a href="/php/php_quiz.asp">PHP 测验</a></li>
+</menu>
+</nav>
+
+<div class="ad-aside">
+<div class="ad-aside-bar">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3381531532877742"
+     crossorigin="anonymous"></script>
+<!-- W3School 侧栏广告自适应 -->
+
+<ins class="adsbygoogle ad-sidebar"
+     style="display:block"
+     data-ad-client="ca-pub-3381531532877742"
+     data-ad-slot="7684920060"
+</ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+</div>
+</div>
+
+</aside>
+
+
+</main>
+
+
+<div class="menu-overlay" id="menuOverlay"></div>
+
+<script type="application/javascript" language="javascript" src="/lib/js/topnav.js?v=6"></script>
+<script type="application/javascript" language="javascript" src="/lib/js/nav.js?v=1"></script>
+
+<footer class="footer-container">
+<div>
+<a href="/about/index.asp" title="关于 W3School">关于 W3School</a>
+<a target="_blank" href="https://www.ykinvestment.com/">技术支持：赢科</a>
+<a target="_blank" href="http://beian.miit.gov.cn">蒙 ICP 备 06004630 号</a>
+</div>
+
+<div>
+W3School 的朋友：<a target="_blank" href="https://www.w3ctech.com/">w3ctech</a>
+<a target="_blank" href="https://wetest.qq.com/?from=links_w3school">WeTest</a>
+</div>
+</footer>
+
+</body>
+
+</html>

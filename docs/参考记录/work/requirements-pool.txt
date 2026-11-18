@@ -1,0 +1,29 @@
+# 算子池依赖（按当前池内算子裁剪；本 work 目录为联调子集）
+# 当前 5 算子：PTt_extract_html/xml/pdf/docx/doc_body（纯规则，无模型依赖）
+# 复制新算子目录进来时，把对应依赖段取消注释（或按各算子 requirements.txt 补）
+
+# —— HTTP 壳（common/server.py，所有算子必需）——
+fastapi>=0.100.0
+uvicorn>=0.23.0
+gunicorn>=21.2.0
+python-multipart>=0.0.6
+orjson==3.13.0
+PyYAML>=6.0
+
+# —— 编码检测（common/text_records.py，所有算子必需）——
+charset-normalizer>=3.1.0
+chardet>=5.2.0
+
+# —— 正文提取组（当前池内 #5/#6）——
+pypdf>=4.0.0
+pypdfium2>=4.0.0   # OCR 页面渲染
+python-docx>=1.1.0
+# LibreOffice（#7 .doc 提取）为系统依赖，在 Dockerfile 中 apt 安装
+
+# —— 以下依赖随算子复制回来时启用 ——
+# 分词 / NER（#19 中文分词、#20 英文NER）
+# jieba>=0.42.1
+# spacy>=3.7.0
+# nltk>=3.8.1
+# BERT tokenizer（#26 MLM/#37 Token序列）与甲方敏感模型（#17）
+# transformers>=4.36.0

@@ -1,0 +1,121 @@
+================================================================
+数据合成产线算子升级 需求记录（整理版）
+================================================================
+本文件是升级需求的原始记录（由混乱的聊天记录整理而来）。
+正式的升级要求文档见同目录《升级要求.md》，两者配合阅读。
+本目录整体打包后供其他产线升级参考；目录内各文件即全部参考材料。
+
+----------------------------------------------------------------
+一、模型网关信息（出站：算子 → IDG/磐智模型网关）
+----------------------------------------------------------------
+
+APPID: audioasr
+APPKEY: f7bdb52281e90645cfd80c58689b648c
+
+这套 APPID/APPKEY 是所有模型公用的，内部通过 PATH 映射来区分模型。
+请求模型时必须严格对照 PATH 的字段，不能自行转换大小写或拼写。
+
+模型 PATH 映射清单：
+
+    /qwen3-vl-8b-instruct
+    /Longcat-Images
+    /Wan2.1-I2v-14B-720P
+    /GLM-4-32B
+    /chinese-clip-vit-huge-patch14
+    /GLINER2.5-multi-v1
+    /qwen3guard-gen-0.6b
+    /Qwen3-ASR-0.6B
+    /qwen3-vl-embedding-2b/embeddings
+    /Qwen3.5-9B
+    /Qwen2.5-3B-Instruct
+    /Qwen2.5-VL-7B-instruct
+    /Qwen3-Embedding-0.6B/embeddings
+    /BAAI/bge-m3
+    /qwen3.6-35B-A3B-api
+    /data-qwen35-2b-api
+    /data-qwen3.5-4b
+
+特殊映射：qwen3.8-27b 的 PATH 是 /data-produce-1
+（PATH 命名不规范，但各产线应能认出自己需要的模型）
+
+调用 demo（同目录参考文件）：
+    qwen35_9b_call.py   文本模型调用 + 签名头生成逻辑
+    idg_audio_call.py   音频接口调用（屈桐提供的原始 demo）
+
+签名规则（两个 demo 一致）：
+    capability     = PATH 首段，右补 "0" 到 24 位
+    csid           = APPID + capability + uuid
+    X-Server-Param = base64(json({"appid": APPID, "csid": csid}))
+    X-CheckSum     = md5(APPKEY + X-CurTime + X-Server-Param)
+请求头：appKey / X-Server-Param / X-CurTime / X-CheckSum
+
+----------------------------------------------------------------
+二、入站认证拦截器需求（平台 → 算子服务）
+----------------------------------------------------------------
+
+原始需求：读取 work/common 里面的拦截器模块代码，
+按其逻辑和内容给算子代码也加上拦截器模块。
+
+运维反馈过一个问题：
+    [WARN] 未设置 AUTH_TOKEN_SHA256/AUTH_TOKEN，认证拦截未启用
+    （生产部署必须注入令牌，见规范 3.4）
+结论：这是设计内的提示，不是报错——镜像里有拦截器，但容器没拿到
+令牌环境变量，认证自动关闭。K8s 不像 docker compose 会自动读 .env，
+Pod 环境变量必须由 Deployment 显式注入：
+
+    env:
+    - name: AUTH_TOKEN_SHA256
+      value: ...
+
+处理口径：
+    服务只在集群内访问（测试）        可暂不处理
+    通过 NodePort / Ingress 对外暴露  必须处理，否则等于裸奔
+    平台侧还没配 X-Token             先别开，否则所有 /predict 会 401
+
+数据合成产线实际使用的令牌与摘要：
+    AUTH_TOKEN_SHA256=272b2f07afad843bca32b9d882477d7d5e3d6dd66367711bb1fbe2259ef1ff84
+    对应原始令牌：dm55JugSxErtlLrvqq6lHihS_C04Mv0uyoQMJn2kmfQ
+SHA-256 是单向摘要，不能从摘要反推原始令牌；调用方必须拿原始令牌。
+
+----------------------------------------------------------------
+三、部署规范
+----------------------------------------------------------------
+
+版本号口径：1.0.0（主版本.次版本.修订版本）。
+
+镜像命名必须全小写（实测踩坑，见 68da026ed813e3c8f13f1b093963f27a.png）：
+
+    [root@k8s-node03 ...]# docker compose build
+    Error response from daemon: invalid reference format:
+    repository name (library/oppretrainCoTpool) must be lowercase
+
+正确格式：小写短横线，如 oppretrain-cot-pool:1.0.0。
+
+deployment-kit/ 目录是完整部署工具包，重点参考：
+    01_UPLOAD_AND_DEPLOY_FLOW.md   上传→部署→验收→回滚全流程与命名规范
+    02_AUTH_INTERCEPTOR.md         认证拦截器协议与接入
+    03_IDG_MODEL_GATEWAY.md        模型网关签名与调用
+    04_RELEASE_CHECKLIST.md        发布检查表
+    05_TROUBLESHOOTING.md          故障排查
+    auth/                          拦截器实现与测试
+    model_gateway/                 签名示例
+    templates/                     Dockerfile / compose / env / deploy 模板
+
+work/common/ 里是拦截器的完整参考实现（auth_guard.py、server.py 等）。
+
+----------------------------------------------------------------
+四、补充：环境变量配置原则
+----------------------------------------------------------------
+
+为了以后方便修改，配置项不需要直接构建到镜像里或写死在代码里，
+可以在启动的时候配置成环境变量，这样以后可以随时修改；
+固定的环境变量可以直接写在镜像里面。
+
+参考文件：
+    anomalypattern.yaml                平台 K8s 部署清单（env: 段格式）
+    ec678111770bb5bd73e4186aa4cd1.png  截图批注："非固定环境变量可以
+                                       按照这种格式依次往后面添加"
+
+即：固定变量写 Dockerfile ENV；非固定变量在 Deployment 的 env: 段
+按 "- name: xxx / value: yyy" 格式按需添加，改完自动滚动重启生效，
+不需要改代码、不需要重新构建镜像。

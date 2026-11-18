@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />            
+    <meta http-equiv="Cache-Control" content="no-transform" />
+    <meta http-equiv="Cache-Control" content="no-siteapp" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="referrer" content="origin-when-cross-origin" />
+    <title>传感器模块都在交出什么：从模拟电压到数字协议 - Zw-awa - 博客园</title>
+    <meta name="keywords" content="STM32,麻薯吐司的STM32教程,麻薯织网的STM32教程" />
+    <meta name="description" content="光敏、热敏、电位器摆在桌面上，交出来的东西却完全不是一类。同一块芯片的输入口，为什么偏偏不能共用一个“读传感器”的函数？" />    
+    <meta property="og:description" content="光敏、热敏、电位器摆在桌面上，交出来的东西却完全不是一类。同一块芯片的输入口，为什么偏偏不能共用一个“读传感器”的函数？" />
+    <meta property="og:image" content="https://img2024.cnblogs.com/blog/3791643/202610/3791643-20261011144230674-942809967.png" />
+    <meta property="bytedance:published_time" content="2026-10-11T14:46:18+08:00" />
+    
+    <link rel="stylesheet" href="/css/blog-common.min.css?v=6O_Ku8w_jYd3yw2BX9ElmxGv25AYbAQ-F6ZeOeZfxYc" />
+    <link id="MainCss" rel="stylesheet" href="/skins/bluesky/bundle-bluesky.min.css?v=voT1jkWclVESD0WzBbBoYCNARzc4OCoY2UL4-rUs9rQ" />
+    <link id="highlighter-theme-cnblogs" type="text/css" rel="stylesheet" href="/css/hljs/cnblogs.css?v=5J1NDtbnnIr2Rc2SdhEMlMxD4l9Eydj88B31E7_NhS4" />
+    
+    
+    <link id="mobile-style" media="only screen and (max-width: 767px)" type="text/css" rel="stylesheet" href="/skins/bluesky/bundle-bluesky-mobile.min.css?v=6M1WRtRQHtepB8czH-DSfhU3aKa9sboo9Re86WcE0Vs" />
+    
+    <link id="favicon" rel="icon" type="image/x-icon" sizes="32x32" href="https://assets.cnblogs.com/favicon_v3_3.ico" />
+    <link id="favicon_svg" rel="icon" type="image/svg+xml" href="https://assets.cnblogs.com/favicon_v3_3.svg" />
+    <link rel="apple-touch-icon" href="https://assets.cnblogs.com/apple-touch-icon.png?v=2" />
+    <link rel="canonical" href="https://www.cnblogs.com/zw-awa/p/23261573" />
+    <link type="application/rss+xml" rel="alternate" href="https://www.cnblogs.com/zw-awa/rss" />
+    <link type="application/rsd+xml" rel="EditURI" href="https://www.cnblogs.com/zw-awa/rsd.xml" />
+    <link type="application/wlwmanifest+xml" rel="wlwmanifest" href="https://www.cnblogs.com/zw-awa/wlwmanifest.xml" />
+    
+    <script type="application/ld&#x2B;json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "@id": "https://www.cnblogs.com/zw-awa/p/23261573",
+      "headline": "传感器模块都在交出什么：从模拟电压到数字协议",
+      "description": "先把三种线接到同一张地图上 桌面上摆着几块常见模块：光敏、热敏和电位器。它们都能接到 STM32，但交出来的东西并不一样。先把这三种输入放到同一张地图上： 器件 模块端 参考接线 这根线交给谁 光敏电阻模块 AO PA0 / ADC1_CH0 ADC，读连续电压 光敏电阻模块 DO PB5 GPIO",
+      "image": [
+        "https://img2024.cnblogs.com/blog/3791643/202610/3791643-20261011144230674-942809967.png"
+      ],
+      "author": {
+        "@type": "Person",
+        "@id": "https://www.cnblogs.com/zw-awa/",
+        "name": "Zw-awa",
+        "url": "https://www.cnblogs.com/zw-awa/"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "@id": "https://www.cnblogs.com/",
+        "name": "博客园",
+        "url": "https://www.cnblogs.com/"
+      },
+      "datePublished": "2026-10-11T14:46:00.0000000&#x2B;08:00",
+      "dateModified": "2026-10-11T14:46:00.0000000&#x2B;08:00",
+      "wordCount": "12828",
+      "isPartOf": {
+        "@type": "Blog",
+        "@id": "https://www.cnblogs.com/zw-awa/",
+        "name": "Zw-awa",
+        "publisher": {
+          "@type": "Organization",
+          "@id": "https://www.cnblogs.com/",
+          "name": "博客园"
+        }
+      }
+    }
+    </script>
+
+    <script>
+        var currentBlogId = 867699;
+        var currentBlogApp = 'zw-awa';
+        var isLogined = false;
+        var isBlogOwner = false;
+        window.isCorp = false;
+        window.skinName = 'BlueSky';
+        var visitorUserId = '';
+        window.hasCustomScript = false;
+        window.cb_enable_mathjax = false;
+        window.mathEngine = 1;
+        window.codeHighlightEngine = 1;
+        window.enableCodeLineNumber = false;
+        window.codeHighlightTheme = 'cnblogs';
+        window.darkModeCodeHighlightTheme = 'vs2015';
+        window.isDarkCodeHighlightTheme = false;
+        window.isDarkModeCodeHighlightThemeDark = true;
+        window.isDisableCodeHighlighter = false;
+        window.enableCodeThemeTypeFollowSystem = false;
+        window.enableMacStyleCodeBlock = false;        
+    </script>
+        <script>
+            window.currentPostId = 23261573;
+            window.currentPostDateAdded = '2026-10-11 14:46';
+        </script>
+    <script src="https://assets.cnblogs.com/scripts/jquery-3.3.1.min.js"></script>
+    <script src="https://cdn-www.cnblogs.com/js/blog-common.min.js?v=s4G89hcAIPG0l9Bje44CCNwM-djP_Bpp8JXJnkGs-4o"></script>
+    
+</head>
+<body class="skin-bluesky has-navbar">
+    <a name="top"></a>
+    <div id="top_nav" class="navbar forpc">
+        <nav id="nav_main" class="navbar-main">
+            <ul id="nav_left" class="navbar-list navbar-left">
+                <li class="navbar-branding">
+                    <a href="https://www.cnblogs.com/" title="开发者的网上家园" role="banner">
+                        <img src="//assets.cnblogs.com/logo.svg" alt="博客园logo" />
+                    </a>
+                </li>
+                <li><a href="https://cnblogs.vip/">会员</a></li>
+                <li><a href="https://cnblogs.vip/store">周边</a></li>
+                <li><a href="https://news.cnblogs.com/" onclick="countClicks('nav', 'skin-navbar-news')">新闻</a></li>
+                <li><a href="https://q.cnblogs.com/" onclick="countClicks('nav', 'skin-navbar-q')">博问</a></li>
+                <li><a href="https://ing.cnblogs.com/" onclick="countClicks('nav', 'skin-navbar-ing')">闪存</a></li>                
+                <li><a href="https://www.cnblogs.com/cmt/p/19316348">赞助商</a></li>
+                <li><a href="https://chat2db-ai.com/" target="_blank">Chat2DB</a></li>
+            </ul>
+            <ul id="nav_right" class="navbar-list navbar-right">
+                <li>
+                    <form id="zzk_search" class="navbar-search dropdown" action="https://zzk.cnblogs.com/s" method="get" role="search">
+                        <input name="w" id="zzk_search_input" placeholder="代码改变世界" type="search" tabindex="3" autocomplete="off" />
+                        <button id="zzk_search_button" onclick="window.navbarSearchManager.triggerActiveOption()">
+                            <img id="search_icon" class="focus-hidden" src="//assets.cnblogs.com/icons/search.svg" alt="搜索" />
+                            <img class="hidden focus-visible" src="//assets.cnblogs.com/icons/enter.svg" alt="搜索" />
+                        </button>
+                        <ul id="navbar_search_options" class="dropdown-menu quick-search-menu">
+                            <li tabindex="0" class="active" onclick="zzkSearch(event, document.getElementById('zzk_search_input').value)">
+                                <div class="keyword-wrapper">
+                                    <img src="//assets.cnblogs.com/icons/search.svg" alt="搜索" />
+                                    <div class="keyword"></div>
+                                </div>
+                                <span class="search-area">所有博客</span>
+                            </li>
+                                    <li tabindex="1" onclick="zzkBlogSearch(event, 'zw-awa', document.getElementById('zzk_search_input').value)">
+                                        <div class="keyword-wrapper">
+                                            <img src="//assets.cnblogs.com/icons/search.svg" alt="搜索" />
+                                            <div class="keyword"></div>
+                                        </div>
+                                        <span class="search-area">当前博客</span>
+                                    </li>
+                        </ul>
+                    </form>
+                </li>
+                <li id="navbar_login_status" class="navbar-list">
+                    <a class="navbar-user-info navbar-blog" href="https://i.cnblogs.com/EditPosts.aspx?opt=1" alt="写随笔" title="写随笔">
+                        <img id="new_post_icon" class="navbar-icon" src="//assets.cnblogs.com/icons/newpost.svg" alt="写随笔" />
+                    </a>
+                    <a id="navblog-myblog-icon" class="navbar-user-info navbar-blog" href="https://www.cnblogs.com/my" alt="我的博客" title="我的博客">
+                        <img id="myblog_icon" class="navbar-icon" src="//assets.cnblogs.com/icons/myblog.svg" alt="我的博客" />
+                    </a>
+                    <a class="navbar-user-info navbar-message navbar-icon-wrapper" href="https://msg.cnblogs.com/" alt="短消息" title="短消息">
+                        <img id="msg_icon" class="navbar-icon" src="//assets.cnblogs.com/icons/message.svg" alt="短消息" />
+                        <span id="msg_count" style="display: none"></span>
+                    </a>
+                    <a id="navbar_lite_mode_indicator" data-current-page="blog" style="display: none" href="javascript:void(0)" alt="简洁模式" title="简洁模式启用，您在访问他人博客时会使用简洁款皮肤展示">
+                        <img class="navbar-icon" src="//assets.cnblogs.com/icons/lite-mode-on.svg" alt="简洁模式" />
+                    </a>
+                    <div id="user_info" class="navbar-user-info dropdown">
+                        <a class="dropdown-button" href="https://home.cnblogs.com/">
+                            <img id="user_icon" class="navbar-avatar" src="//assets.cnblogs.com/icons/avatar-default.svg" alt="用户头像" />
+                        </a>
+                        <div class="dropdown-menu">
+                            <a id="navblog-myblog-text" href="https://www.cnblogs.com/my">我的博客</a>
+                            <a href="https://home.cnblogs.com/">我的园子</a>
+                            <a href="https://account.cnblogs.com/settings/account">账号设置</a>
+                            <a href="https://vip.cnblogs.com/my">会员中心</a>
+                            <a href="javascript:void(0)" id="navbar_lite_mode_toggle" title="简洁模式会使用简洁款皮肤显示所有博客">
+    简洁模式 <span id="navbar_lite_mode_spinner" class="hide">...</span>
+</a>
+
+                            <a href="javascript:void(0)" onclick="account.logout();">退出登录</a>
+                        </div>
+                    </div>
+                    <a class="navbar-anonymous" href="https://account.cnblogs.com/signup">注册</a>
+                    <a class="navbar-anonymous" href="javascript:void(0);" onclick="account.login()">登录</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    
+
+    <div id="home">
+<div id="header">
+	<div id="blogTitle">
+        <a id="lnkBlogLogo" href="https://www.cnblogs.com/zw-awa/"><img id="blogLogo" src="/skins/custom/images/logo.gif" alt="返回主页" /></a>		
+		
+
+<h1><a id="Header1_HeaderTitle" class="headermaintitle HeaderMainTitle" href="https://www.cnblogs.com/zw-awa">Zw-awa</a>
+</h1>
+<h2></h2>
+
+
+
+
+		
+	</div>
+	<div id="navigator">
+		
+<ul id="navList">
+<li><a id="blog_nav_sitehome" class="menu" href="https://www.cnblogs.com/">
+博客园</a>
+</li>
+<li>
+<a id="blog_nav_myhome" class="menu" href="https://www.cnblogs.com/zw-awa/">
+首页</a>
+</li>
+<li>
+
+<a id="blog_nav_newpost" class="menu" href="https://i.cnblogs.com/EditPosts.aspx?opt=1">
+新随笔</a>
+</li>
+<li>
+<a id="blog_nav_contact" class="menu" href="https://msg.cnblogs.com/send/Zw-awa">
+联系</a></li>
+<li>
+<a id="blog_nav_rss" class="menu" href="javascript:void(0)" data-rss="https://www.cnblogs.com/zw-awa/rss/">
+订阅</a>
+<!--<partial name="./Shared/_XmlLink.cshtml" model="Model" /></li>--></li>
+<li>
+<a id="blog_nav_admin" class="menu" href="https://i.cnblogs.com/">
+管理</a>
+</li>
+</ul>
+
+
+		<div class="blogStats">
+			<div id="blog_stats_place_holder"><script>loadBlogStats();</script></div>
+		</div>
+	</div>
+</div>
+<div id="main">
+	<div id="mainContent">
+	<div class="forFlow">
+		<div id="post_detail">
+    
+    <div id="topics">
+        <div class="post">
+            <h1 class = "postTitle">
+                <a id="cb_post_title_url" class="postTitle2 vertical-middle" href="https://www.cnblogs.com/zw-awa/p/23261573" title="发布于 2026-10-11 14:46">
+    
+
+    <span role="heading" aria-level="2">传感器模块都在交出什么：从模拟电压到数字协议</span>
+    
+
+</a>
+
+            </h1>
+            <div class="clear"></div>
+            <div class="postBody">
+                    <div id="cnblogs_post_description" style="display: none">
+        <img src="https://img2024.cnblogs.com/blog/3791643/202610/3791643-20261011144230674-942809967.png" alt="传感器模块都在交出什么：从模拟电压到数字协议" class="desc_img" />
+        光敏、热敏、电位器摆在桌面上，交出来的东西却完全不是一类。同一块芯片的输入口，为什么偏偏不能共用一个“读传感器”的函数？
+    </div>
+<div id="cnblogs_post_body" class="blogpost-body cnblogs-markdown">
+<h2 id="先把三种线接到同一张地图上">先把三种线接到同一张地图上</h2>
+<p>桌面上摆着几块常见模块：光敏、热敏和电位器。它们都能接到 STM32，但交出来的东西并不一样。先把这三种输入放到同一张地图上：</p>
+<table>
+<thead>
+<tr>
+<th>器件</th>
+<th>模块端</th>
+<th>参考接线</th>
+<th>这根线交给谁</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>光敏电阻模块</td>
+<td><code>AO</code></td>
+<td><code>PA0 / ADC1_CH0</code></td>
+<td>ADC，读连续电压</td>
+</tr>
+<tr>
+<td>光敏电阻模块</td>
+<td><code>DO</code></td>
+<td><code>PB5</code></td>
+<td>GPIO，读比较器后的 0/1</td>
+</tr>
+<tr>
+<td>热敏电阻模块</td>
+<td><code>AO</code></td>
+<td><code>PA1 / ADC1_CH1</code></td>
+<td>ADC，读分压电压</td>
+</tr>
+<tr>
+<td>3362P <code>103</code></td>
+<td>中间滑动端</td>
+<td><code>PA2 / ADC1_CH2</code></td>
+<td>ADC，读手动电压</td>
+</tr>
+<tr>
+<td>三个器件</td>
+<td><code>GND</code></td>
+<td><code>GND</code></td>
+<td>必须共地</td>
+</tr>
+<tr>
+<td>三个器件</td>
+<td><code>VCC</code></td>
+<td>按产品资料供电</td>
+<td>先确认工作电压和输出范围</td>
+</tr>
+</tbody>
+</table>
+<p>光敏模块通常有 <code>VCC、GND、AO、DO</code> 四个引脚。<code>AO</code> 是传感电路产生的模拟电压，<code>DO</code> 是板上的比较器拿 AO 和阈值比较后的结果。模块上的小电位器，就是在改这条阈值线。</p>
+<p>3362P <code>103</code> 是 10K 电位器。把两端接到 <code>3.3V</code> 和 <code>GND</code>，中间滑动端接 PA2，它就是一只手动可调的分压器。不要把滑动端直接接到 5V 再送进 STM32 ADC。STM32F103 的 ADC 输入通常不能高于 3.3V，接线之前先用万用表量一下电压。</p>
+<p>如果某个模块用 5V 供电，<code>AO</code> 可能随着光线或温度接近 5V。此时不能因为“它只是一个模拟输出”就直接插进 PA0/PA1。</p>
+<h2 id="adc-没有光照通道">ADC 没有“光照通道”</h2>
+<p>STM32F103 的 ADC 是 12 位。假设参考电压是 3.3V，它把输入电压切成 4096 个刻度：</p>
+<pre><code class="language-text">0V       -&gt; 0
+1.65V    -&gt; 约 2048
+3.3V     -&gt; 4095
+</code></pre>
+<p>它真正做的是：采样 PA0 上的电压，转换成一个 0 到 4095 的整数。</p>
+<p>如果光敏模块在黑暗时输出 2.4V，ADC 可能返回接近 2978；如果热敏模块在当前温度下输出 1.1V，ADC 可能返回接近 1365。数字本身没有“光”和“温度”的单位。单位来自传感器电路的关系，还需要你知道分压电阻、热敏电阻曲线、模块方向和标定结果。</p>
+<pre><code class="language-c">uint16_t light_raw = AnalogInput_ReadLight();
+uint16_t thermistor_raw = AnalogInput_ReadThermistor();
+uint16_t potentiometer_raw = AnalogInput_ReadPotentiometer();
+</code></pre>
+<p>这三个变量的名字已经在提醒我们：它们是 <code>raw</code>，是原始采样值。它们还不是 <code>temperature</code> 或 <code>lux</code>。</p>
+<h2 id="光敏模块ao-和-do-同时接出来差别才会露出来">光敏模块：AO 和 DO 同时接出来，差别才会露出来</h2>
+<p>先只做一个动作：用手遮住光敏电阻，再拿手机灯照它。OLED 第一行显示 <code>AO</code>，第四行显示 <code>DO</code>。同时拧光敏模块上的电位器，让 DO 的状态翻转。</p>
+<p>程序里，AO 走 ADC，DO 走普通 GPIO：</p>
+<pre><code class="language-c">static uint16_t AnalogInput_ReadChannel(uint8_t channel)
+{
+    ADC_RegularChannelConfig(ADC1, channel, 1,
+                             ADC_SampleTime_55Cycles5);
+    ADC_SoftwareStartConvCmd(ADC1, ENABLE);
+
+    while (ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC) == RESET)
+    {
+    }
+
+    return ADC_GetConversionValue(ADC1);
+}
+
+uint16_t AnalogInput_ReadLight(void)
+{
+    return AnalogInput_ReadChannel(ADC_Channel_0);
+}
+
+uint8_t AnalogInput_IsLightThresholdActive(void)
+{
+    uint8_t level;
+
+    level = GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_5) == Bit_SET;
+
+    /* 常见模块是低电平触发，换模块时只改这一层。 */
+    return (uint8_t)!level;
+}
+</code></pre>
+<p>这里的 <code>!level</code> 不是玄学。它只是把“引脚读到低电平”翻译成“阈值被触发”。如果你手上的模块恰好高电平触发，改这一层就够了，不要让上层业务到处出现 <code>if (GPIO_Read... == Bit_RESET)</code>。</p>
+<p>DO 的状态由模块电位器决定。拧动电位器，改变的是比较器的阈值，不是光敏电阻本身突然变灵敏。AO 曲线仍然是传感器原始电压；DO 只是告诉你“这次有没有越过阈值”。</p>
+<h2 id="热敏模块先看到电压再谈温度">热敏模块：先看到电压，再谈温度</h2>
+<p>常见热敏模块把热敏电阻和固定电阻组成分压。温度改变，热敏电阻阻值改变，分压点电压跟着改变，ADC 读到的就是这个分压点。</p>
+<pre><code class="language-text">3.3V
+ |
+[热敏电阻]
+ |
+ +------&gt; AO ------&gt; PA1 / ADC1_CH1
+ |
+[固定电阻]
+ |
+GND
+</code></pre>
+<p>手指按住热敏电阻，数字可能变化得很慢。手指的热量先传到封装，再改变阻值，分压电压才移动；松开以后，它又慢慢回到环境温度。用 OLED 连续看几次读数，就能看到这个变化过程。至于精确的摄氏度，还需要完整的参数和标定数据。</p>
+<p>如果要把 ADC 数值换成温度，至少还要知道：热敏电阻的标称阻值、B 值或完整阻值曲线、分压电阻值、供电电压，以及模块的实际误差。少一个条件，公式都可能只是漂亮的错数。</p>
+<h2 id="3362p最诚实的模拟输入">3362P：最诚实的模拟输入</h2>
+<p>电位器没有“传感器算法”。你拧多少，它就把滑动端电压推到哪里。它最适合用来排查 ADC：</p>
+<ul>
+<li>数字从接近 0 连续走到接近 4095，说明 ADC 基本链路在工作；</li>
+<li>数字卡在某个范围，先量滑动端电压，再查供电、接地和引脚；</li>
+<li>数字跳动明显，先检查面包板接触、供电和采样线；</li>
+<li>模块上的调节电位器改变 DO 翻转点，本质上也是在改变一个比较电压。</li>
+</ul>
+<pre><code class="language-c">uint16_t potentiometer_raw = AnalogInput_ReadPotentiometer();
+
+OLED_ShowNum(0, 16, potentiometer_raw, 4, OLED_6X8);
+</code></pre>
+<p>把电位器从一端慢慢拧到另一端，OLED 上的数字应该跟着连续变化。它给 ADC 提供了一份能由手动控制、能重复回到原点的输入。</p>
+<h2 id="一次采样代码里到底准备了什么">一次采样，代码里到底准备了什么</h2>
+<p>初始化函数把三路 ADC 配成模拟输入，把光敏 DO 配成上拉输入，再完成 ADC 时钟和校准：</p>
+<pre><code class="language-c">void AnalogInput_Init(void)
+{
+    GPIO_InitTypeDef gpio;
+    ADC_InitTypeDef adc;
+
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA |
+                           RCC_APB2Periph_GPIOB |
+                           RCC_APB2Periph_ADC1, ENABLE);
+    RCC_ADCCLKConfig(RCC_PCLK2_Div6);
+
+    gpio.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_2;
+    gpio.GPIO_Mode = GPIO_Mode_AIN;
+    GPIO_Init(GPIOA, &amp;gpio);
+
+    gpio.GPIO_Pin = GPIO_Pin_5;
+    gpio.GPIO_Mode = GPIO_Mode_IPU;
+    GPIO_Init(GPIOB, &amp;gpio);
+
+    adc.ADC_Mode = ADC_Mode_Independent;
+    adc.ADC_ScanConvMode = DISABLE;
+    adc.ADC_ContinuousConvMode = DISABLE;
+    adc.ADC_ExternalTrigConv = ADC_ExternalTrigConv_None;
+    adc.ADC_DataAlign = ADC_DataAlign_Right;
+    adc.ADC_NbrOfChannel = 1;
+    ADC_Init(ADC1, &amp;adc);
+
+    ADC_Cmd(ADC1, ENABLE);
+    ADC_ResetCalibration(ADC1);
+    while (ADC_GetResetCalibrationStatus(ADC1))
+    {
+    }
+    ADC_StartCalibration(ADC1);
+    while (ADC_GetCalibrationStatus(ADC1))
+    {
+    }
+}
+</code></pre>
+<p><code>GPIO_Mode_AIN</code> 是在告诉 GPIO：这三根脚不再负责输出高低电平，而是把外部电压交给 ADC。<code>ADC_RegularChannelConfig()</code> 每次选择当前要读的通道，软件触发一次转换，<code>EOC</code> 置位后才取结果。</p>
+<p>三路输入每 10ms 读一次，足够观察光敏、热敏和手动电位器。每次只选择一个通道、启动一次转换、等待完成，再读取结果，过程清清楚楚。</p>
+<p>主循环按固定间隔采样，并把结果显示在屏幕上：</p>
+<pre><code class="language-c">if (Timer_Expired(&amp;sample_time, 10))
+{
+    light_raw = AnalogInput_ReadLight();
+    thermistor_raw = AnalogInput_ReadThermistor();
+    potentiometer_raw = AnalogInput_ReadPotentiometer();
+    light_threshold_active = AnalogInput_IsLightThresholdActive();
+}
+
+if (Timer_Expired(&amp;oled_time, 100))
+{
+    OLED_ShowNum(0, 0, light_raw, 4, OLED_6X8);
+    OLED_ShowNum(0, 8, thermistor_raw, 4, OLED_6X8);
+    OLED_ShowNum(0, 16, potentiometer_raw, 4, OLED_6X8);
+    OLED_ShowNum(0, 24, light_threshold_active, 1, OLED_6X8);
+}
+
+</code></pre>
+<p>DO 是离散状态，直接显示 <code>0/1</code> 就足够；AO 则显示 ADC 的原始数值。这样看屏幕时，可以同时对照连续变化的电压和越过阈值后的状态。</p>
+<h2 id="看到异常先检查输入">看到异常，先检查输入</h2>
+<h3 id="光敏-ao-一直不变">光敏 AO 一直不变</h3>
+<p>先用万用表测 AO 对 GND 的电压，再拧模块电位器。电位器通常只影响 DO 阈值，不能保证 AO 一定大幅变化；如果 AO 本身接近固定电压，检查光敏元件、供电和模块方向。</p>
+<h3 id="do-一直是-0-或一直是-1">DO 一直是 0 或一直是 1</h3>
+<p>看模块指示灯，再慢慢拧阈值电位器。确认 PB5 的有效电平定义，必要时只改 <code>LIGHT_DO_ACTIVE_LOW</code>。不要把 DO 的状态异常直接归咎于 ADC，因为 DO 根本没有经过 ADC。</p>
+<h3 id="热敏数值变化很小">热敏数值变化很小</h3>
+<p>这可能是热量传递慢，也可能是模块分压范围窄。把手指按住几十秒，再松开观察曲线；如果只看一瞬间的 OLED 数字，很容易把“响应慢”误判成“代码没工作”。</p>
+<h3 id="电位器不能走满-0-到-4095">电位器不能走满 0 到 4095</h3>
+<p>先量两端是否真的接在 3.3V 和 GND，滑动端是否接对。电位器阻值、ADC 输入范围、供电和接触电阻都会影响端点；不要为了追求满量程把 ADC 输入接到超过 3.3V 的电压。</p>
+<h2 id="这几种输入为什么不能共用一个传感器函数">这几种输入为什么不能共用一个“传感器函数”</h2>
+<p>它们最后都可以得到数字，但数字之前发生的事情不同：</p>
+<pre><code class="language-text">光敏 AO       -&gt; 电压 -&gt; ADC 原始值
+光敏 DO       -&gt; 比较器阈值 -&gt; GPIO 状态
+热敏电阻 AO   -&gt; 分压电压 -&gt; ADC 原始值 -&gt; 需要曲线才能换温度
+3362P         -&gt; 手动分压电压 -&gt; ADC 原始值
+</code></pre>
+<p>如果接口只写成 <code>Sensor_Read()</code>，调用者很快就会忘记返回的是电平、ADC 原始值，还是已经换算过的物理量。把名字写具体一些：<code>ReadLight()</code>、<code>ReadThermistor()</code>、<code>ReadPotentiometer()</code>，并注明它们当前返回的仍然是原始 ADC 数字。</p>
+<p>先把这几种输入的来路分清楚：传感器给出电压，ADC 把电压变成数字，模块上的比较器则把连续变化压成一个阈值状态。未经标定的热敏模块，不能只凭一个 ADC 数字得出可靠的摄氏度。</p>
+<p>ADC 不是“光照值”和“温度值”的翻译器。它只是电压的记账员；至于这笔电压账最后代表什么，要由传感器电路、标定数据和你的工程目标共同决定。</p>
+<h2 id="先让-data-线在空闲时站稳">先让 DATA 线在空闲时站稳</h2>
+<p>裸 DHT11 有四个针脚，实际接三根。<code>NC</code> 保持悬空。不同批次和封装的脚位顺序可能不同，接线前先对照自己手上的资料和元件正面标记。</p>
+<table>
+<thead>
+<tr>
+<th>DHT11 引脚</th>
+<th>参考接法</th>
+<th>观察什么</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>VCC</code></td>
+<td>3.3V；也可按资料使用 5V</td>
+<td>先确认 DATA 高电平会不会超过 MCU 可承受范围</td>
+</tr>
+<tr>
+<td><code>DATA</code></td>
+<td><code>PB2</code></td>
+<td>主机发起读取，DHT11 回传数据</td>
+</tr>
+<tr>
+<td><code>NC</code></td>
+<td>不接</td>
+<td>没有功能</td>
+</tr>
+<tr>
+<td><code>GND</code></td>
+<td>STM32 <code>GND</code></td>
+<td>DHT11 和开发板共地</td>
+</tr>
+</tbody>
+</table>
+<p>DATA 和 VCC 之间需要一颗上拉电阻 R1，常用 4.7K 到 10K。很多 DHT11 模块已经把它焊在板上，裸传感器则需要外接。接线前先看清模块原理图或板上丝印：已经有 R1 的模块，不再重复加一颗。</p>
+<pre><code class="language-text">VCC
+ |
+[R1]
+ |
+ +------ DATA ------ PB2
+ |
+DHT11
+ |
+GND
+</code></pre>
+<p>DHT11 需要发低电平时，把 DATA 拉到地；它松手时，R1 把线带回高电平。STM32 也遵守这个习惯：发起读取时把 PB2 拉低，随后把 PB2 改成输入，把这根线还给 DHT11。</p>
+<p>没有 R1，DATA 在双方都松手时就没有明确的高低电平，程序读到的结果也不可靠。R1 的工作不是制造一串数据，而是给这根共享的数据线准备稳定的空闲状态。</p>
+<h2 id="data-上跑的是-40-个-bit">DATA 上跑的是 40 个 bit</h2>
+<p>DHT11 每次回传 5 个字节：</p>
+<pre><code class="language-text">湿度整数 | 湿度小数 | 温度整数 | 温度小数 | 校验和
+</code></pre>
+<p>DHT11 常见整数型号的小数字节多为 <code>0</code>。第五个字节由前四个相加得到：</p>
+<pre><code class="language-c">checksum = humidity_integer + humidity_decimal +
+           temperature_integer + temperature_decimal;
+</code></pre>
+<p>这里没有一个“2.1V 等于 26 度”的换算公式。DATA 线上先后经过的是一段段低电平和高电平。每一位先低约 50us；后面的高电平很短时记为 <code>0</code>，持续约 70us 时记为 <code>1</code>。</p>
+<pre><code class="language-text">低约 50us | 高约 26~28us  -&gt; 0
+低约 50us | 高约 70us     -&gt; 1
+</code></pre>
+<p>主机还要先敲门：</p>
+<pre><code class="language-text">STM32 拉低 DATA 至少 18ms
+STM32 释放 DATA
+DHT11 拉低约 80us，再拉高约 80us
+DHT11 连续发送 40 位
+</code></pre>
+<p>观察 PB2 的程序状态和 DHT11 返回结果时，最该先找的不是一整帧数据。先分清主机拉低的起始动作，再分清代表 <code>0</code> 和 <code>1</code> 的两种高电平时长。</p>
+<h2 id="pb2-在一次读取中换了两次身份">PB2 在一次读取中换了两次身份</h2>
+<p>一次读取里，PB2 要先做输出，再做输入：</p>
+<pre><code class="language-c">static void DHT11_SetOutput(void)
+{
+    GPIO_InitTypeDef gpio;
+
+    gpio.GPIO_Pin = GPIO_Pin_2;
+    gpio.GPIO_Mode = GPIO_Mode_Out_OD;
+    gpio.GPIO_Speed = GPIO_Speed_2MHz;
+    GPIO_Init(GPIOB, &amp;gpio);
+}
+
+static void DHT11_SetInput(void)
+{
+    GPIO_InitTypeDef gpio;
+
+    gpio.GPIO_Pin = GPIO_Pin_2;
+    gpio.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+    GPIO_Init(GPIOB, &amp;gpio);
+}
+</code></pre>
+<p>开始读取时，STM32 把 PB2 配成开漏输出，拉低 DATA。协议要求这段低电平至少 18ms，而这里用的是空循环延时，不是精确的毫秒计时——它一个“单位”大约 2µs 上下，随主频和编译器变，所以 <code>19000</code> 落地时比 19ms 要长，接板子前先按自己的时钟校准一次：</p>
+<pre><code class="language-c">DHT11_SetOutput();
+GPIO_ResetBits(DHT11_PORT, DHT11_PIN);
+DHT11_DelayUs(19000);
+GPIO_SetBits(DHT11_PORT, DHT11_PIN);
+DHT11_DelayUs(30);
+DHT11_SetInput();
+</code></pre>
+<p>最后一行一执行，STM32 就不再控制 DATA。随后等 DHT11 先拉低、再拉高。等不到预期电平，<code>DHT11_WaitLevel()</code> 返回，<code>DHT11_Read()</code> 给出 <code>DHT11_TIMEOUT</code>。没有超时保护的版本会卡在 <code>while</code> 里，线路没有响应时程序就再也回不到主循环。</p>
+<p>每一位高电平开始后，程序等一小段再看一次 PB2。这里的 <code>40</code> 同样受空循环延时的影响，不是精确的 40µs（按上面那个单位估算落在 80~90µs 这一档）——它的作用是在高电平结束前采一次样，所以这个数要按自己的板子校准，别照抄：</p>
+<pre><code class="language-c">DHT11_DelayUs(40);
+data &lt;&lt;= 1;
+
+if (DHT11_ReadLevel())
+{
+    data |= 1;
+}
+</code></pre>
+<p>短高电平已经结束，读到 <code>0</code>；长高电平还在，读到 <code>1</code>。这就是为什么 DATA 接在普通 GPIO 上，驱动里却反复谈时间。ADC 擅长把稳定电压转换成数字；DHT11 需要程序分辨脉冲什么时候落下。</p>
+<h2 id="两秒读一次就够了">两秒读一次就够了</h2>
+<p>DHT11 自己完成一次测量需要时间，常见资料给出的两次读取间隔至少约 1 秒。每两秒请求一次，能留出明显余量。屏幕可以继续显示上一次成功读到的温度、湿度和状态码；到了下一次读取时间，再取一组新数据。</p>
+<p>一次读取本身会占用几十毫秒，因为程序必须等完那 40 位高低电平。间隔的两秒并不是程序停住两秒，而是等到下一次该读取时再发起请求。</p>
+<h2 id="温湿度数字先要过三道关">温湿度数字先要过三道关</h2>
+<p>屏幕上显示温度和湿度之前，驱动已经做了三次判断：DHT11 有没有回应，40 个 bit 有没有按时读完，最后的校验和能不能对上。结果可以归成三种状态：</p>
+<pre><code class="language-text">0：收到完整数据，校验通过
+1：等响应或等位超时
+2：收满五个字节，校验失败
+</code></pre>
+<p><code>0</code> 表示五个字节都收到了，而且第五个字节与前四个字节相加的结果一致，这时温湿度才可以更新到屏幕上。</p>
+<p><code>1</code> 表示程序在等某个该出现的电平，却一直没有等到。DATA 没接好、上拉电阻缺失、供电异常、读取间隔太短，都可能走到这个结果。它的意义是“这一帧没有读完”，不是“当前温湿度为 1”。</p>
+<p><code>2</code> 表示 40 个 bit 已经全部收到，但最后一项核对没有通过。这些 bit 有可能在传输中受干扰，也有可能其中某一位的时长被误判。驱动不需要猜是哪一位出了问题，只需要拒绝用这帧数据覆盖上一次正确的温湿度。</p>
+<p>这三种状态比“屏幕上有个 26 度”更早告诉你程序走到了哪里。上拉电阻保证空闲电平，超时判断防止程序永远等待，校验和负责拦住看似完整却不可信的数据。</p>
+<p>DHT11 给 STM32 的是一帧有时序的数据。PA0 上的光敏 AO 可以交给 ADC；PB2 上的 DHT11 DATA 需要按脉冲宽度读取。线只有一根，里面跑的东西完全不同。</p>
+<h2 id="先把看哪里摆在桌面上">先把“看哪里”摆在桌面上</h2>
+<table>
+<thead>
+<tr>
+<th>模块</th>
+<th>观察对象</th>
+<th>触发动作</th>
+<th>典型用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>单个 TCRT5000 / 单路灰度</td>
+<td>一处近距离的反射</td>
+<td>黑白或距离变化让通道翻转</td>
+<td>到位检测、近物检测</td>
+</tr>
+<tr>
+<td>八路循迹 / 八路灰度</td>
+<td>车底八处位置的反射差异</td>
+<td>黑线让若干通道翻转</td>
+<td>判断线在左还是右</td>
+</tr>
+<tr>
+<td>对射红外</td>
+<td>发射端和接收端之间的光路</td>
+<td>中间出现遮挡物时翻转</td>
+<td>计数、门边检测、掉落检测</td>
+</tr>
+<tr>
+<td>光敏模块 DO</td>
+<td>当前位置的环境光</td>
+<td>光线越过阈值时翻转</td>
+<td>光暗开关</td>
+</tr>
+</tbody>
+</table>
+<p>单个 TCRT5000 和八路循迹模块本质上是同一种反射式传感器，八路循迹模块也常被叫作灰度传感器。前者把一组发射管和接收管对着一小块区域，后者把多组相同的器件排成一行。把八路模块拆开看，其中任意一路和单个 TCRT5000 都是在交出一个反射状态；确认供电和输出电平后，两者可以按同一种 GPIO 输入方式接入。真正不同的是数量和安装位置：一个点只能回答“眼前这一小块区域是什么样”，八个点还能比较出黑线偏左还是偏右。</p>
+<p>对射不看目标反射回来的光。发射端一直对着接收端，接收端只等那一束光有没有到达。手指伸进中间，状态就变；手指拿走，状态又恢复。</p>
+<h2 id="把状态接到看得见的地方">把状态接到看得见的地方</h2>
+<p>下面这组引脚用于把这些状态接到同一块开发板上：</p>
+<table>
+<thead>
+<tr>
+<th>信号</th>
+<th>参考引脚</th>
+<th>有效状态</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>对射 DO</td>
+<td><code>PB0</code></td>
+<td>低电平表示光路被挡</td>
+</tr>
+<tr>
+<td>TCRT5000 DO</td>
+<td><code>PB2</code></td>
+<td>低电平表示近处反射触发</td>
+</tr>
+<tr>
+<td>光敏 DO</td>
+<td><code>PB5</code></td>
+<td>低电平表示越过光照阈值</td>
+</tr>
+<tr>
+<td>有源蜂鸣器 IN</td>
+<td><code>PB12</code></td>
+<td>低电平响</td>
+</tr>
+<tr>
+<td>外接 LED</td>
+<td><code>PC13</code></td>
+<td>TCRT 有效时点亮</td>
+</tr>
+</tbody>
+</table>
+<p>模块的 VCC、GND 按自己买到的产品资料接，三个 DO 和 STM32 必须共地。对射模块的发射端和接收端也要分别供电，先让两端指示灯稳定，再把 DO 接 PB0。</p>
+<p>底层接口只保留“这个状态是否有效”：</p>
+<pre><code class="language-c">static uint8_t DigitalSensor_ReadPin(uint16_t pin,
+                                     uint8_t active_low)
+{
+    uint8_t level;
+
+    level = GPIO_ReadInputDataBit(GPIOB, pin) == Bit_SET;
+
+    if (active_low)
+    {
+        return (uint8_t)!level;
+    }
+
+    return level;
+}
+</code></pre>
+<p>换一块输出逻辑相反的模块，只改 <code>BEAM_ACTIVE_LOW</code> 或 <code>REFLECT_ACTIVE_LOW</code>，屏幕、蜂鸣器和 LED 的逻辑不用跟着散开。</p>
+<h2 id="第一次运行保持初始状态">第一次运行：保持初始状态</h2>
+<p>上电后让对射两端正对，TCRT5000 前方放一块距离合适的白纸，光敏模块放在桌面上。OLED 三行显示：</p>
+<pre><code class="language-text">beam    reflect    light
+</code></pre>
+<p>三行的具体 0/1 取决于模块的有效电平定义。先看模块指示灯和代码里的有效电平宏，把实际状态记录下来。</p>
+<p>程序每 10ms 读取一次 GPIO：</p>
+<pre><code class="language-c">if (Timer_Expired(&amp;sample_time, 10))
+{
+    beam_blocked = DigitalSensor_ReadBeam();
+    reflect_active = DigitalSensor_ReadReflect();
+    light_active = DigitalSensor_ReadLight();
+}
+</code></pre>
+<p>10ms 对手动遮挡和近物检测足够。需要快速计数时，采样频率还要按目标运动速度重新安排；三种“1”背后，对应的是三种不同的空间关系。</p>
+<h2 id="让两个动作把区别说出来">让两个动作把区别说出来</h2>
+<pre><code class="language-c">Buzzer_Set(beam_blocked);
+
+if (reflect_active)
+{
+    LED_On();
+}
+else
+{
+    LED_Off();
+}
+</code></pre>
+<p>PB12 接常见三针有源蜂鸣器模块，触发端低电平时发声。这里把它当成“低电平进去就响”的黑盒；有源和无源的发声原理另开文章。</p>
+<p>把手指插进对射两端之间。蜂鸣器应该随着 <code>beam_blocked</code> 的有效状态动作；拿开手指，声音停止。把白纸移到 TCRT5000 前面，PC13 外接 LED 随 <code>reflect_active</code> 翻转；纸离开，LED 恢复。</p>
+<p>对射的手指不需要靠近接收头，只要穿过中间那条线；TCRT5000 的手指必须进入近距离反射范围；光敏没有遮挡动作也可以触发，只要环境亮暗改变。</p>
+<h2 id="让状态变化看得见">让状态变化看得见</h2>
+<p>如果每 10ms 都刷新一次屏幕，重复的 <code>0</code> 和 <code>1</code> 没有太大意义。可以只在状态发生变化时更新显示：</p>
+<pre><code class="language-c">if (beam_blocked != old_beam)
+{
+    old_beam = beam_blocked;
+    OLED_ShowNum(0, 0, beam_blocked, 1, OLED_6X8);
+}
+
+if (reflect_active != old_reflect)
+{
+    old_reflect = reflect_active;
+    OLED_ShowNum(0, 8, reflect_active, 1, OLED_6X8);
+}
+</code></pre>
+<p>用纸片连续遮挡对射三次，屏幕上的 <code>beam</code> 应该跟着变化；把纸片在 TCRT5000 前后移动，<code>reflect</code> 的变化对应的是距离和表面反射，不是某一条固定光路被截断。</p>
+<p>光敏 DO 的变化和手机灯、手掌阴影、环境灯有关；光敏 AO 和 DO 的阈值关系，可以对照前文的实验观察。</p>
+<h2 id="三个实验把红外拆开">三个实验，把“红外”拆开</h2>
+<h3 id="实验一对射只认光路">实验一：对射只认光路</h3>
+<p>先让发射端和接收端正对，记录 <code>beam</code> 的初始值。用硬纸片从两端之间穿过，保持纸片不碰模块；再把纸片移走。</p>
+<p>记录三件事：纸片没有进入光路时的状态、挡住光路时的状态和蜂鸣器反应、移走后多久恢复。把纸片放在发射端旁边、接收端旁边，但不挡中间直线，状态不应该因为“附近有一块纸”就改变。</p>
+<h3 id="实验二tcrt5000-需要一个反射面">实验二：TCRT5000 需要一个反射面</h3>
+<p>先把白纸放在模块前方，慢慢拉远，记录 LED 什么时候熄灭。换成黑纸重复，再换一个有光泽的物体。</p>
+<p>不要求不同模块给出同一个距离。留下自己的三条记录：白纸触发范围、黑纸触发范围、亮面物体的反应。TCRT5000 看的不是抽象的“有没有东西”，它看的是返回到接收管的反射光够不够越过阈值。</p>
+<p>把手指放在模块侧面，既不挡正前方，也不让反射面进入感应区。LED 如果仍翻转，调整安装角度和遮光条件，检查环境光是不是从侧面进来了。</p>
+<h3 id="实验三光敏-do-不等于-tcrt5000-do">实验三：光敏 DO 不等于 TCRT5000 DO</h3>
+<p>把手机灯照向光敏模块，再用手掌遮住；同时保持 TCRT5000 前面的白纸位置不变。记录三行 OLED 的变化。</p>
+<p>然后把手机灯移走，拿白纸在 TCRT5000 前后移动，观察哪一行变化。两种动作可以分别触发两个状态，说明 <code>DO</code> 只描述输出形式，没有说明传感器正在观察什么。</p>
+<h2 id="故障时先看空间关系">故障时先看空间关系</h2>
+<p>对射一直显示“被挡”时，让两端靠近、正对，观察接收端指示灯；如果光路这样仍不恢复，检查 VCC、GND 和发射/接收端。再把两端一点点拉开，找出稳定距离。</p>
+<p>TCRT5000 一直触发时，把目标拿远，再拧模块电位器；一直不触发时，把白纸贴近，确认发射灯在工作。黑纸、白纸和亮面材料的结果不同，属于反射条件变化。</p>
+<p>光敏 DO 一直翻转时，重新观察 AO 电压和阈值电位器；两者的变化能帮助定位问题。</p>
+<p>只有当指示灯、供电和实际动作都正常，OLED 上的 0/1 方向却反了，才改 <code>ACTIVE_LOW</code>。</p>
+<p>八路循迹和 TCRT5000 都是在比较反射光，只是观察点数量不同；对射红外则把发射端和接收端分开，判断的是中间光路是否被挡住。把八路模块中的一路单独使用时，接线和读取方式可以与单个 TCRT5000 按同一思路处理，再根据实际输出电平调整有效状态。</p>
+<p>传感器只交出状态。对射状态让蜂鸣器响，TCRT5000 状态让 LED 亮；上层动作改变时，底层读取函数仍然可以不动。</p>
+<h2 id="最后橘猫说">最后橘猫说</h2>
+<p>传感器模块到底在交出什么，不外乎三种：模拟电压、比较器切好的 0/1、以及按节奏送出来的数字协议。AO 的电压要交给 ADC，DO 的电平交给 GPIO，DHT11 的 40 个 bit 要在一根数据线上慢慢收。先把一根线到底交出什么问清楚，接错接口、读错数值的弯路能少走一大半。十分推荐大家去看看 ADC 读数的原理，十分的天才。</p>
+<h2 id="最后蜘蛛说">最后蜘蛛说</h2>
+<p>传感器天天把风吹草动整理成小报告递给我，我对着屏幕看了半天，最后发现是杜邦线在和我玩捉迷藏。</p>
+
+
+</div>
+<div class="clear"></div>
+<div id="blog_post_info_block" role="contentinfo" class="post-meta-container">
+    <div id="blog_post_info"></div>
+    <div class="clear"></div>
+    <div id="post_next_prev"></div>
+</div>
+            </div>
+            <div class="postDesc">posted @ 
+<span id="post-date" data-last-update-days="0" data-date-updated="2026-10-11 14:46">2026-10-11 14:46</span>&nbsp;
+<a href="https://www.cnblogs.com/zw-awa">Zw-awa</a>&nbsp;
+阅读(<span id="post_view_count">0</span>)&nbsp;
+评论(<span id="post_comment_count">0</span>)&nbsp;
+&nbsp;
+<a href="javascript:void(0)" onclick="AddToWz(23261573);return false;">收藏</a>&nbsp;
+<a href="https://report.cnblogs.com?targetLink=https%3A%2F%2Fwww.cnblogs.com%2Fzw-awa%2Fp%2F23261573&targetId=23261573&targetType=0" target="_blank">举报</a>
+</div>
+        </div>
+	    
+	    
+    </div><!--end: topics 文章、评论容器-->
+</div>
+<script>
+    var cb_entryId = 23261573, cb_entryCreatedDate = '2026-10-11 14:46', cb_postType = 1, cb_postTitle = '传感器模块都在交出什么：从模拟电压到数字协议';
+    var allowComments = true, cb_blogId = 867699, cb_blogApp = 'zw-awa', cb_blogUserGuid = 'dc5f8715-83bb-426b-ae3f-08de9eaa2b94';
+    mermaidRender.render()
+    markdown_highlight()
+    zoomManager.apply("#cnblogs_post_body img:not(.code_img_closed):not(.code_img_opened)");    
+</script>
+<a id="!comments"></a>
+<div id="blog-comments-placeholder"></div>
+<div id="comment_form" class="commentform">
+    <a name="commentform"></a>
+    <div id="divCommentShow"></div>
+    <div id="comment_nav">
+        <div class="comment-nav-right">
+            <span id="span_refresh_tips"></span><a href="#" onclick="return RefreshPage();">刷新页面</a><a href="#top">返回顶部</a>
+        </div>
+    </div>
+    <div id="comment_form_container"></div>
+    <div class="ad_text_commentbox" id="ad_text_under_commentbox"></div>
+        <div id="cnblogs_ch"></div>
+    <div id="opt_under_post"></div>
+        <div id="blog_c1" class="under-post-card below-post-card">
+            <a href="https://ais.cn/u/3Qf22e" rel="nofollow" target="_blank" onclick="countCreativeClicks('C1-艾思科蓝')">
+                <img src="https://img2024.cnblogs.com/blog/35695/202512/35695-20251205182619157-1150461542.webp" onload="countCreativeImpressions('C1-艾思科蓝')" alt="" style="width:300px!important;height:250px!important;min-width:300px!important;max-width:300px!important;" />
+                <span id="c1_impression" style="display:none"></span>
+            </a>
+        </div>
+    <div id="under_post_card1"></div>
+    <div id="related_posts_card"></div>
+    <div id="under_post_card2"></div>
+    <div id="HistoryToday" class="under-post-card below-post-card"></div>
+    <script type="text/javascript">
+        var commentManager = new blogCommentManager();
+        commentManager.renderComments(0);
+        fixPostBody();
+        window.footnoteTipManager.generateFootnoteTips();
+
+            window.tocManager.displayDisableTocTips = false;
+            window.tocManager.generateToc();
+            
+            setTimeout(function() { countViews(cb_blogId, cb_entryId); }, 50);
+            
+            deliverT2();
+            deliverC1C2();
+            loadNewsAndKb();
+            
+            LoadPostCategoriesTags(cb_blogId, cb_entryId);
+            
+            LoadPostInfoBlock(cb_blogId, cb_entryId, cb_blogApp, cb_blogUserGuid);
+            GetPrevNextPost(cb_entryId, cb_blogId, cb_entryCreatedDate, cb_postType);
+            loadOptUnderPost();
+            GetHistoryToday(cb_blogId, cb_blogApp, cb_entryCreatedDate);
+                </script>
+</div>
+
+	</div>
+	</div>
+	<div id="sideBar">
+		<div id="sideBarMain">
+			<div id="sidebar_news" class="newsItem">
+    <h3 class="catListTitle">公告</h3>
+<div id="blog-news" class="sidebar-news">
+    <div id="sidebar_news_container">
+    </div>
+</div>
+<script>loadBlogNews();</script>
+
+
+</div>
+			<div id="blog-calendar" style="display:none"></div><script>loadBlogDefaultCalendar();</script>			
+			<div id="leftcontentcontainer">
+				<div id="blog-sidecolumn"></div>
+					<script>loadBlogSideColumn()</script>
+			</div>			
+		</div>
+	</div>
+	<div class="clear"></div>
+	</div>
+	<div class="clear"></div>
+	<div id="footer">
+		<a href="https://www.cnblogs.com/" id="footer_site_link" class="footer-brand">博客园</a>
+<span class="footer-copyright"> &nbsp;&copy;&nbsp; 2004-2026</span>
+<br /><span class="footer-icp">
+    <a target="_blank" href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=33010602011771"><img src="//assets.cnblogs.com/images/ghs.png" />浙公网安备 33010602011771号</a>
+    <a href="https://beian.miit.gov.cn" target="_blank">浙ICP备2021040463号-3</a>
+</span>
+
+
+
+	</div>
+</div>
+
+
+
+    
+
+    <input type="hidden" id="antiforgery_token" value="CfDJ8Ow5-In01nBEvFwaadRGjqH7ZrkTrRrVu-MWl-FIo4Y-d-5CnlOsLdA0wcHUzphfqOknnYYknjDAakt7beowbkQ0IlbETWi2iNvcNPD1JzrPAlDkrugUOHCs71xolqH7XCw-eFeqMU_elFcDayVvYDc" />
+    <script defer src="https://hm.baidu.com/hm.js?866c9be12d4a814454792b1fd0fed295"></script>
+<script defer src="https://lf1-cdn-tos.bytegoofy.com/goofy/ttzz/push.js?32d945448dd797af605da9156763de3dc11c9886368d0f917d6388e4fcf5542030632485602430134f60bc55ca391050b680e2741bf7233a8f1da9902314a3fa" id="ttzz"></script>
+</body>
+</html>

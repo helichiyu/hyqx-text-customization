@@ -1,0 +1,20 @@
+# PTt_extract_pdf_body 配置（默认值与主表"工具配置项参数设计"列一致）
+app:
+  name: "PTt_extract_pdf_body"
+  version: "1.0.0"
+  host: "0.0.0.0"
+  port: 6304
+
+limits:
+  max_input_mb: 10
+  max_response_mb: 50
+
+workers: 2   # 生产由 Dockerfile gunicorn 使用
+
+# 算子默认参数（与 model/network.py default_params 保持一致）
+params: {
+  "页码范围": "全部",
+  "表格提取": "启用",
+  "图片文字提取": "启用",
+  "OCR识别": "启用"
+}

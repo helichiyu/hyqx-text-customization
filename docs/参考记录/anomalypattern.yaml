@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+  creationTimestamp: null
+  generation: 1
+  labels:
+    app: anomalypattern
+    publish-type: "1"
+  name: anomalypattern
+  namespace: obu-ai-cloud
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: anomalypattern
+      java_app: anomalypattern
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
+      creationTimestamp: null
+      labels:
+        app: anomalypattern
+        java_app: anomalypattern
+      namespace: obu-ai-cloud
+    spec:
+      nodeName: "192.168.1.110"
+      containers:
+      - image: owl-harbor.corp.lsattr.cn:580/obu-ai-cloud/anomaly-pattern:1.0.0-alpha.1
+        imagePullPolicy: Always
+        name: anomalypattern
+        ports:
+        - containerPort: 6288
+          protocol: TCP  
+        env:
+        - name: IMAGE_GEN_BACKEND
+          value: idg
+        resources:
+          limits:
+            cpu: "4"
+            memory: 8000Mi
+          requests:
+            cpu: 100m
+            memory: 400Mi
+      dnsPolicy: ClusterFirst
+      imagePullSecrets:
+      - name: aliyun-acr-login
+      - name: harbor-admin-login
+      restartPolicy: Always
+      schedulerName: default-scheduler
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: anomalypattern
+  name: anomalypattern
+  namespace: obu-ai-cloud
+spec:
+  ports:
+  - name: http
+    port: 6288
+    protocol: TCP
+    targetPort: 6288
+    nodePort: 30811
+  selector:
+    app: anomalypattern
+  sessionAffinity: None
+  type: NodePort
+

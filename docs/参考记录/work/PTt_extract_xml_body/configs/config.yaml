@@ -1,0 +1,19 @@
+# PTt_extract_xml_body 配置（默认值与主表"工具配置项参数设计"列一致）
+app:
+  name: "PTt_extract_xml_body"
+  version: "1.0.0"
+  host: "0.0.0.0"
+  port: 6303
+
+limits:
+  max_input_mb: 10
+  max_response_mb: 50
+
+workers: 2   # 生产由 Dockerfile gunicorn 使用
+
+# 算子默认参数（与 model/network.py default_params 保持一致）
+params: {
+  "正文提取范围": "全文",
+  "标签过滤": "启用",
+  "属性过滤": "启用"
+}

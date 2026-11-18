@@ -1,0 +1,89 @@
+{
+ "operator_name": "PTt_extract_docx_body",
+ "detection": "PTt_extract_docx_body",
+ "display_name": "提取DOCX正文",
+ "tool_type": "规则型",
+ "stage": "清洗·正文",
+ "version": "1.0.0",
+ "skippable": "是（可选-必填1个）",
+ "api_path": "/predict",
+ "description": "接收 Word 文档（.docx）并提取正文（段落+表格+可选超链接），输出纯文本内容",
+ "input_schema": {
+  "method": "POST",
+  "path": "/predict?detection=PTt_extract_docx_body",
+  "content_type": "multipart/form-data",
+  "form_fields": {
+   "file": {
+    "type": "file",
+    "required": true,
+    "description": "待处理文件（jsonl 每行一条记录；其他格式整体一条）"
+   }
+  },
+  "params": {
+   "param_表格内容": {
+    "default": "保留"
+   },
+   "param_批注": {
+    "default": "删除"
+   },
+   "param_超链接": {
+    "default": "删除"
+   },
+   "param_图片说明文字": {
+    "default": "保留"
+   }
+  },
+  "limits": {
+   "max_input_mb": 10,
+   "max_response_mb": 50
+  }
+ },
+ "output_schema": {
+  "content_type": "application/json",
+  "fields": {
+   "code": {
+    "type": "int",
+    "description": "0=成功 1=失败"
+   },
+   "msg": {
+    "type": "string",
+    "description": "提示信息"
+   },
+   "data": {
+    "type": "list",
+    "items": {
+     "fieldName": {
+      "type": "string",
+      "description": "记录标识"
+     },
+     "tags": {
+      "type": "list",
+      "description": "业务标签（主表拦截处理列标签原文）"
+     },
+     "action": {
+      "type": "string",
+      "description": "keep / remove / review"
+     },
+     "text": {
+      "type": "string",
+      "description": "提取的正文"
+     },
+     "status": {
+      "type": "int",
+      "description": "兼容主表 U 列：1=放行/处理成功，0=过滤/需复核（由 action 派生）"
+     }
+    }
+   }
+  }
+ },
+ "error_codes": [
+  "FILE_EMPTY",
+  "FILE_CORRUPT",
+  "DECODE_FAIL",
+  "PARSE_FAIL",
+  "SIZE_EXCEEDED",
+  "PARAM_INVALID",
+  "MODEL_LOAD_FAIL",
+  "INTERNAL_ERROR"
+ ]
+}
