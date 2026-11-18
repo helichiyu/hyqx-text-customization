@@ -1,6 +1,6 @@
 # 文本定制化生产 · 11 个算子合并为单容器（服务名 op-custom-text，对外端口 17022）
 #
-# 本文件是交付包 release/op-custom-text-docker/ 内的编排文件，由
+# 本文件是交付包 release/op-custom-text-docker/ 内的编排文件（交付根目录即构建上下文），由
 #   python -I operators/_shared_tools/pack_docker_bundle.py
 # 原样复制过去；仓库根直接 `docker compose up` 没有构建上下文，请先生成交付包。
 #
@@ -17,10 +17,10 @@
 # 平台部署要求（升级要求第五节）：不挂载任何卷，运行期文件只写容器内部文件系统，
 # 随容器删除自动回收；K8s 清单请为容器配置 ephemeral-storage 限额。
 # 本地联调如需把产物留在宿主机，自行加 docker-compose.override.yml 挂载 ./op-runtime:/data。
+# 11 服务独立端口形态（6301–6311）见仓库 operators/docker-compose.per-port.yml（不在交付包内）。
 #
 # 模型调用默认走 IDG/磐智网关（MODEL_PROVIDER=idg）；非固定环境变量按下方格式
 # 在 K8s Deployment 的 env: 段按需添加，改完滚动重启即生效，无需改代码/重建镜像。
-# 11 服务独立端口形态见 docker-compose.per-port.yml。
 
 name: op-custom-text
 
@@ -28,8 +28,8 @@ services:
   op-custom-text:
     # 显式指定镜像名（全小写短横线 + 版本 tag），否则 Compose 会按 {项目名}-{服务名}
     # 自动命名成 op-custom-text-op-custom-text；改代码必须换 tag。
-    image: op-custom-text:1.1.0
-    build: ./op-custom-text
+    image: op-custom-text:1.0.0
+    build: .
     container_name: op-custom-text
     # 复用 docker0，不新建项目网络：部分服务器 Docker 默认地址池已耗尽
     # （could not find an available, non-overlapping IPv4 address pool）

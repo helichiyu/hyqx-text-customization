@@ -3,12 +3,11 @@
 用法（项目根执行）：
     python -I operators/_shared_tools/pack_docker_bundle.py
 
-产物：
+产物（扁平结构，交付根目录即 Docker 构建上下文，与 operators/ 目录习惯一致）：
     release/op-custom-text-docker/
-        docker-compose.yml
-        op-custom-text/            # Docker 构建上下文
-            Dockerfile / requirements.txt / nginx.conf / supervisor.py / .dockerignore
-            ops/<tag>/             # 每个算子仅保留运行所需文件
+        docker-compose.yml / UPGRADE.md
+        Dockerfile / requirements.txt / nginx.conf / supervisor.py / .dockerignore
+        ops/<tag>/             # 每个算子仅保留运行所需文件
     release/op-custom-text-docker-v{VERSION}.zip
 
 每个算子只复制 Docker 构建必需内容：
@@ -27,12 +26,11 @@ from pathlib import Path
 OPERATORS = Path(__file__).resolve().parents[1]
 PROJECT = OPERATORS.parent
 RELEASE_ROOT = PROJECT / "release"
-BUNDLE = RELEASE_ROOT / "op-custom-text-docker"
-CONTEXT = BUNDLE / "op-custom-text"
+BUNDLE = RELEASE_ROOT / "op-custom-text-docker"  # 交付根目录，同时是 Docker 构建上下文
 DEPLOY_TEMPLATE = OPERATORS / "_deploy"
 
 #: 发布版本（主版本.次版本.修订版本）：与镜像 tag、inference VERSION 保持一致
-VERSION = "1.1.0"
+VERSION = "1.0.0"
 
 TAGS = ["meta_clean_slice", "meta_genre_judge", "meta_fact_extract", "meta_field_fill",
         "lay_page_render", "lay_page_detect", "fml_formula_locate", "fml_formula_recognize",
@@ -46,7 +44,7 @@ EXCLUDE_FILE_NAMES = {"README.md"}
 
 def copy_operator(tag: str) -> int:
     src = OPERATORS / tag
-    dst = CONTEXT / "ops" / tag
+    dst = BUNDLE / "ops" / tag
     dst.mkdir(parents=True)
     count = 0
 
@@ -98,11 +96,10 @@ def reset_bundle_dir() -> None:
 
 def main() -> None:
     reset_bundle_dir()
-    CONTEXT.mkdir(parents=True)
-    (CONTEXT / "ops").mkdir()
+    (BUNDLE / "ops").mkdir(parents=True)
 
     for name in ["Dockerfile", "requirements.txt", "nginx.conf", "supervisor.py", ".dockerignore"]:
-        shutil.copy2(DEPLOY_TEMPLATE / "op-custom-text" / name, CONTEXT / name)
+        shutil.copy2(DEPLOY_TEMPLATE / "op-custom-text" / name, BUNDLE / name)
     shutil.copy2(OPERATORS / "docker-compose.yml", BUNDLE / "docker-compose.yml")
     shutil.copy2(DEPLOY_TEMPLATE / "UPGRADE.md", BUNDLE / "UPGRADE.md")
 

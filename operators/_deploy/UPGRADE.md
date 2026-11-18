@@ -1,7 +1,7 @@
-# op-custom-text v1.1.0 升级说明
+# op-custom-text v1.0.0 升级说明
 
 > 依据《升级要求.md》（docs/参考记录/）完成的三项改造：入站认证拦截、出站切换 IDG/磐智模型网关、部署规范对齐。
-> 旧版备份：`op-custom-text-docker-v1.0.0-backup.zip`（回滚直接用旧包 + 旧清单）。
+> 升级前快照备份：`op-custom-text-docker-v1.0.0-backup.zip`（回滚直接用旧包 + 旧清单）。
 
 ## 变更内容
 
@@ -23,7 +23,7 @@
 
 ### 3. 部署规范
 
-- 镜像 `op-custom-text:1.1.0`（全小写短横线 + 版本 tag；改代码必须换 tag）。
+- 镜像 `op-custom-text:1.0.0`（全小写短横线 + 版本 tag；改代码必须换 tag）。
 - compose 不再挂载任何卷：运行期文件只写容器内 `/data`（INPUT_DIR/OUTPUT_DIR），随容器删除回收；K8s 侧请配 `ephemeral-storage` 限额。
 - 健康检查固定 `/healthz`（白名单内）；compose 日志轮转 50MB×3。
 - 非固定环境变量在 K8s Deployment `env:` 段按 `- name:/value:` 追加，改完滚动重启生效。

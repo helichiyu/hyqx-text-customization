@@ -74,7 +74,7 @@ log = logging.getLogger(OPERATOR_TAG)
 
 core = importlib.import_module(f"{OPERATOR_TAG}.operator")
 
-VERSION = "1.1.0"
+VERSION = "1.0.0"
 DEFAULT_PORT = int(os.getenv("PORT", "6288"))
 
 INPUT_DIR = Path(os.getenv("INPUT_DIR", ROOT / "runtime" / "input")).resolve()
