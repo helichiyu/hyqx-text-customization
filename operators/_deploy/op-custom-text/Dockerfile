@@ -1,7 +1,9 @@
 FROM python:3.12-slim
 
 WORKDIR /app
+# 固定环境变量写镜像（升级要求 4.1）；非固定变量（后端开关/凭据/令牌）启动时注入
 ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
     PYTHONIOENCODING=utf-8 \
     INPUT_DIR=/data/input \
     OUTPUT_DIR=/data/outputs

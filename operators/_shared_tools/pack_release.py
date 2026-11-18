@@ -25,7 +25,7 @@ TAGS = ["meta_clean_slice", "meta_genre_judge", "meta_fact_extract", "meta_field
         "lay_page_render", "lay_page_detect", "fml_formula_locate", "fml_formula_recognize",
         "img_region_locate", "img_type_classify", "img_struct_describe"]
 
-ZIP_ROOT_FILES = ["Dockerfile", "requirements.txt", "inference.py", "map.json"]
+ZIP_ROOT_FILES = ["Dockerfile", "requirements.txt", "inference.py", "auth_guard.py", "map.json"]
 
 EXCLUDE_DIR_NAMES = {"__pycache__", ".pytest_cache", ".idea", ".git"}
 

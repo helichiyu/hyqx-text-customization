@@ -6,7 +6,7 @@ ENV PYTHONUNBUFFERED=1 PYTHONIOENCODING=utf-8
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY inference.py map.json ./
+COPY inference.py auth_guard.py map.json ./
 COPY meta_genre_judge/ ./meta_genre_judge/
 
 ENV INPUT_DIR=/data/input OUTPUT_DIR=/data/outputs

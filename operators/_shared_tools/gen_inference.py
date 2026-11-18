@@ -62,6 +62,9 @@ def run(input_dir: Path, output_dir: Path, params: dict[str, Any], log) -> dict[
 #: 需要 vendor 进每个算子内层包 utils/ 的共享模块（交付包自包含，不依赖 _shared_tools）
 VENDOR_MODULES = ["llm_config.py", "llm_client.py", "pdf_utils.py", "review_codes.py"]
 
+#: 需要复制到每个算子根目录（与 inference.py 同级）的共享模块
+ROOT_MODULES = ["auth_guard.py"]
+
 
 def scaffold(force: bool = False) -> list[str]:
     created: list[str] = []
@@ -74,6 +77,9 @@ def scaffold(force: bool = False) -> list[str]:
         inference = root / "inference.py"
         if force or not inference.exists():
             shutil.copyfile(TEMPLATE, inference)
+
+        for mod in ROOT_MODULES:
+            shutil.copyfile(SHARED / mod, root / mod)
 
         (root / "map.json").write_text(
             json.dumps({tag: name}, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

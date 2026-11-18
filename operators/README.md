@@ -25,7 +25,7 @@
 | `img_type_classify` | 图片判型 | 图文融合 ① | 视觉大模型 | 是 |
 | `img_struct_describe` | 图文要素与描述生成 | 图文融合 ②③（末位） | 视觉大模型 + 规则回核 | 是 |
 
-模型接入统一走硅基流动（OpenAI 兼容）：视觉 `Qwen/Qwen3-VL-8B-Instruct`，文本 `deepseek-ai/DeepSeek-V3.2`；密钥已内置，`SILICONFLOW_BASE_URL` / `SILICONFLOW_API_KEY` 环境变量可覆盖。
+模型接入默认走 IDG/磐智模型网关（`MODEL_PROVIDER=idg`）：文本 `Qwen3.5-9B`（PATH `/Qwen3.5-9B`），视觉 `qwen3-vl-8b-instruct`（PATH `/qwen3-vl-8b-instruct`）；APPID/APPKEY 签名，`MODEL_APP_KEY` 等凭据只走环境变量（本地联调见 `.env.example`，`.env` 不入库）。`MODEL_PROVIDER=siliconflow` 可切回第三方回退后端（视觉 `Qwen/Qwen3-VL-8B-Instruct`、文本 `deepseek-ai/DeepSeek-V3.2`，需配 `SILICONFLOW_API_KEY`）。入站认证见各算子 `auth_guard.py`（`X-Token` + `AUTH_TOKEN_SHA256` 摘要，`/healthz` 白名单）。
 
 ## 链路编排（四条产线）
 

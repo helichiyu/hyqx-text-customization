@@ -9,10 +9,13 @@
         op-custom-text/            # Docker 构建上下文
             Dockerfile / requirements.txt / nginx.conf / supervisor.py / .dockerignore
             ops/<tag>/             # 每个算子仅保留运行所需文件
-    release/op-custom-text-docker.zip
+    release/op-custom-text-docker-v{VERSION}.zip
 
 每个算子只复制 Docker 构建必需内容：
-    inference.py / map.json / <tag>/（剔除 tests、dataset、README.md、__pycache__）
+    inference.py / auth_guard.py / map.json / <tag>/（剔除 tests、dataset、README.md、__pycache__）
+
+命名遵循升级要求第五节：发布包 <product-name>-v<version>.zip，全小写短横线；
+改代码必须换版本号（同步 docker-compose.yml 的镜像 tag 与 inference_template.py 的 VERSION）。
 """
 
 from __future__ import annotations
@@ -28,11 +31,14 @@ BUNDLE = RELEASE_ROOT / "op-custom-text-docker"
 CONTEXT = BUNDLE / "op-custom-text"
 DEPLOY_TEMPLATE = OPERATORS / "_deploy"
 
+#: 发布版本（主版本.次版本.修订版本）：与镜像 tag、inference VERSION 保持一致
+VERSION = "1.1.0"
+
 TAGS = ["meta_clean_slice", "meta_genre_judge", "meta_fact_extract", "meta_field_fill",
         "lay_page_render", "lay_page_detect", "fml_formula_locate", "fml_formula_recognize",
         "img_region_locate", "img_type_classify", "img_struct_describe"]
 
-ROOT_FILES = ["inference.py", "map.json"]
+ROOT_FILES = ["inference.py", "auth_guard.py", "map.json"]
 EXCLUDE_DIR_NAMES = {"__pycache__", ".pytest_cache", ".idea", ".git"}
 EXCLUDE_PKG_DIRS = {"tests", "dataset"}
 EXCLUDE_FILE_NAMES = {"README.md"}
@@ -69,7 +75,7 @@ def copy_operator(tag: str) -> int:
 
 
 def zip_bundle() -> Path:
-    archive = RELEASE_ROOT / "op-custom-text-docker.zip"
+    archive = RELEASE_ROOT / f"op-custom-text-docker-v{VERSION}.zip"
     archive.unlink(missing_ok=True)
     with zipfile.ZipFile(archive, "w", zipfile.ZIP_DEFLATED) as zf:
         for path in sorted(BUNDLE.rglob("*")):
@@ -98,6 +104,7 @@ def main() -> None:
     for name in ["Dockerfile", "requirements.txt", "nginx.conf", "supervisor.py", ".dockerignore"]:
         shutil.copy2(DEPLOY_TEMPLATE / "op-custom-text" / name, CONTEXT / name)
     shutil.copy2(OPERATORS / "docker-compose.yml", BUNDLE / "docker-compose.yml")
+    shutil.copy2(DEPLOY_TEMPLATE / "UPGRADE.md", BUNDLE / "UPGRADE.md")
 
     total = 0
     for tag in TAGS:

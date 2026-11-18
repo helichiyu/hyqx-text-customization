@@ -14,16 +14,21 @@
 #   POST /img_struct_describe/uploadFile?uniqueId=...
 # 11 个算子在容器内各自独立进程运行，nginx 按路径前缀分流。
 #
-# 共享数据卷：./op-runtime 挂载到容器 /data（INPUT_DIR=/data/input、OUTPUT_DIR=/data/outputs）。
-# 模型调用默认走硅基流动公网 API，宿主机需可出网；如需覆盖网关/密钥，取消下面注释。
+# 平台部署要求（升级要求第五节）：不挂载任何卷，运行期文件只写容器内部文件系统，
+# 随容器删除自动回收；K8s 清单请为容器配置 ephemeral-storage 限额。
+# 本地联调如需把产物留在宿主机，自行加 docker-compose.override.yml 挂载 ./op-runtime:/data。
+#
+# 模型调用默认走 IDG/磐智网关（MODEL_PROVIDER=idg）；非固定环境变量按下方格式
+# 在 K8s Deployment 的 env: 段按需添加，改完滚动重启即生效，无需改代码/重建镜像。
 # 11 服务独立端口形态见 docker-compose.per-port.yml。
 
 name: op-custom-text
 
 services:
   op-custom-text:
-    # 显式指定镜像名，否则 Compose 会按 {项目名}-{服务名} 自动命名成 op-custom-text-op-custom-text
-    image: op-custom-text:latest
+    # 显式指定镜像名（全小写短横线 + 版本 tag），否则 Compose 会按 {项目名}-{服务名}
+    # 自动命名成 op-custom-text-op-custom-text；改代码必须换 tag。
+    image: op-custom-text:1.1.0
     build: ./op-custom-text
     container_name: op-custom-text
     # 复用 docker0，不新建项目网络：部分服务器 Docker 默认地址池已耗尽
@@ -35,11 +40,33 @@ services:
     environment:
       INPUT_DIR: /data/input
       OUTPUT_DIR: /data/outputs
-      # SILICONFLOW_BASE_URL: http://your-gateway/v1
+      # ---- 非固定环境变量（按需取消注释；K8s 侧对应 Deployment env: 段）----
+      # 模型后端开关：idg（默认，磐智网关）/ siliconflow（第三方回退）
+      # MODEL_PROVIDER: idg
+      # 磐智网关：地址/凭据/模型覆盖（MODEL_APP_KEY 建议 Secret 注入，勿明文提交）
+      # MODEL_GATEWAY_BASE_URL: http://10.252.92.98:9050
+      # MODEL_APP_ID: audioasr
+      # MODEL_APP_KEY: <磐智 APPKEY>
+      # MODEL_GATEWAY_TIMEOUT_SECONDS: "300"
+      # MODEL_GATEWAY_RETRIES: "2"
+      # TEXT_MODEL: Qwen3.5-9B
+      # TEXT_MODEL_PATH: /Qwen3.5-9B
+      # VISION_MODEL: qwen3-vl-8b-instruct
+      # VISION_MODEL_PATH: /qwen3-vl-8b-instruct
+      # SiliconFlow 回退（MODEL_PROVIDER=siliconflow 时必填 key）
       # SILICONFLOW_API_KEY: sk-...
-    volumes:
-      - ./op-runtime:/data
+      # SILICONFLOW_BASE_URL: https://api.siliconflow.cn/v1
+      # 入站认证（平台 → 本服务）：生产注入摘要；平台未配 X-Token 前保持注释（认证自动关闭）
+      # AUTH_TOKEN_SHA256: <令牌 sha256 摘要，空格/逗号分隔支持多个>
+      # AUTH_DISABLED: "1"   # 仅限测试/本地，生产禁止
+    # 日志：INFO 输出到标准输出（PYTHONUNBUFFERED=1），docker logs 查看；轮转 50MB×3
+    logging:
+      driver: json-file
+      options:
+        max-size: 50m
+        max-file: "3"
     healthcheck:
+      # 探针一律 /healthz（认证白名单内，无需令牌）；禁止用 /openapi.json
       test: ["CMD", "python", "-c", "import urllib.request as u,sys; sys.exit(0 if u.urlopen('http://127.0.0.1:17022/healthz', timeout=3).status==200 else 1)"]
       interval: 30s
       timeout: 5s

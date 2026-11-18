@@ -8,14 +8,18 @@
 #
 # 共享数据卷：./op-runtime 挂载到所有容器的 /data（INPUT_DIR=/data/input、OUTPUT_DIR=/data/outputs）。
 # 链路传输要求下游能读到上游的 outputFile——所有容器共用同一挂载路径即可满足路径闸门校验。
-# 模型调用走硅基流动公网 API，宿主机需可出网；如走内网网关，改下面 SILICONFLOW_BASE_URL。
+# （本形态供本地联调；平台交付用单容器形态 docker-compose.yml，不挂载任何卷。）
+# 模型调用默认走 IDG/磐智网关（MODEL_PROVIDER=idg），凭据用环境变量注入：
+# 本地联调在 operators/.env 配 MODEL_APP_KEY；回退第三方置 MODEL_PROVIDER=siliconflow + SILICONFLOW_API_KEY。
 
 x-op-common: &op-common
   restart: unless-stopped
   environment: &op-env
     INPUT_DIR: /data/input
     OUTPUT_DIR: /data/outputs
-    # SILICONFLOW_BASE_URL: http://your-gateway/v1   # 需要时覆盖（key 同理：SILICONFLOW_API_KEY）
+    # MODEL_PROVIDER: idg            # 默认即 idg；回退改 siliconflow 并配 SILICONFLOW_API_KEY
+    # MODEL_APP_KEY: <磐智 APPKEY>   # 联调值见 docs/参考记录/聊天记录.txt；生产建议 Secret
+    # AUTH_TOKEN_SHA256: <令牌摘要>  # 平台未配 X-Token 前保持注释（认证自动关闭）
   volumes:
     - ./op-runtime:/data
   healthcheck:

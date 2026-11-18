@@ -32,6 +32,9 @@
   `validate_params(params) -> dict`（参数校验/补默认，不合法抛 ValueError，信息用中文）。
 
 环境变量：`INPUT_DIR`、`OUTPUT_DIR`（默认 `<包根>/runtime/input|output`）、`PORT`（默认 6288）。
+入站认证（升级要求第三节）：`AUTH_TOKEN_SHA256`（生产，摘要）、`AUTH_TOKEN`（联调明文）、
+`AUTH_DISABLED`（测试显式关闭）、`AUTH_WHITELIST_PATHS`（默认 `/health,/healthz`）；
+模型后端见 utils/llm_config.py（`MODEL_PROVIDER=idg|siliconflow`，默认 IDG/磐智网关）。
 统一信封 `{"code":0,"msg":"success","data":{...}}`；业务失败 `code=1`，HTTP 仍为 200。
 """
 
@@ -60,6 +63,8 @@ ROOT = Path(__file__).resolve().parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+import auth_guard  # noqa: E402  # 同目录随包分发（gen_inference.py 复制）
+
 _map = json.loads((ROOT / "map.json").read_text(encoding="utf-8"))
 OPERATOR_TAG = next(iter(_map))
 OPERATOR_NAME = _map[OPERATOR_TAG]
@@ -69,7 +74,7 @@ log = logging.getLogger(OPERATOR_TAG)
 
 core = importlib.import_module(f"{OPERATOR_TAG}.operator")
 
-VERSION = "1.0.0"
+VERSION = "1.1.0"
 DEFAULT_PORT = int(os.getenv("PORT", "6288"))
 
 INPUT_DIR = Path(os.getenv("INPUT_DIR", ROOT / "runtime" / "input")).resolve()
@@ -257,7 +262,9 @@ def _progress_lock_for(path: Path) -> threading.Lock:
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(title=f"{OPERATOR_TAG} · {OPERATOR_NAME}", version=VERSION)
+    app = FastAPI(title=f"{OPERATOR_TAG} · {OPERATOR_NAME}", version=VERSION,
+                  **auth_guard.docs_off_kwargs())
+    auth_guard.install_auth(app)
     INPUT_DIR.mkdir(parents=True, exist_ok=True)
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -442,7 +449,7 @@ def create_app() -> FastAPI:
     # 平台与算子不在同一服务器，产物只能经 HTTP 读取，契约见
     # platform-hsmty/docs/算子文件接口约定.md。path 统一是 /predict 返回的 data.outputFile，
     # 只允许 OUTPUT_DIR 之内、且不得是共享根本身（防跨任务枚举）。
-    # 注意：本服务与 /uploadFile、/predict 一样无鉴权，部署时必须保证端口仅内网/平台网段可达。
+    # 鉴权由 auth_guard 中间件统一承担（X-Token，/healthz 白名单除外）。
 
     def _gate_output_path(path: str, label: str = "path") -> Path:
         target = _gate_path(path, label, roots=(OUTPUT_DIR,))
